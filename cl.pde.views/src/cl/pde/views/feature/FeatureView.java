@@ -1,0 +1,206 @@
+package cl.pde.views.feature;
+
+import java.util.Locale;
+import java.util.function.Function;
+import java.util.function.Predicate;
+
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.pde.internal.core.ICoreConstants;
+import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
+import org.eclipse.pde.internal.core.ifeature.IFeature;
+import org.eclipse.pde.internal.ui.PDEPlugin;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.ISelectionListener;
+import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.part.DrillDownAdapter;
+import org.eclipse.ui.part.ViewPart;
+
+import cl.pde.Activator;
+import cl.pde.views.NotTreeParentPatternFilter;
+import cl.pde.views.NotifyResourceChangeListener;
+import cl.pde.views.PDESelectionListener;
+import cl.pde.views.PdeLabelProvider;
+import cl.pde.views.actions.ExpandAllNodesAction;
+import cl.pde.views.actions.OpenNodeAction;
+
+/**
+ */
+public class FeatureView extends ViewPart
+{
+  /**
+   * The ID of the view as specified by the extension.
+   */
+  public static final String ID = "cl.pde.featureView";
+
+  private FilteredTree featureFilteredTree;
+  private PatternFilter filter;
+  private TreeViewer featureViewer;
+
+  private DrillDownAdapter drillDownAdapter;
+
+  private Action expandAllNodesAction;
+  private Action collapseAllNodesAction;
+  private Action doubleClickOpenNodeAction;
+
+  private ISelectionListener selectionListener;
+  private NotifyResourceChangeListener notifyResourceChangeListener;
+
+  /**
+   * The constructor.
+   */
+  public FeatureView()
+  {
+  }
+
+  /**
+   * This is a callback that will allow us
+   * to create the viewer and initialize it.
+   */
+  @Override
+  public void createPartControl(Composite parent)
+  {
+    filter = new NotTreeParentPatternFilter();
+    featureFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    featureViewer = featureFilteredTree.getViewer();
+    featureFilteredTree.setBackground(featureViewer.getTree().getBackground());
+
+    drillDownAdapter = new DrillDownAdapter(featureViewer);
+
+    featureViewer.setContentProvider(new FeatureViewContentProvider());
+    featureViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
+
+    //
+    PDEPlugin.getDefault().getLabelProvider().connect(this);
+    notifyResourceChangeListener = new NotifyResourceChangeListener();
+    IWorkspace workspace = ResourcesPlugin.getWorkspace();
+    workspace.addResourceChangeListener(notifyResourceChangeListener, IResourceChangeEvent.POST_CHANGE);
+
+    //
+    featureViewer.getTree().addDisposeListener(e -> {
+      workspace.removeResourceChangeListener(notifyResourceChangeListener);
+      PDEPlugin.getDefault().getLabelProvider().disconnect(FeatureView.this);
+      PDEPlugin.getDefault().getLabelProvider().dispose();
+    });
+
+    // Create the help context id for the viewer's control
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(featureViewer.getControl(), Activator.PLUGIN_ID + ".featureView");
+
+    getSite().setSelectionProvider(featureViewer);
+
+    makeActions();
+    hookContextMenu();
+    hookDoubleClickAction();
+    contributeToActionBars();
+
+    //
+    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
+
+    Predicate<IFile> predicate = file -> ICoreConstants.FEATURE_FILENAME_DESCRIPTOR.equals(file.getName().toLowerCase(Locale.ENGLISH));
+    Function<IFile, Object> inputFunction = file -> {
+      WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
+      workspaceFeatureModel.load();
+
+      IFeature feature = workspaceFeatureModel.getFeature();
+      return feature;
+    };
+    selectionListener = new PDESelectionListener(featureViewer, notifyResourceChangeListener, predicate, inputFunction);
+    selectionService.addPostSelectionListener(selectionListener);
+    selectionListener.selectionChanged(null, selectionService.getSelection());
+  }
+
+  @Override
+  public void dispose()
+  {
+    if (selectionListener != null)
+    {
+      ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
+      selectionService.removePostSelectionListener(selectionListener);
+      selectionListener = null;
+    }
+
+    super.dispose();
+  }
+
+  private void hookContextMenu()
+  {
+    MenuManager menuMgr = new MenuManager("#PopupMenu");
+    menuMgr.setRemoveAllWhenShown(true);
+    menuMgr.addMenuListener(manager -> FeatureView.this.fillContextMenu(manager));
+    Menu menu = menuMgr.createContextMenu(featureViewer.getControl());
+    featureViewer.getControl().setMenu(menu);
+    getSite().registerContextMenu(menuMgr, featureViewer);
+  }
+
+  private void contributeToActionBars()
+  {
+    IActionBars bars = getViewSite().getActionBars();
+    fillLocalPullDown(bars.getMenuManager());
+    fillLocalToolBar(bars.getToolBarManager());
+  }
+
+  private void fillLocalPullDown(IMenuManager manager)
+  {
+    manager.add(expandAllNodesAction);
+    manager.add(collapseAllNodesAction);
+    manager.add(new Separator());
+  }
+
+  private void fillContextMenu(IMenuManager manager)
+  {
+    manager.add(expandAllNodesAction);
+    manager.add(collapseAllNodesAction);
+    manager.add(new Separator());
+    drillDownAdapter.addNavigationActions(manager);
+    // Other plug-ins can contribute there actions here
+    manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+  }
+
+  private void fillLocalToolBar(IToolBarManager manager)
+  {
+    manager.add(expandAllNodesAction);
+    manager.add(collapseAllNodesAction);
+    manager.add(new Separator());
+    drillDownAdapter.addNavigationActions(manager);
+  }
+
+  private void makeActions()
+  {
+    expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true);
+    collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
+
+    //
+    doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);
+  }
+
+  private void hookDoubleClickAction()
+  {
+    featureViewer.addDoubleClickListener(event -> doubleClickOpenNodeAction.run());
+  }
+
+  /**
+   * Passing the focus request to the viewer's control.
+   */
+  @Override
+  public void setFocus()
+  {
+    featureViewer.getControl().setFocus();
+  }
+
+}

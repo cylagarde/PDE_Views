@@ -1,0 +1,5 @@
+ecouter les changements de contenu de la feature
+OK labelProvider : differencier les infos par une couleur
+OK faire une vue pour les launch configurations
+OK faire une vue pour les products
+OK ajouter une textfield pour chercher un id de plugin
