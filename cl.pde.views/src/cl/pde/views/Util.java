@@ -59,9 +59,9 @@ public class Util
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-  * Open PDE object
-  * @param treeObject
-  */
+   * Open PDE object
+   * @param treeObject
+   */
   public static void open(Object pdeObject)
   {
     if (pdeObject instanceof IPlugin)
@@ -515,10 +515,12 @@ public class Util
    */
   private static IResource getFeatureImportResource(IFeatureImport featureImport)
   {
+    String featureId = featureImport.getId();
+    String featureVersion = featureImport.getVersion();
     if (featureImport.getType() == IFeatureImport.PLUGIN)
-      return getPluginResource(featureImport.getId(), featureImport.getVersion());
+      return getPluginResource(featureId, featureVersion);
     else if (featureImport.getType() == IFeatureImport.FEATURE)
-      return getFeatureResource(featureImport.getFeature());
+      return getFeatureResource(featureId, featureVersion);
     return null;
   }
 
