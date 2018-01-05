@@ -33,6 +33,7 @@ import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
 import cl.pde.Activator;
+import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.PDESelectionListener;
@@ -98,6 +99,7 @@ public class ProductView extends ViewPart
       PDEPlugin.getDefault().getLabelProvider().disconnect(ProductView.this);
       PDEPlugin.getDefault().getLabelProvider().dispose();
     });
+    productViewer.addTreeListener(new ExpandTreeViewerListener());
 
     // Create the help context id for the viewer's control
     PlatformUI.getWorkbench().getHelpSystem().setHelp(productViewer.getControl(), Activator.PLUGIN_ID + ".productView");

@@ -26,32 +26,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   Set<IResource> resourceSet = new HashSet<>();
   TreeViewer treeViewer;
   IFile file;
-  Function<IFile, Object> inputFunction;
-
-  /**
-   *
-   * @param resource
-   */
-  public void addResource(IResource resource)
-  {
-    resourceSet.add(resource);
-  }
-
-  /**
-   *
-   */
-  public void clearAllResources()
-  {
-    resourceSet.clear();
-  }
-
-  /**
-   * @param object
-   */
-  public void forEachResource(Consumer<? super IResource> action)
-  {
-    resourceSet.forEach(action);
-  }
+  Function<IFile, Object> inputProviderFunction;
 
   @Override
   public void resourceChanged(IResourceChangeEvent event)
@@ -80,16 +55,13 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     @Override
     public boolean visit(IResourceDelta delta)
     {
-      IResource res = delta.getResource();
+      IResource resource = delta.getResource();
       //      System.out.println("POST_CHANGE " + res + " " + delta.getFlags() + "  " + delta.getKind());
 
       if ((delta.getFlags() & IResourceDelta.CONTENT) != 0)
       {
-        if (resourceSet.contains(res))
-        {
-          System.out.println("res changed " + res + "   must update=" + delta);
-          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, file, inputFunction));
-        }
+        if (resourceSet.contains(resource))
+          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, file, inputProviderFunction));
       }
 
       //
@@ -98,31 +70,36 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   }
 
   /**
-   * @param featureViewer
+   * @param treeViewer
    * @param file
-   * @param inputSupplier
+   * @param inputProviderFunction
    */
-  public void setUpdated(TreeViewer treeViewer, IFile file, Function<IFile, Object> inputFunction)
+  public void setUpdated(TreeViewer treeViewer, IFile file, Function<IFile, Object> inputProviderFunction)
   {
     this.treeViewer = treeViewer;
     this.file = file;
-    this.inputFunction = inputFunction;
+    this.inputProviderFunction = inputProviderFunction;
 
-    //
-    Object input = inputFunction.apply(file);
-    if (input == null)
-      return;
+    resourceSet.clear();
 
-    clearAllResources();
-    addResource(file);
+    // get input for treeViewer
+    Object input = inputProviderFunction.apply(file);
 
-    //
     treeViewer.getTree().setRedraw(false);
-    treeViewer.setInput(input);
+    try
+    {
+      treeViewer.setInput(input);
 
-    treeViewer.expandAll();
-    treeViewer.getTree().setRedraw(true);
+      treeViewer.expandAll();
+    }
+    finally
+    {
+      treeViewer.getTree().setRedraw(true);
+    }
 
+    resourceSet.add(file);
+
+    // add all resources
     Consumer<Object> consumer = o -> {
       if (o instanceof TreeObject)
       {
@@ -131,7 +108,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         {
           IResource resource = Util.getResource(treeObject.data);
           if (resource != null)
-            addResource(resource);
+            resourceSet.add(resource);
         }
       }
     };
