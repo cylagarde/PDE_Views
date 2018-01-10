@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.internal.core.FeatureModelManager;
 import org.eclipse.pde.internal.core.PDECore;
@@ -12,6 +13,7 @@ import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.core.iproduct.IProduct;
 import org.eclipse.pde.internal.core.iproduct.IProductFeature;
+import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.core.iproduct.IProductPlugin;
 import org.eclipse.pde.internal.core.util.VersionUtil;
 import org.eclipse.pde.internal.ui.PDELabelProvider;
@@ -37,9 +39,11 @@ public class ProductViewContentProvider implements ITreeContentProvider
     if (parent instanceof IProduct)
     {
       IProduct product = (IProduct) parent;
+      IProductModel productModel = product.getModel();
+      IResource underlyingResource = productModel.getUnderlyingResource();
 
       TreeParent productTreeParent = new TreeParent(null, product);
-      productTreeParent.name = product.getId();
+      productTreeParent.name = underlyingResource.getName();
       if (!VersionUtil.isEmptyVersion(product.getVersion()))
         productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
       productTreeParent.image = Activator.getImage(Images.PRODUCT);
