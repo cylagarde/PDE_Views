@@ -1,3 +1,4 @@
+prendre le nom du fichier pour le product
 OK ecouter les changements de contenu de la feature
 OK labelProvider : differencier les infos par une couleur
 OK faire une vue pour les launch configurations

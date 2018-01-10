@@ -7,6 +7,7 @@
             id="cl.pde.views"
             name="PDE views">
       </category>
+      
       <view
             category="cl.pde.views"
             class="cl.pde.views.feature.FeatureView"
@@ -14,6 +15,7 @@
             id="cl.pde.featureView"
             name="Feature View">
       </view>
+      
       <view
             category="cl.pde.views"
             class="cl.pde.views.product.ProductView"
@@ -21,6 +23,7 @@
             id="cl.pde.productView"
             name="Product View">
       </view>
+      
       <view
             category="cl.pde.views"
             class="cl.pde.views.launchconfiguration.LaunchConfigurationView"
@@ -39,28 +42,34 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <view
                id="cl.pde.productView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <view
                id="cl.pde.launchConfigurationView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <viewShortcut
                id="cl.pde.featureView">
          </viewShortcut>
+         
          <viewShortcut
                id="cl.pde.productView">
          </viewShortcut>
+         
          <viewShortcut
                id="cl.pde.launchConfigurationView">
          </viewShortcut>
       </perspectiveExtension>
+      
       <perspectiveExtension
             targetID="org.eclipse.pde.ui.PDEPerspective">
          <view
@@ -69,30 +78,36 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <view
                id="cl.pde.productView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <view
                id="cl.pde.launchConfigurationView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <view
                id="cl.pde.productView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
+         
          <viewShortcut
                id="cl.pde.featureView">
          </viewShortcut>
+         
          <viewShortcut
                id="cl.pde.productView">
          </viewShortcut>
+         
          <viewShortcut
                id="cl.pde.launchConfigurationView">
          </viewShortcut>            
@@ -104,5 +119,136 @@
             file="contexts.xml">
       </contexts>
    </extension>
+   
+   
+   <extension point="org.eclipse.core.expressions.definitions">
+      <definition id="is.feature">
+         <iterate ifEmpty="false">
+            <adapt type="org.eclipse.core.resources.IFile">
+               <test property="org.eclipse.core.resources.name" 
+                     value="feature.xml"/>
+            </adapt>
+         </iterate>
+      </definition>
+      
+      <definition id="is.product">
+         <iterate ifEmpty="false">
+            <adapt type="org.eclipse.core.resources.IFile">
+               <test property="org.eclipse.core.resources.name" 
+                     value="*.product"/>
+            </adapt>
+         </iterate>
+      </definition>
+      
+      <definition id="is.launch">
+         <iterate ifEmpty="false">
+            <adapt type="org.eclipse.core.resources.IFile">
+               <test property="org.eclipse.core.resources.name" 
+                     value="*.launch"/>
+            </adapt>
+         </iterate>
+      </definition>
+      
+      <definition id="is.pde">
+         <iterate ifEmpty="false">
+            <adapt type="org.eclipse.core.resources.IProject">
+               <test property="org.eclipse.core.resources.projectNature"
+                   	 value="org.eclipse.pde.PluginNature">
+               </test>
+            </adapt>
+         </iterate>
+      </definition>
+   </extension>
+   
+   <extension point="org.eclipse.ui.commands">
+      <category
+            name="CL PDE commands"
+            description="CL PDE commands"
+            id="cl.pde.commands">
+      </category>
+      
+      <command
+            name="Open in feature view"
+            description="Open in feature view"
+            defaultHandler="cl.pde.handlers.OpenInFeatureViewHandler"
+            categoryId="cl.pde.commands"
+            id="cl.pde.open_in_feature_view">
+      </command>
+      <command
+            name="Open in product view"
+            description="Open in product view"
+            categoryId="cl.pde.commands"
+            defaultHandler="cl.pde.handlers.OpenInProductViewHandler"
+            id="cl.pde.open_in_product_view">
+      </command>
+      <command
+            name="Open in launch configuration view"
+            categoryId="cl.pde.commands"
+            defaultHandler="cl.pde.handlers.OpenInLaunchConfigurationViewHandler"
+            description="Open in launch configuration view"
+            id="cl.pde.open_in_launch_configuration_view">
+      </command>
+   </extension>
+   
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+         <command
+               commandId="cl.pde.open_in_feature_view"
+               icon="icons/ftr_xml_obj.png"
+               id="open.in.feature.view.command"
+               label="Open in feature view"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="activeMenuSelection">
+                     <reference definitionId="is.feature"/>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
 
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+         <command
+               commandId="cl.pde.open_in_product_view"
+               icon="icons/product_xml_obj.png"
+               id="open.in.product.view.command"
+               label="Open in product view"
+               style="push">
+            <visibleWhen checkEnabled="false">
+              <with variable="activeMenuSelection">
+                 	<reference definitionId="is.product"/>
+              </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.popup.any">
+         <command
+               commandId="cl.pde.open_in_launch_configuration_view"
+               icon="icons/launchConfiguration.png"
+               id="open.in.launch.configuration.view.command"
+               label="Open in launch configuration view"
+               style="push">
+            <visibleWhen checkEnabled="false">
+               <with variable="activeMenuSelection">
+                  <reference definitionId="is.launch">
+                  </reference>
+               </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      
+      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+         <command commandId="org.eclipse.jdt.ui.launchJavadocWizard"
+               id="LaunchJavadocWizard"
+               label="Search all features"
+               style="push">
+            <visibleWhen checkEnabled="false">
+	          <with variable="activeMenuSelection">
+                    <reference definitionId="is.pde"/>
+              </with>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   
 </plugin>
