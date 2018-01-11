@@ -3,7 +3,8 @@ package cl.pde.views;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -17,9 +18,9 @@ public class PDESelectionListener implements ISelectionListener
 {
   private final TreeViewer treeViewer;
   private final NotifyResourceChangeListener notifyResourceChangeListener;
-  private final Predicate<IFile> predicate;
-  private final Function<IFile, Object> inputFunction;
-  IFile file;
+  private final Predicate<IResource> predicate;
+  private final Function<IResource, Object> inputFunction;
+  IResource resource;
   long lastTime = -1;
 
   /**
@@ -29,7 +30,7 @@ public class PDESelectionListener implements ISelectionListener
    * @param predicate
    * @param inputFunction
    */
-  public PDESelectionListener(TreeViewer treeViewer, NotifyResourceChangeListener notifyResourceChangeListener, Predicate<IFile> predicate, Function<IFile, Object> inputFunction)
+  public PDESelectionListener(TreeViewer treeViewer, NotifyResourceChangeListener notifyResourceChangeListener, Predicate<IResource> predicate, Function<IResource, Object> inputFunction)
   {
     this.treeViewer = treeViewer;
     this.notifyResourceChangeListener = notifyResourceChangeListener;
@@ -45,17 +46,21 @@ public class PDESelectionListener implements ISelectionListener
     {
       IStructuredSelection structuredSelection = (IStructuredSelection) selection;
       Object firstElement = structuredSelection.getFirstElement();
-      if (firstElement instanceof IFile)
+
+      if (firstElement instanceof IAdaptable)
+        firstElement = ((IAdaptable) firstElement).getAdapter(IResource.class);
+
+      if (firstElement instanceof IResource)
       {
-        IFile file = (IFile) firstElement;
-        if (predicate.test(file))
+        IResource resource = (IResource) firstElement;
+        if (predicate.test(resource))
         {
-          if (!file.equals(this.file) || (System.currentTimeMillis() - lastTime) > 250)
+          if (resource != this.resource || System.currentTimeMillis() - lastTime > 250)
           {
-            this.file = file;
+            this.resource = resource;
             lastTime = System.currentTimeMillis();
 
-            notifyResourceChangeListener.setUpdated(treeViewer, file, inputFunction);
+            notifyResourceChangeListener.setUpdated(treeViewer, resource, inputFunction);
           }
         }
       }

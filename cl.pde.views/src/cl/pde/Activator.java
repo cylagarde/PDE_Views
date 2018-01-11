@@ -20,9 +20,9 @@ public class Activator extends AbstractUIPlugin
   // The plug-in ID
   public static final String PLUGIN_ID = "cl.pde.views"; //$NON-NLS-1$
 
-  public static final String FEATURE_VIEW_ID = "cl.pde.featureView";
-  public static final String PRODUCT_VIEW_ID = "cl.pde.productView";
-  public static final String LAUNCH_CONFIGURATION_VIEW_ID = "cl.pde.launchConfigurationView";
+  //  public static final String FEATURE_VIEW_ID = "cl.pde.featureView";
+  //  public static final String PRODUCT_VIEW_ID = "cl.pde.productView";
+  //  public static final String LAUNCH_CONFIGURATION_VIEW_ID = "cl.pde.launchConfigurationView";
 
   // The shared instance
   private static Activator plugin;

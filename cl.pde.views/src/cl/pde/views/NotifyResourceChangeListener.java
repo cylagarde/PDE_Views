@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -25,8 +24,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   NotifyChangedResourceDeltaVisitor manifestChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
   Set<IResource> resourceSet = new HashSet<>();
   TreeViewer treeViewer;
-  IFile file;
-  Function<IFile, Object> inputProviderFunction;
+  IResource resource;
+  Function<IResource, Object> inputProviderFunction;
 
   @Override
   public void resourceChanged(IResourceChangeEvent event)
@@ -61,7 +60,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       if ((delta.getFlags() & IResourceDelta.CONTENT) != 0)
       {
         if (resourceSet.contains(resource))
-          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, file, inputProviderFunction));
+          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, resource, inputProviderFunction));
       }
 
       //
@@ -71,20 +70,19 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
 
   /**
    * @param treeViewer
-   * @param file
+   * @param resource
    * @param inputProviderFunction
    */
-  public void setUpdated(TreeViewer treeViewer, IFile file, Function<IFile, Object> inputProviderFunction)
+  public void setUpdated(TreeViewer treeViewer, IResource resource, Function<IResource, Object> inputProviderFunction)
   {
     this.treeViewer = treeViewer;
-    this.file = file;
+    this.resource = resource;
     this.inputProviderFunction = inputProviderFunction;
 
     resourceSet.clear();
 
     // get input for treeViewer
-    Object input = inputProviderFunction.apply(file);
-
+    Object input = inputProviderFunction.apply(resource);
     treeViewer.getTree().setRedraw(false);
     try
     {
@@ -97,7 +95,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       treeViewer.getTree().setRedraw(true);
     }
 
-    resourceSet.add(file);
+    resourceSet.add(resource);
 
     // add all resources
     Consumer<Object> consumer = o -> {
@@ -106,9 +104,9 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         TreeObject treeObject = (TreeObject) o;
         if (treeObject.data != null)
         {
-          IResource resource = Util.getResource(treeObject.data);
-          if (resource != null)
-            resourceSet.add(resource);
+          IResource res = Util.getResource(treeObject.data);
+          if (res != null)
+            resourceSet.add(res);
         }
       }
     };

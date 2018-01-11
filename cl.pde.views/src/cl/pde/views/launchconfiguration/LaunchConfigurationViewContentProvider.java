@@ -47,6 +47,7 @@ public class LaunchConfigurationViewContentProvider implements ITreeContentProvi
 
       TreeParent launchConfigurationTreeParent = new TreeParent(null, launchConfiguration);
       launchConfigurationTreeParent.image = Activator.getImage(Images.LAUNCH_CONFIGURATION);
+      launchConfigurationTreeParent.foreground = Constants.LAUNCH_CONFIGURATION_FOREGROUND;
 
       launchConfigurationTreeParent.loadChildRunnable = () -> {
         List<TreeObject> elements = getElementsFromLaunchConfiguration(launchConfiguration);

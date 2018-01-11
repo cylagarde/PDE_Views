@@ -2,8 +2,11 @@ package cl.pde.views;
 
 import java.util.function.Consumer;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.core.IModel;
@@ -16,6 +19,7 @@ import org.eclipse.pde.core.plugin.IPluginModelBase;
 import org.eclipse.pde.core.plugin.PluginRegistry;
 import org.eclipse.pde.internal.core.FeatureModelManager;
 import org.eclipse.pde.internal.core.PDECore;
+import org.eclipse.pde.internal.core.bundle.WorkspaceBundlePluginModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureChild;
 import org.eclipse.pde.internal.core.ifeature.IFeatureImport;
@@ -24,6 +28,8 @@ import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
 import org.eclipse.pde.internal.core.iproduct.IProduct;
 import org.eclipse.pde.internal.core.iproduct.IProductFeature;
 import org.eclipse.pde.internal.core.iproduct.IProductPlugin;
+import org.eclipse.pde.internal.core.natures.PDE;
+import org.eclipse.pde.internal.core.project.PDEProject;
 import org.eclipse.pde.internal.ui.IPDEUIConstants;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
@@ -54,6 +60,71 @@ public class Util
     Object[] children = treeContentProvider.getChildren(element);
     for(Object child : children)
       traverseElement(treeContentProvider, child, consumer);
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Return true if project is open and has PluginNature
+   *
+   * @param project
+   */
+  public static boolean isValidPlugin(IProject project)
+  {
+    try
+    {
+      if (project.isOpen() && project.hasNature(PDE.PLUGIN_NATURE) && getPluginId(project) != null)
+        return true;
+    }
+    catch(Exception e)
+    {
+      Activator.logError("Error: " + e, e);
+    }
+    return false;
+  }
+
+  /**
+   * Return the plugin id
+   *
+   * @param project
+   */
+  public static String getPluginId(IProject project)
+  {
+    WorkspaceBundlePluginModel pluginModel = getWorkspaceBundlePluginModel(project);
+    String pluginId = pluginModel.getPlugin().getId();
+    return pluginId;
+  }
+
+  /**
+   * Return the WorkspaceBundlePluginModel
+   *
+   * @param project
+   */
+  public static WorkspaceBundlePluginModel getWorkspaceBundlePluginModel(IProject project)
+  {
+    IFile pluginXml = null;// PDEProject.getPluginXml(project);
+    IFile manifest = PDEProject.getManifest(project);
+    WorkspaceBundlePluginModel pluginModel = new WorkspaceBundlePluginModel(manifest, pluginXml);
+    return pluginModel;
+  }
+
+  /**
+   *
+   * @param container
+   * @param fileConsumer
+   * @throws CoreException
+   */
+  public static void processContainer(IContainer container, Consumer<IFile> fileConsumer) throws CoreException
+  {
+    IResource[] members = container.members();
+
+    for(IResource member : members)
+    {
+      if (member instanceof IContainer)
+        processContainer((IContainer) member, fileConsumer);
+      else if (member instanceof IFile)
+        fileConsumer.accept((IFile) member);
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////

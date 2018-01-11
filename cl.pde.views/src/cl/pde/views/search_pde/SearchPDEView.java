@@ -1,10 +1,9 @@
-package cl.pde.views.feature;
+package cl.pde.views.search_pde;
 
-import java.util.Locale;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
@@ -16,9 +15,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.pde.internal.core.ICoreConstants;
-import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
-import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -39,21 +35,22 @@ import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.PDESelectionListener;
 import cl.pde.views.PdeLabelProvider;
+import cl.pde.views.Util;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
  */
-public class FeatureView extends ViewPart
+public class SearchPDEView extends ViewPart
 {
   /**
    * The ID of the view as specified by the extension.
    */
-  public static final String ID = "cl.pde.featureView";
+  public static final String ID = "cl.pde.searchPDEView";
 
-  private FilteredTree featureFilteredTree;
+  private FilteredTree searchFilteredTree;
   private PatternFilter filter;
-  private TreeViewer featureViewer;
+  private TreeViewer searchViewer;
 
   private DrillDownAdapter drillDownAdapter;
 
@@ -67,7 +64,7 @@ public class FeatureView extends ViewPart
   /**
    * The constructor.
    */
-  public FeatureView()
+  public SearchPDEView()
   {
   }
 
@@ -79,14 +76,14 @@ public class FeatureView extends ViewPart
   public void createPartControl(Composite parent)
   {
     filter = new NotTreeParentPatternFilter();
-    featureFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
-    featureViewer = featureFilteredTree.getViewer();
-    featureFilteredTree.setBackground(featureViewer.getTree().getBackground());
+    searchFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    searchViewer = searchFilteredTree.getViewer();
+    searchFilteredTree.setBackground(searchViewer.getTree().getBackground());
 
-    drillDownAdapter = new DrillDownAdapter(featureViewer);
+    drillDownAdapter = new DrillDownAdapter(searchViewer);
 
-    featureViewer.setContentProvider(new FeatureViewContentProvider());
-    featureViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
+    searchViewer.setContentProvider(new SearchPDEViewContentProvider());
+    searchViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
 
     //
     PDEPlugin.getDefault().getLabelProvider().connect(this);
@@ -95,17 +92,17 @@ public class FeatureView extends ViewPart
     workspace.addResourceChangeListener(notifyResourceChangeListener, IResourceChangeEvent.POST_CHANGE);
 
     //
-    featureViewer.getTree().addDisposeListener(e -> {
+    searchViewer.getTree().addDisposeListener(e -> {
       workspace.removeResourceChangeListener(notifyResourceChangeListener);
-      PDEPlugin.getDefault().getLabelProvider().disconnect(FeatureView.this);
+      PDEPlugin.getDefault().getLabelProvider().disconnect(SearchPDEView.this);
       PDEPlugin.getDefault().getLabelProvider().dispose();
     });
-    featureViewer.addTreeListener(new ExpandTreeViewerListener());
+    searchViewer.addTreeListener(new ExpandTreeViewerListener());
 
     // Create the help context id for the viewer's control
-    PlatformUI.getWorkbench().getHelpSystem().setHelp(featureViewer.getControl(), Activator.PLUGIN_ID + ".featureView");
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(searchViewer.getControl(), Activator.PLUGIN_ID + ".productView");
 
-    getSite().setSelectionProvider(featureViewer);
+    getSite().setSelectionProvider(searchViewer);
 
     makeActions();
     hookContextMenu();
@@ -115,16 +112,9 @@ public class FeatureView extends ViewPart
     //
     ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 
-    Predicate<IResource> predicate = resource -> resource instanceof IFile && ICoreConstants.FEATURE_FILENAME_DESCRIPTOR.equals(resource.getName().toLowerCase(Locale.ENGLISH));
-    Function<IResource, Object> inputFunction = resource -> {
-      IFile file = (IFile) resource;
-      WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
-      workspaceFeatureModel.load();
-
-      IFeature feature = workspaceFeatureModel.getFeature();
-      return feature;
-    };
-    selectionListener = new PDESelectionListener(featureViewer, notifyResourceChangeListener, predicate, inputFunction);
+    Predicate<IResource> predicate = resource -> resource instanceof IProject && Util.isValidPlugin((IProject) resource);
+    Function<IResource, Object> inputFunction = resource -> resource;
+    selectionListener = new PDESelectionListener(searchViewer, notifyResourceChangeListener, predicate, inputFunction);
     selectionService.addPostSelectionListener(selectionListener);
     selectionListener.selectionChanged(null, selectionService.getSelection());
   }
@@ -146,10 +136,10 @@ public class FeatureView extends ViewPart
   {
     MenuManager menuMgr = new MenuManager("#PopupMenu");
     menuMgr.setRemoveAllWhenShown(true);
-    menuMgr.addMenuListener(manager -> FeatureView.this.fillContextMenu(manager));
-    Menu menu = menuMgr.createContextMenu(featureViewer.getControl());
-    featureViewer.getControl().setMenu(menu);
-    getSite().registerContextMenu(menuMgr, featureViewer);
+    menuMgr.addMenuListener(manager -> SearchPDEView.this.fillContextMenu(manager));
+    Menu menu = menuMgr.createContextMenu(searchViewer.getControl());
+    searchViewer.getControl().setMenu(menu);
+    getSite().registerContextMenu(menuMgr, searchViewer);
   }
 
   private void contributeToActionBars()
@@ -186,16 +176,16 @@ public class FeatureView extends ViewPart
 
   private void makeActions()
   {
-    expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true);
-    collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
+    expandAllNodesAction = new ExpandAllNodesAction(searchViewer, true);
+    collapseAllNodesAction = new ExpandAllNodesAction(searchViewer, false);
 
     //
-    doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);
+    doubleClickOpenNodeAction = new OpenNodeAction(searchViewer);
   }
 
   private void hookDoubleClickAction()
   {
-    featureViewer.addDoubleClickListener(event -> doubleClickOpenNodeAction.run());
+    searchViewer.addDoubleClickListener(event -> doubleClickOpenNodeAction.run());
   }
 
   /**
@@ -204,7 +194,7 @@ public class FeatureView extends ViewPart
   @Override
   public void setFocus()
   {
-    featureViewer.getControl().setFocus();
+    searchViewer.getControl().setFocus();
   }
 
 }

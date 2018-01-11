@@ -15,6 +15,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
+import cl.pde.views.product.ProductView;
 
 /**
  * The class <b>OpenInProductViewHandler</b> allows to.<br>
@@ -51,7 +52,7 @@ public class OpenInProductViewHandler extends AbstractHandler
     IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
     try
     {
-      workbenchPage.showView(Activator.PRODUCT_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
     }
     catch(PartInitException e)
     {

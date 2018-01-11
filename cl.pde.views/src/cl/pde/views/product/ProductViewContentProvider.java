@@ -44,6 +44,7 @@ public class ProductViewContentProvider implements ITreeContentProvider
 
       TreeParent productTreeParent = new TreeParent(null, product);
       productTreeParent.name = underlyingResource.getName();
+      productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
       if (!VersionUtil.isEmptyVersion(product.getVersion()))
         productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
       productTreeParent.image = Activator.getImage(Images.PRODUCT);
@@ -99,11 +100,11 @@ public class ProductViewContentProvider implements ITreeContentProvider
 
       for(IProductFeature productFeature : productFeatures)
       {
-        TreeParent childTreeParent = new TreeParent(null, productFeature);
-        childTreeParent.foreground = Constants.FEATURE_FOREGROUND;
-        featuresTreeParent.addChild(childTreeParent);
+        TreeParent featureTreeParent = new TreeParent(null, productFeature);
+        featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+        featuresTreeParent.addChild(featureTreeParent);
 
-        childTreeParent.loadChildRunnable = () -> {
+        featureTreeParent.loadChildRunnable = () -> {
           FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
           IFeatureModel featureModel = manager.findFeatureModel(productFeature.getId(), productFeature.getVersion());
           if (featureModel != null)
@@ -112,7 +113,7 @@ public class ProductViewContentProvider implements ITreeContentProvider
             if (feature != null)
             {
               List<TreeParent> childElements = cl.pde.views.feature.FeatureViewContentProvider.getElementsFromFeature(feature);
-              childElements.forEach(childTreeParent::addChild);
+              childElements.forEach(featureTreeParent::addChild);
             }
           }
         };

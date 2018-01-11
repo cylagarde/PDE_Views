@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -48,7 +49,7 @@ public class LaunchConfigurationView extends ViewPart
   /**
    * The ID of the view as specified by the extension.
    */
-  public static final String ID = "cl.pde.LaunchConfigurationView";
+  public static final String ID = "cl.pde.launchConfigurationView";
 
   private FilteredTree launchConfigurationFilteredTree;
   private PatternFilter filter;
@@ -114,8 +115,9 @@ public class LaunchConfigurationView extends ViewPart
     //
     ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 
-    Predicate<IFile> predicate = file -> file.getName().toLowerCase(Locale.ENGLISH).endsWith(".launch");
-    Function<IFile, Object> inputFunction = file -> {
+    Predicate<IResource> predicate = resource -> resource instanceof IFile && resource.getName().toLowerCase(Locale.ENGLISH).endsWith(".launch");
+    Function<IResource, Object> inputFunction = resource -> {
+      IFile file = (IFile) resource;
       ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
       ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(file);
       return launchConfiguration;

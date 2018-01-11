@@ -31,6 +31,13 @@
             id="cl.pde.launchConfigurationView"
             name="Launch Configuration View">
       </view>
+      <view
+            category="cl.pde.views"
+            class="cl.pde.views.search_pde.SearchPDEView"
+            icon="icons/ftr_xml_obj.png"
+            id="cl.pde.searchPDEView"
+            name="Search PDE View">
+      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -174,6 +181,7 @@
             categoryId="cl.pde.commands"
             id="cl.pde.open_in_feature_view">
       </command>
+      
       <command
             name="Open in product view"
             description="Open in product view"
@@ -181,12 +189,21 @@
             defaultHandler="cl.pde.handlers.OpenInProductViewHandler"
             id="cl.pde.open_in_product_view">
       </command>
+      
       <command
             name="Open in launch configuration view"
             categoryId="cl.pde.commands"
             defaultHandler="cl.pde.handlers.OpenInLaunchConfigurationViewHandler"
             description="Open in launch configuration view"
             id="cl.pde.open_in_launch_configuration_view">
+      </command>
+      
+      <command
+            name="Search all features"
+            categoryId="cl.pde.commands"
+            defaultHandler="cl.pde.handlers.SearchAllFeaturesHandler"
+            description="Search all features containing the selected plugin/project"
+            id="cl.pde.search_all_features">
       </command>
    </extension>
    
@@ -204,51 +221,57 @@
                </with>
             </visibleWhen>
          </command>
-      </menuContribution>
-
-      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
+         
          <command
                commandId="cl.pde.open_in_product_view"
                icon="icons/product_xml_obj.png"
                id="open.in.product.view.command"
                label="Open in product view"
                style="push">
-            <visibleWhen checkEnabled="false">
-              <with variable="activeMenuSelection">
-                 	<reference definitionId="is.product"/>
-              </with>
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <reference
+                        definitionId="is.product">
+                  </reference>
+               </with>
             </visibleWhen>
          </command>
-      </menuContribution>
-      <menuContribution
-            locationURI="popup:org.eclipse.ui.popup.any">
+         
          <command
                commandId="cl.pde.open_in_launch_configuration_view"
                icon="icons/launchConfiguration.png"
                id="open.in.launch.configuration.view.command"
                label="Open in launch configuration view"
                style="push">
-            <visibleWhen checkEnabled="false">
-               <with variable="activeMenuSelection">
-                  <reference definitionId="is.launch">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <reference
+                        definitionId="is.launch">
+                  </reference>
+               </with>
+            </visibleWhen>
+         </command>
+         
+         <command
+               commandId="cl.pde.search_all_features"
+               icon="icons/ftr_xml_obj.png"
+               id="cl.pde.search_all_features.command"
+               label="Search all features"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <with
+                     variable="activeMenuSelection">
+                  <reference
+                        definitionId="is.pde">
                   </reference>
                </with>
             </visibleWhen>
          </command>
       </menuContribution>
-      
-      <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
-         <command commandId="org.eclipse.jdt.ui.launchJavadocWizard"
-               id="LaunchJavadocWizard"
-               label="Search all features"
-               style="push">
-            <visibleWhen checkEnabled="false">
-	          <with variable="activeMenuSelection">
-                    <reference definitionId="is.pde"/>
-              </with>
-            </visibleWhen>
-         </command>
-      </menuContribution>
    </extension>
-   
 </plugin>

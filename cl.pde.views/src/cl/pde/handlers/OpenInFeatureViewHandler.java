@@ -15,6 +15,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
+import cl.pde.views.feature.FeatureView;
 
 /**
  * The class <b>OpenInFeatureViewHandler</b> allows to.<br>
@@ -51,7 +52,7 @@ public class OpenInFeatureViewHandler extends AbstractHandler
     IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
     try
     {
-      workbenchPage.showView(Activator.FEATURE_VIEW_ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      workbenchPage.showView(FeatureView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
     }
     catch(PartInitException e)
     {

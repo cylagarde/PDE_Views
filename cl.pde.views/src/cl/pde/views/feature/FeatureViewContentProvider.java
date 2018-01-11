@@ -34,6 +34,7 @@ public class FeatureViewContentProvider implements ITreeContentProvider
       IFeature feature = (IFeature) parent;
 
       TreeParent featureTreeParent = new TreeParent(null, feature);
+      featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
       featureTreeParent.image = Activator.getImage(Images.FEATURE);
 
       featureTreeParent.loadChildRunnable = () -> {

@@ -1,4 +1,24 @@
-prendre le nom du fichier pour le product
+afficher une icone differente si le plugin est un singleton ou pas
+  IManifestHeader header = getSingletonHeader();
+  fSingleton.setSelection(header instanceof BundleSymbolicNameHeader && ((BundleSymbolicNameHeader) header).isSingleton());
+  IManifestHeader getSingletonHeader() {
+		IBundle bundle = getBundle();
+		if (bundle instanceof Bundle) {
+			IManifestHeader header = bundle.getManifestHeader(Constants.BUNDLE_SYMBOLICNAME);
+			return header;
+		}
+		return null;
+	}
+
+
+afficher toutes les features dans la vue feature view (ceux du workspace et de la targetplatform)
+afficher toutes les products dans la vue products view
+avoir une checkbox pour faire des recherches ds les includes plugins uniquement
+faire la vue Search all features
+avoir une popup pour afficher une feature d'un product ds la vue feature view
+avoir une popup ds l'onglet dépendencies pour faire une recherche des features le contenant
+ 
+OK prendre le nom du fichier pour le product
 OK ecouter les changements de contenu de la feature
 OK labelProvider : differencier les infos par une couleur
 OK faire une vue pour les launch configurations

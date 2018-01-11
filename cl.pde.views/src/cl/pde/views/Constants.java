@@ -7,7 +7,10 @@ import org.eclipse.swt.graphics.Color;
  */
 public interface Constants
 {
-  final Color PLUGIN_FOREGROUND = null;//new Color(null, 0, 127, 174);
+  final Color PLUGIN_FOREGROUND = null;
+  //  final Color PLUGIN_FOREGROUND = new Color(null, 0, 207, 0);
   final Color FEATURE_FOREGROUND = new Color(null, 149, 125, 71);
-
+  final Color PROJECT_FOREGROUND = null;
+  final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
+  final Color PRODUCT_FOREGROUND = null;
 }

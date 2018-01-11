@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -114,10 +115,11 @@ public class ProductView extends ViewPart
     //
     ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 
-    Predicate<IFile> predicate = file -> file.getName().toLowerCase(Locale.ENGLISH).endsWith(".product");
-    Function<IFile, Object> inputFunction = file -> {
+    Predicate<IResource> predicate = resource -> resource instanceof IFile && resource.getName().toLowerCase(Locale.ENGLISH).endsWith(".product");
+    Function<IResource, Object> inputFunction = resource -> {
       try
       {
+        IFile file = (IFile) resource;
         WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(file, true);
         workspaceProductModel.load();
 
