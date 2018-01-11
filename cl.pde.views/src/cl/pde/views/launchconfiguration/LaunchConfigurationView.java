@@ -5,7 +5,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -115,12 +114,20 @@ public class LaunchConfigurationView extends ViewPart
     //
     ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 
-    Predicate<IResource> predicate = resource -> resource instanceof IFile && resource.getName().toLowerCase(Locale.ENGLISH).endsWith(".launch");
-    Function<IResource, Object> inputFunction = resource -> {
-      IFile file = (IFile) resource;
-      ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-      ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(file);
-      return launchConfiguration;
+    Predicate<Object> predicate = resource -> {
+      if (resource instanceof IFile)
+        return ((IFile) resource).getName().toLowerCase(Locale.ENGLISH).endsWith(".launch");
+      return false;
+    };
+    Function<Object, Object> inputFunction = resource -> {
+      if (resource instanceof IFile)
+      {
+        IFile file = (IFile) resource;
+        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(file);
+        return launchConfiguration;
+      }
+      return null;
     };
     selectionListener = new PDESelectionListener(launchConfigurationViewer, notifyResourceChangeListener, predicate, inputFunction);
     selectionService.addPostSelectionListener(selectionListener);

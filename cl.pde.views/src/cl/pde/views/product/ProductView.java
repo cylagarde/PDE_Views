@@ -5,7 +5,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -115,23 +114,31 @@ public class ProductView extends ViewPart
     //
     ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 
-    Predicate<IResource> predicate = resource -> resource instanceof IFile && resource.getName().toLowerCase(Locale.ENGLISH).endsWith(".product");
-    Function<IResource, Object> inputFunction = resource -> {
-      try
+    Predicate<Object> predicate = resource -> {
+      if (resource instanceof IFile)
+        return ((IFile) resource).getName().toLowerCase(Locale.ENGLISH).endsWith(".product");
+      return false;
+    };
+    Function<Object, Object> inputFunction = resource -> {
+      if (resource instanceof IFile)
       {
-        IFile file = (IFile) resource;
-        WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(file, true);
-        workspaceProductModel.load();
+        try
+        {
+          IFile file = (IFile) resource;
+          WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(file, true);
+          workspaceProductModel.load();
 
-        IProduct product = workspaceProductModel.getProduct();
-        return product;
+          IProduct product = workspaceProductModel.getProduct();
+          return product;
+        }
+        catch(CoreException e)
+        {
+          e.printStackTrace();
+          Activator.logError("Cannot open product file", e);
+          return null;
+        }
       }
-      catch(CoreException e)
-      {
-        e.printStackTrace();
-        Activator.logError("Cannot open product file", e);
-        return null;
-      }
+      return null;
     };
     selectionListener = new PDESelectionListener(productViewer, notifyResourceChangeListener, predicate, inputFunction);
     selectionService.addPostSelectionListener(selectionListener);

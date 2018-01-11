@@ -24,8 +24,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   NotifyChangedResourceDeltaVisitor manifestChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
   Set<IResource> resourceSet = new HashSet<>();
   TreeViewer treeViewer;
-  IResource resource;
-  Function<IResource, Object> inputProviderFunction;
+  Object resource;
+  Function<Object, Object> inputProviderFunction;
 
   @Override
   public void resourceChanged(IResourceChangeEvent event)
@@ -73,7 +73,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
    * @param resource
    * @param inputProviderFunction
    */
-  public void setUpdated(TreeViewer treeViewer, IResource resource, Function<IResource, Object> inputProviderFunction)
+  public void setUpdated(TreeViewer treeViewer, Object resource, Function<Object, Object> inputProviderFunction)
   {
     this.treeViewer = treeViewer;
     this.resource = resource;
@@ -95,7 +95,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       treeViewer.getTree().setRedraw(true);
     }
 
-    resourceSet.add(resource);
+    if (resource instanceof IResource)
+      resourceSet.add((IResource) resource);
 
     // add all resources
     Consumer<Object> consumer = o -> {

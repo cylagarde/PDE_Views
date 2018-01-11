@@ -685,4 +685,40 @@ public class Util
   {
     return getModelResource(product.getModel());
   }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Get IFeature
+   * @param productFeature
+   */
+  public static IFeature getFeature(IProductFeature productFeature)
+  {
+    String featureId = productFeature.getId();
+    String featureVersion = productFeature.getVersion();
+    return getFeature(featureId, featureVersion);
+  }
+
+  /**
+   * Get IFeature
+   * @param featureChild
+   */
+  public static IFeature getFeature(IFeatureChild featureChild)
+  {
+    String featureId = featureChild.getId();
+    String featureVersion = featureChild.getVersion();
+    return getFeature(featureId, featureVersion);
+  }
+
+  /**
+   * Get IFeature
+   * @param featureId
+   * @param featureVersion
+   */
+  public static IFeature getFeature(String featureId, String featureVersion)
+  {
+    FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
+    IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
+    return featureModel == null? null : featureModel.getFeature();
+  }
 }

@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -112,8 +113,20 @@ public class SearchPDEView extends ViewPart
     //
     ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
 
-    Predicate<IResource> predicate = resource -> resource instanceof IProject && Util.isValidPlugin((IProject) resource);
-    Function<IResource, Object> inputFunction = resource -> resource;
+    Predicate<Object> predicate = resource -> {
+      if (resource instanceof IAdaptable)
+        resource = ((IAdaptable) resource).getAdapter(IResource.class);
+
+      if (resource instanceof IProject)
+        return Util.isValidPlugin((IProject) resource);
+
+      return false;
+    };
+    Function<Object, Object> inputFunction = resource -> {
+      if (resource instanceof IProject)
+        return resource;
+      return null;
+    };
     selectionListener = new PDESelectionListener(searchViewer, notifyResourceChangeListener, predicate, inputFunction);
     selectionService.addPostSelectionListener(selectionListener);
     selectionListener.selectionChanged(null, selectionService.getSelection());

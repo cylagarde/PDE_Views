@@ -22,6 +22,7 @@ import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.Util;
+import cl.pde.views.feature.FeatureViewContentProvider;
 
 /**
  * The class <b>SearchPDEViewContentProvider</b> allows to.<br>
@@ -122,10 +123,10 @@ public class SearchPDEViewContentProvider implements ITreeContentProvider
           featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
           featureTreeParent.image = Activator.getImage(Images.FEATURE);
 
-          //            featureTreeParent.loadChildRunnable = () -> {
-          //              List<TreeParent> childs = FeatureViewContentProvider.getElementsFromFeature(feature);
-          //              childs.forEach(featureTreeParent::addChild);
-          //            };
+          featureTreeParent.loadChildRunnable = () -> {
+            List<TreeParent> childs = FeatureViewContentProvider.getElementsFromFeature(feature);
+            childs.forEach(featureTreeParent::addChild);
+          };
 
           elements.add(featureTreeParent);
         }
