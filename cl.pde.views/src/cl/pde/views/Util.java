@@ -1,6 +1,14 @@
 package cl.pde.views;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.function.Consumer;
+import java.util.jar.Attributes;
+import java.util.jar.JarInputStream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -16,10 +24,14 @@ import org.eclipse.pde.core.plugin.IMatchRules;
 import org.eclipse.pde.core.plugin.IPlugin;
 import org.eclipse.pde.core.plugin.IPluginModel;
 import org.eclipse.pde.core.plugin.IPluginModelBase;
+import org.eclipse.pde.core.plugin.ISharedPluginModel;
 import org.eclipse.pde.core.plugin.PluginRegistry;
 import org.eclipse.pde.internal.core.FeatureModelManager;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.bundle.WorkspaceBundlePluginModel;
+import org.eclipse.pde.internal.core.ibundle.IBundle;
+import org.eclipse.pde.internal.core.ibundle.IBundlePluginModelBase;
+import org.eclipse.pde.internal.core.ibundle.IManifestHeader;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureChild;
 import org.eclipse.pde.internal.core.ifeature.IFeatureImport;
@@ -29,7 +41,9 @@ import org.eclipse.pde.internal.core.iproduct.IProduct;
 import org.eclipse.pde.internal.core.iproduct.IProductFeature;
 import org.eclipse.pde.internal.core.iproduct.IProductPlugin;
 import org.eclipse.pde.internal.core.natures.PDE;
+import org.eclipse.pde.internal.core.plugin.ExternalPluginModelBase;
 import org.eclipse.pde.internal.core.project.PDEProject;
+import org.eclipse.pde.internal.core.text.bundle.BundleSymbolicNameHeader;
 import org.eclipse.pde.internal.ui.IPDEUIConstants;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
@@ -131,7 +145,7 @@ public class Util
 
   /**
    * Open PDE object
-   * @param treeObject
+   * @param pdeObject
    */
   public static void open(Object pdeObject)
   {
@@ -221,9 +235,7 @@ public class Util
    */
   private static void openPlugin(IPlugin plugin)
   {
-    String pluginId = plugin.getId();
-    String pluginVersion = plugin.getVersion();
-    openPlugin(pluginId, pluginVersion);
+    ManifestEditor.open(plugin, false);
   }
 
   /**
@@ -254,6 +266,7 @@ public class Util
    */
   private static void openFeatureImport(IFeatureImport featureImport)
   {
+    getSingletonState(featureImport);
     if (featureImport.getType() == IFeatureImport.PLUGIN)
       openPlugin(featureImport.getId(), featureImport.getVersion());
     else if (featureImport.getType() == IFeatureImport.FEATURE && featureImport.getFeature() != null)
@@ -385,7 +398,6 @@ public class Util
   public static String getPluginLocation(String pluginId, String pluginVersion)
   {
     IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
-
     if (pluginModelBase instanceof IFragmentModel)
     {
       IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
@@ -432,9 +444,10 @@ public class Util
    */
   private static String getPluginLocation(IPlugin plugin)
   {
-    String pluginId = plugin.getId();
-    String pluginVersion = plugin.getVersion();
-    return getPluginLocation(pluginId, pluginVersion);
+    //    String pluginId = plugin.getId();
+    //    String pluginVersion = plugin.getVersion();
+    //    return getPluginLocation(pluginId, pluginVersion);
+    return plugin.getPluginModel().getBundleDescription().getLocation();
   }
 
   /**
@@ -721,4 +734,166 @@ public class Util
     IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
     return featureModel == null? null : featureModel.getFeature();
   }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Open PDE object
+   * @param pdeObject
+   */
+  public static Boolean getSingletonState(Object pdeObject)
+  {
+    if (pdeObject instanceof IPlugin)
+      return getSingletonState((IPlugin) pdeObject);
+
+    else if (pdeObject instanceof IFeaturePlugin)
+      return getSingletonState((IFeaturePlugin) pdeObject);
+
+    else if (pdeObject instanceof IFeatureImport)
+      return getSingletonState((IFeatureImport) pdeObject);
+
+    else if (pdeObject instanceof IProductPlugin)
+      return getSingletonState((IProductPlugin) pdeObject);
+
+    else if (pdeObject instanceof IFragment)
+      return getSingletonState((IFragment) pdeObject);
+
+    else if (pdeObject != null)
+      Activator.logError("Cannot getSingletonState " + pdeObject.getClass().getName(), new Exception());
+    return null;
+  }
+
+  /**
+   *
+   * @param plugin
+   */
+  public static Boolean getSingletonState(IPlugin plugin)
+  {
+    ISharedPluginModel model = plugin.getModel();
+    if (model instanceof IBundlePluginModelBase)
+    {
+      IBundlePluginModelBase bundlePluginModel = (IBundlePluginModelBase) model;
+      IBundle bundle = bundlePluginModel.getBundleModel().getBundle();
+      IManifestHeader header = bundle.getManifestHeader(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME);
+      if (header instanceof BundleSymbolicNameHeader)
+        return ((BundleSymbolicNameHeader) header).isSingleton();
+    }
+    if (model instanceof ExternalPluginModelBase)
+      return getSingletonState((ExternalPluginModelBase) model);
+
+    return null;
+  }
+
+  /**
+  *
+  * @param featureImport
+  */
+  public static Boolean getSingletonState(IFeatureImport featureImport)
+  {
+    String featureId = featureImport.getId();
+    String featureVersion = featureImport.getVersion();
+    if (featureImport.getType() == IFeatureImport.PLUGIN)
+    {
+      IPluginModelBase pluginModelBase = getPluginModelBase(featureId, featureVersion);
+      if (pluginModelBase instanceof IPluginModel)
+      {
+        IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
+        return getSingletonState(plugin);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @param featurePlugin
+   */
+  public static Boolean getSingletonState(IFeaturePlugin featurePlugin)
+  {
+    String pluginId = featurePlugin.getId();
+    String pluginVersion = featurePlugin.getVersion();
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    if (pluginModelBase instanceof IPluginModel)
+    {
+      IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
+      return getSingletonState(plugin);
+    }
+    return null;
+  }
+
+  /**
+   * @param productPlugin
+   */
+  public static Boolean getSingletonState(IProductPlugin productPlugin)
+  {
+    String pluginId = productPlugin.getId();
+    String pluginVersion = productPlugin.getVersion();
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    if (pluginModelBase instanceof IPluginModel)
+    {
+      IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
+      return getSingletonState(plugin);
+    }
+    return null;
+  }
+
+  /**
+   * @param fragment
+   */
+  public static Boolean getSingletonState(IFragment fragment)
+  {
+    String fragmentId = fragment.getId();
+    String fragmentVersion = fragment.getVersion();
+    IPluginModelBase pluginModelBase = getPluginModelBase(fragmentId, fragmentVersion);
+    if (pluginModelBase instanceof ExternalPluginModelBase)
+      return getSingletonState((ExternalPluginModelBase) pluginModelBase);
+
+    return null;
+  }
+
+  /**
+   * @param externalPluginModelBase
+   */
+  private static Boolean getSingletonState(ExternalPluginModelBase externalPluginModelBase)
+  {
+    String installLocation = externalPluginModelBase.getInstallLocation();
+    if (installLocation != null)
+    {
+      File installLocationFile = new File(installLocation);
+      if (installLocationFile.exists())
+      {
+        if (installLocationFile.isFile())
+        {
+          try
+          {
+            JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
+            Attributes attributes = jarInputStream.getManifest().getMainAttributes();
+            jarInputStream.close();
+            String value = attributes.getValue("Bundle-SymbolicName");
+            if (value != null)
+              return value.contains("singleton:=true");
+          }
+          catch(IOException e)
+          {
+          }
+        }
+        else if (installLocationFile.isDirectory())
+        {
+          Path manifestPath = Paths.get(installLocationFile.getPath(), "META-INF", "MANIFEST.MF");
+          if (Files.exists(manifestPath))
+          {
+            try
+            {
+              return Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
+            }
+            catch(IOException e)
+            {
+            }
+          }
+        }
+      }
+    }
+
+    return null;
+  }
+
 }

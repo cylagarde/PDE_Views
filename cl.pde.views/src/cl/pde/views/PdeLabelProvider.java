@@ -1,8 +1,11 @@
 package cl.pde.views;
 
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.IColorProvider;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
@@ -10,6 +13,9 @@ import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+
+import cl.pde.Activator;
+import cl.pde.Images;
 
 /**
  * The class <b>PdeLabelProvider</b> allows to.<br>
@@ -70,7 +76,27 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     {
       TreeObject treeObject = (TreeObject) obj;
       if (treeObject.image == null)
-        return PDEPlugin.getDefault().getLabelProvider().getImage(treeObject.data);
+      {
+        Image img = PDEPlugin.getDefault().getLabelProvider().getImage(treeObject.data);
+
+        Boolean singletonState = Util.getSingletonState(treeObject.data);
+        if (singletonState != null && singletonState)
+        {
+          //
+          ImageDescriptor singletonImageDescriptor = Activator.getDefault().getImageDescriptor(Images.SINGLETON);
+          String key = String.valueOf(img) + " " + String.valueOf(singletonImageDescriptor);
+          Image overlayImage = Activator.getDefault().getImageRegistry().get(key);
+          if (overlayImage == null)
+          {
+            DecorationOverlayIcon overlayIcon = new DecorationOverlayIcon(img, singletonImageDescriptor, IDecoration.TOP_RIGHT);
+            overlayImage = overlayIcon.createImage();
+            Activator.getDefault().getImageRegistry().put(key, overlayImage);
+          }
+          img = overlayImage;
+        }
+
+        return img;
+      }
 
       return treeObject.image;
     }

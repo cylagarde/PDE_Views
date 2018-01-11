@@ -10,6 +10,7 @@ public enum Images
   EXPAND_ALL("icons/expand_all.png"),
   COLLAPSE_ALL("icons/collapse_all.png"), 
   LAUNCH_CONFIGURATION("icons/launchConfiguration.png"),
+  SINGLETON("icons/singleton.png"),
   ;
 
   private String path;
