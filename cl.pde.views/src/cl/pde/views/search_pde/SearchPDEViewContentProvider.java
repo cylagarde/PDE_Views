@@ -17,7 +17,6 @@ import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.ui.PlatformUI;
 
 import cl.pde.Activator;
-import cl.pde.Images;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
@@ -119,15 +118,7 @@ public class SearchPDEViewContentProvider implements ITreeContentProvider
         IFeature feature = searchPluginIdInFeature(pluginId, featureFile);
         if (feature != null)
         {
-          TreeParent featureTreeParent = new TreeParent(null, feature);
-          featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
-          featureTreeParent.image = Activator.getImage(Images.FEATURE);
-
-          featureTreeParent.loadChildRunnable = () -> {
-            List<TreeParent> childs = FeatureViewContentProvider.getElementsFromFeature(feature);
-            childs.forEach(featureTreeParent::addChild);
-          };
-
+          TreeParent featureTreeParent = FeatureViewContentProvider.getTreeParent(feature);
           elements.add(featureTreeParent);
         }
       }

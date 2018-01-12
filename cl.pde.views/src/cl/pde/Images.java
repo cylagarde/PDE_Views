@@ -11,6 +11,7 @@ public enum Images
   COLLAPSE_ALL("icons/collapse_all.png"), 
   LAUNCH_CONFIGURATION("icons/launchConfiguration.png"),
   SINGLETON("icons/singleton.png"),
+  GET_ALL_FEATURES("icons/getAllFeatures.png"),
   ;
 
   private String path;

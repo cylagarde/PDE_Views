@@ -39,6 +39,7 @@ import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.PDESelectionListener;
 import cl.pde.views.PdeLabelProvider;
 import cl.pde.views.actions.ExpandAllNodesAction;
+import cl.pde.views.actions.GetAllFeaturesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
@@ -58,6 +59,7 @@ public class FeatureView extends ViewPart
 
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
+  private Action getAllFeaturesAction;
   private Action doubleClickOpenNodeAction;
 
   private ISelectionListener selectionListener;
@@ -210,6 +212,8 @@ public class FeatureView extends ViewPart
 
   private void fillLocalToolBar(IToolBarManager manager)
   {
+    manager.add(getAllFeaturesAction);
+    manager.add(new Separator());
     manager.add(expandAllNodesAction);
     manager.add(collapseAllNodesAction);
     manager.add(new Separator());
@@ -220,6 +224,9 @@ public class FeatureView extends ViewPart
   {
     expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true);
     collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
+
+    //
+    getAllFeaturesAction = new GetAllFeaturesAction(featureViewer);
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);

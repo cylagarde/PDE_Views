@@ -2,6 +2,8 @@ package cl.pde.views.feature;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -32,20 +34,31 @@ public class FeatureViewContentProvider implements ITreeContentProvider
     if (parent instanceof IFeature)
     {
       IFeature feature = (IFeature) parent;
-
-      TreeParent featureTreeParent = new TreeParent(null, feature);
-      featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
-      featureTreeParent.image = Activator.getImage(Images.FEATURE);
-
-      featureTreeParent.loadChildRunnable = () -> {
-        List<TreeParent> elements = getElementsFromFeature(feature);
-        elements.forEach(featureTreeParent::addChild);
-      };
-
-      return new Object[]{featureTreeParent};
+      parent = Collections.singletonList(feature);
+    }
+    if (parent instanceof Collection)
+    {
+      Collection<?> collection = (Collection<?>) parent;
+      return collection.stream().filter(IFeature.class::isInstance).map(IFeature.class::cast).map(FeatureViewContentProvider::getTreeParent).toArray();
     }
 
     return getChildren(parent);
+  }
+
+  /**
+   * @param feature
+   */
+  public static TreeParent getTreeParent(IFeature feature)
+  {
+    TreeParent featureTreeParent = new TreeParent(null, feature);
+    featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+    featureTreeParent.image = Activator.getImage(Images.FEATURE);
+
+    featureTreeParent.loadChildRunnable = () -> {
+      List<TreeParent> elements = getElementsFromFeature(feature);
+      elements.forEach(featureTreeParent::addChild);
+    };
+    return featureTreeParent;
   }
 
   /**
@@ -127,8 +140,7 @@ public class FeatureViewContentProvider implements ITreeContentProvider
           if (referencedFeature != null)
           {
             List<TreeParent> featureElements = getElementsFromFeature(referencedFeature);
-            for(TreeParent featureElement : featureElements)
-              featureChildTreeParent.addChild(featureElement);
+            featureElements.forEach(featureChildTreeParent::addChild);
           }
         };
       }
@@ -163,14 +175,13 @@ public class FeatureViewContentProvider implements ITreeContentProvider
           requiredFeaturesTreeParent.addChild(featureChildTreeParent);
 
           //
-          featureChildTreeParent.loadChildRunnable = () -> {
-            if (featureImport.getFeature() != null)
-            {
+          if (featureImport.getFeature() != null)
+          {
+            featureChildTreeParent.loadChildRunnable = () -> {
               List<TreeParent> featureElements = getElementsFromFeature(featureImport.getFeature());
-              for(TreeParent featureElement : featureElements)
-                featureChildTreeParent.addChild(featureElement);
-            }
-          };
+              featureElements.forEach(featureChildTreeParent::addChild);
+            };
+          }
         }
         else if (featureImport.getType() == IFeatureImport.PLUGIN)
         {
