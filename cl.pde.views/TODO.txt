@@ -1,16 +1,5 @@
-afficher une icone differente si le plugin est un singleton ou pas
-  IManifestHeader header = getSingletonHeader();
-  fSingleton.setSelection(header instanceof BundleSymbolicNameHeader && ((BundleSymbolicNameHeader) header).isSingleton());
-  IManifestHeader getSingletonHeader() {
-		IBundle bundle = getBundle();
-		if (bundle instanceof Bundle) {
-			IManifestHeader header = bundle.getManifestHeader(Constants.BUNDLE_SYMBOLICNAME);
-			return header;
-		}
-		return null;
-	}
-
-
+OK afficher une icone differente si le plugin est un singleton ou pas
+bug plugin n'est pas mis à jour ds la featureView lorsque le singleton change
 afficher toutes les features dans la vue feature view (ceux du workspace et de la targetplatform)
 afficher toutes les products dans la vue products view
 avoir une checkbox pour faire des recherches ds les includes plugins uniquement

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.core.plugin.IFragment;
 import org.eclipse.pde.core.plugin.IFragmentModel;
 import org.eclipse.pde.core.plugin.IMatchRules;
@@ -31,12 +30,13 @@ import cl.pde.Images;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
+import cl.pde.views.UseCacheTreeContentProvider;
 import cl.pde.views.feature.FeatureViewContentProvider;
 
 /**
  * The class <b>LaunchConfigurationViewContentProvider</b> allows to.<br>
  */
-public class LaunchConfigurationViewContentProvider implements ITreeContentProvider
+public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentProvider
 {
   @Override
   public Object[] getElements(Object parent)
@@ -243,29 +243,5 @@ public class LaunchConfigurationViewContentProvider implements ITreeContentProvi
 
       return treeParent;
     }).forEach(elements::add);
-  }
-
-  @Override
-  public Object getParent(Object child)
-  {
-    if (child instanceof TreeObject)
-      return ((TreeObject) child).getParent();
-    return null;
-  }
-
-  @Override
-  public Object[] getChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).getChildren();
-    return new Object[0];
-  }
-
-  @Override
-  public boolean hasChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).hasChildren();
-    return false;
   }
 }

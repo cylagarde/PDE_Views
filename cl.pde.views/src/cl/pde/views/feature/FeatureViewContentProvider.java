@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.internal.core.feature.FeatureChild;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureChild;
@@ -22,11 +21,12 @@ import cl.pde.Images;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
+import cl.pde.views.UseCacheTreeContentProvider;
 
 /**
  * The class <b>FeatureViewContentProvider</b> allows to.<br>
  */
-public class FeatureViewContentProvider implements ITreeContentProvider
+public class FeatureViewContentProvider extends UseCacheTreeContentProvider
 {
   @Override
   public Object[] getElements(Object parent)
@@ -193,27 +193,4 @@ public class FeatureViewContentProvider implements ITreeContentProvider
     }
   }
 
-  @Override
-  public Object getParent(Object child)
-  {
-    if (child instanceof TreeObject)
-      return ((TreeObject) child).getParent();
-    return null;
-  }
-
-  @Override
-  public Object[] getChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).getChildren();
-    return new Object[0];
-  }
-
-  @Override
-  public boolean hasChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).hasChildren();
-    return false;
-  }
 }

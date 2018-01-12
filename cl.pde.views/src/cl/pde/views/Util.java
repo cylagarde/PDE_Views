@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -45,6 +47,7 @@ import org.eclipse.pde.internal.core.plugin.ExternalPluginModelBase;
 import org.eclipse.pde.internal.core.project.PDEProject;
 import org.eclipse.pde.internal.core.text.bundle.BundleSymbolicNameHeader;
 import org.eclipse.pde.internal.ui.IPDEUIConstants;
+import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
 import org.eclipse.ui.IWorkbenchPage;
@@ -737,11 +740,35 @@ public class Util
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
+  final static Object NULL = new Object();
+  final static Map<Object, Object> SINGLETONSTATE_CACHEMAP = new HashMap<>();
+
   /**
    * Open PDE object
    * @param pdeObject
    */
   public static Boolean getSingletonState(Object pdeObject)
+  {
+    Object key = PDEPlugin.getDefault().getLabelProvider().getText(pdeObject);
+    Object singletonState = SINGLETONSTATE_CACHEMAP.get(key);
+    if (singletonState == null)
+    {
+      singletonState = getSingletonStateImpl(pdeObject);
+      if (singletonState == null)
+        singletonState = NULL;
+      SINGLETONSTATE_CACHEMAP.put(key, singletonState);
+    }
+    //    else
+    //      System.out.println("++++++++++++ " + key);
+
+    return singletonState == NULL? null : (Boolean) singletonState;
+  }
+
+  /**
+   * Open PDE object
+   * @param pdeObject
+   */
+  private static Boolean getSingletonStateImpl(Object pdeObject)
   {
     if (pdeObject instanceof IPlugin)
       return getSingletonState((IPlugin) pdeObject);

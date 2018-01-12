@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.internal.core.FeatureModelManager;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
@@ -25,11 +24,12 @@ import cl.pde.Images;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
+import cl.pde.views.UseCacheTreeContentProvider;
 
 /**
  * The class <b>ProductViewContentProvider</b> allows to.<br>
  */
-public class ProductViewContentProvider implements ITreeContentProvider
+public class ProductViewContentProvider extends UseCacheTreeContentProvider
 {
   private final Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
 
@@ -145,29 +145,5 @@ public class ProductViewContentProvider implements ITreeContentProvider
         pluginsTreeParent.addChild(productPluginTreeObject);
       }
     }
-  }
-
-  @Override
-  public Object getParent(Object child)
-  {
-    if (child instanceof TreeObject)
-      return ((TreeObject) child).getParent();
-    return null;
-  }
-
-  @Override
-  public Object[] getChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).getChildren();
-    return new Object[0];
-  }
-
-  @Override
-  public boolean hasChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).hasChildren();
-    return false;
   }
 }

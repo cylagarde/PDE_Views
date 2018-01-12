@@ -8,7 +8,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
@@ -20,13 +19,14 @@ import cl.pde.Activator;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
+import cl.pde.views.UseCacheTreeContentProvider;
 import cl.pde.views.Util;
 import cl.pde.views.feature.FeatureViewContentProvider;
 
 /**
  * The class <b>SearchPDEViewContentProvider</b> allows to.<br>
  */
-public class SearchPDEViewContentProvider implements ITreeContentProvider
+public class SearchPDEViewContentProvider extends UseCacheTreeContentProvider
 {
   private final Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
 
@@ -125,29 +125,5 @@ public class SearchPDEViewContentProvider implements ITreeContentProvider
     }
 
     return elements;
-  }
-
-  @Override
-  public Object getParent(Object child)
-  {
-    if (child instanceof TreeObject)
-      return ((TreeObject) child).getParent();
-    return null;
-  }
-
-  @Override
-  public Object[] getChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).getChildren();
-    return new Object[0];
-  }
-
-  @Override
-  public boolean hasChildren(Object parent)
-  {
-    if (parent instanceof TreeParent)
-      return ((TreeParent) parent).hasChildren();
-    return false;
   }
 }
