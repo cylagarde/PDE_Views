@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -63,6 +64,9 @@ import cl.pde.Activator;
  */
 public class Util
 {
+  public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText,
+                                                                                     String.CASE_INSENSITIVE_ORDER);
+  
   public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Consumer<Object> consumer)
   {
     Object[] elements = treeContentProvider.getElements(root);

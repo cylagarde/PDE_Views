@@ -1,7 +1,6 @@
 package cl.pde.views.search_pde;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -12,7 +11,6 @@ import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
 import org.eclipse.pde.internal.core.natures.PDE;
-import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.ui.PlatformUI;
 
 import cl.pde.Activator;
@@ -28,8 +26,6 @@ import cl.pde.views.feature.FeatureViewContentProvider;
  */
 public class SearchPDEViewContentProvider extends UseCacheTreeContentProvider
 {
-  private final Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-
   @Override
   public Object[] getElements(Object parent)
   {

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.pde.internal.core.feature.FeatureChild;
@@ -22,6 +21,7 @@ import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.UseCacheTreeContentProvider;
+import cl.pde.views.Util;
 
 /**
  * The class <b>FeatureViewContentProvider</b> allows to.<br>
@@ -39,7 +39,12 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
     if (parent instanceof Collection)
     {
       Collection<?> collection = (Collection<?>) parent;
-      return collection.stream().filter(IFeature.class::isInstance).map(IFeature.class::cast).map(FeatureViewContentProvider::getTreeParent).toArray();
+      return collection.stream()
+          .filter(IFeature.class::isInstance)
+          .map(IFeature.class::cast)
+          .sorted(Util.PDE_LABEL_COMPARATOR)
+          .map(FeatureViewContentProvider::getTreeParent)
+          .toArray();
     }
 
     return getChildren(parent);
@@ -91,8 +96,7 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
     if (includedPlugins != null && includedPlugins.length != 0)
     {
       // sort
-      Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-      Arrays.sort(includedPlugins, PDE_COMPARATOR);
+      Arrays.sort(includedPlugins, Util.PDE_LABEL_COMPARATOR);
 
       //
       TreeParent includedPluginsTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_ReferencePage_title);
@@ -119,8 +123,7 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
     if (includedFeatures != null && includedFeatures.length != 0)
     {
       // sort
-      Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-      Arrays.sort(includedFeatures, PDE_COMPARATOR);
+      Arrays.sort(includedFeatures, Util.PDE_LABEL_COMPARATOR);
 
       //
       TreeParent includedFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_IncludesPage_title);
@@ -158,8 +161,7 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
     if (featureImports != null && featureImports.length != 0)
     {
       // sort
-      Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-      Arrays.sort(featureImports, PDE_COMPARATOR);
+      Arrays.sort(featureImports, Util.PDE_LABEL_COMPARATOR);
 
       //
       TreeParent requiredFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_DependenciesPage_title);

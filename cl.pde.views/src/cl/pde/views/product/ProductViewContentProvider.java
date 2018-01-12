@@ -2,7 +2,6 @@ package cl.pde.views.product;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.core.resources.IResource;
@@ -25,14 +24,13 @@ import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.UseCacheTreeContentProvider;
+import cl.pde.views.Util;
 
 /**
  * The class <b>ProductViewContentProvider</b> allows to.<br>
  */
 public class ProductViewContentProvider extends UseCacheTreeContentProvider
 {
-  private final Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-
   @Override
   public Object[] getElements(Object parent)
   {
@@ -91,7 +89,7 @@ public class ProductViewContentProvider extends UseCacheTreeContentProvider
     if (productFeatures != null && productFeatures.length != 0)
     {
       // sort
-      Arrays.sort(productFeatures, PDE_COMPARATOR);
+      Arrays.sort(productFeatures, Util.PDE_LABEL_COMPARATOR);
 
       //
       TreeParent featuresTreeParent = new TreeParent("Features");
@@ -131,7 +129,7 @@ public class ProductViewContentProvider extends UseCacheTreeContentProvider
     if (productPlugins != null && productPlugins.length != 0)
     {
       // sort
-      Arrays.sort(productPlugins, PDE_COMPARATOR);
+      Arrays.sort(productPlugins, Util.PDE_LABEL_COMPARATOR);
 
       //
       TreeParent pluginsTreeParent = new TreeParent("Plugins");

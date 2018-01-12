@@ -2,7 +2,6 @@ package cl.pde.views.launchconfiguration;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -31,6 +30,7 @@ import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.UseCacheTreeContentProvider;
+import cl.pde.views.Util;
 import cl.pde.views.feature.FeatureViewContentProvider;
 
 /**
@@ -121,8 +121,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
       List<IPluginBase> pluginBases = loadPlugins(launchConfiguration, attributeKey);
 
       // sort
-      Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-      Collections.sort(pluginBases, PDE_COMPARATOR);
+      Collections.sort(pluginBases, Util.PDE_LABEL_COMPARATOR);
 
       //
       pluginBases.forEach(pluginBase -> {
@@ -228,8 +227,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
     }
 
     // sort
-    Comparator<Object> PDE_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText);
-    Collections.sort(featureModels, PDE_COMPARATOR);
+    Collections.sort(featureModels, Util.PDE_LABEL_COMPARATOR);
 
     featureModels.stream().map(featureModel -> {
       TreeParent treeParent = new TreeParent(null, featureModel);
