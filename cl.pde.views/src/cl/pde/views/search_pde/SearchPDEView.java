@@ -123,6 +123,9 @@ public class SearchPDEView extends ViewPart
       return false;
     };
     Function<Object, Object> inputFunction = resource -> {
+      if (resource instanceof IAdaptable)
+        resource = ((IAdaptable) resource).getAdapter(IResource.class);
+
       if (resource instanceof IProject)
         return resource;
       return null;

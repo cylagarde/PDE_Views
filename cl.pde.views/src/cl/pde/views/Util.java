@@ -2,13 +2,13 @@ package cl.pde.views;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
+import java.util.jar.Manifest;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -758,8 +758,6 @@ public class Util
     else if (pdeObject instanceof IFragment)
       return getSingletonState((IFragment) pdeObject);
 
-    else if (pdeObject != null)
-      Activator.logError("Cannot getSingletonState " + pdeObject.getClass().getName(), new Exception());
     return null;
   }
 
@@ -785,9 +783,9 @@ public class Util
   }
 
   /**
-  *
-  * @param featureImport
-  */
+   *
+   * @param featureImport
+   */
   public static Boolean getSingletonState(IFeatureImport featureImport)
   {
     String featureId = featureImport.getId();
@@ -866,13 +864,17 @@ public class Util
           try
           {
             JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
-            Attributes attributes = jarInputStream.getManifest().getMainAttributes();
+            Manifest manifest = jarInputStream.getManifest();
             jarInputStream.close();
-            String value = attributes.getValue("Bundle-SymbolicName");
-            if (value != null)
-              return value.contains("singleton:=true");
+            if (manifest != null)
+            {
+              Attributes attributes = manifest.getMainAttributes();
+              String value = attributes.getValue("Bundle-SymbolicName");
+              if (value != null)
+                return value.contains("singleton:=true");
+            }
           }
-          catch(IOException e)
+          catch(Exception e)
           {
           }
         }
@@ -885,7 +887,7 @@ public class Util
             {
               return Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
             }
-            catch(IOException e)
+            catch(Exception e)
             {
             }
           }
