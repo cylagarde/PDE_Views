@@ -13,13 +13,11 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.ICoreConstants;
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.ui.PDEPlugin;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -37,7 +35,6 @@ import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.PDESelectionListener;
-import cl.pde.views.PdeLabelProvider;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.GetAllFeaturesAction;
 import cl.pde.views.actions.OpenNodeAction;
@@ -52,7 +49,6 @@ public class FeatureView extends ViewPart
   public static final String ID = "cl.pde.featureView";
 
   private FilteredTree featureFilteredTree;
-  private PatternFilter filter;
   private TreeViewer featureViewer;
 
   private DrillDownAdapter drillDownAdapter;
@@ -79,15 +75,12 @@ public class FeatureView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
-    filter = new NotTreeParentPatternFilter();
-    featureFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    //
+    PatternFilter filter = new NotTreeParentPatternFilter();
+    featureFilteredTree = new FeatureFilteredTree(parent, filter);
     featureViewer = featureFilteredTree.getViewer();
-    featureFilteredTree.setBackground(featureViewer.getTree().getBackground());
 
     drillDownAdapter = new DrillDownAdapter(featureViewer);
-
-    featureViewer.setContentProvider(new FeatureViewContentProvider());
-    featureViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
 
     //
     PDEPlugin.getDefault().getLabelProvider().connect(this);
@@ -245,5 +238,4 @@ public class FeatureView extends ViewPart
   {
     featureViewer.getControl().setFocus();
   }
-
 }
