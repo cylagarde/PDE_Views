@@ -42,6 +42,7 @@ import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
+ * The class <b>LaunchConfigurationView</b> allows to.<br>
  */
 public class LaunchConfigurationView extends ViewPart
 {

@@ -41,6 +41,7 @@ import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
+ * The class <b>SearchPDEView</b> allows to.<br>
  */
 public class SearchPDEView extends ViewPart
 {

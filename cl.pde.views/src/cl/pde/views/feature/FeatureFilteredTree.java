@@ -19,8 +19,8 @@ import cl.pde.views.PdeLabelProvider;
 import cl.pde.views.TreeParent;
 
 /**
-   * The class <b>FeatureFilteredTree</b> allows to.<br>
-   */
+  * The class <b>FeatureFilteredTree</b> allows to.<br>
+  */
 class FeatureFilteredTree extends FilteredTree
 {
   Button searchInIncludedPluginsButton;

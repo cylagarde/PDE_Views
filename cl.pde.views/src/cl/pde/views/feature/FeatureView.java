@@ -40,6 +40,7 @@ import cl.pde.views.actions.GetAllFeaturesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
+ * The class <b>FeatureView</b> allows to.<br>
  */
 public class FeatureView extends ViewPart
 {

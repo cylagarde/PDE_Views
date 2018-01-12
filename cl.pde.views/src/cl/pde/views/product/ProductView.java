@@ -42,6 +42,7 @@ import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
+ * The class <b>ProductView</b> allows to.<br>
  */
 public class ProductView extends ViewPart
 {
