@@ -32,9 +32,17 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
   @Override
   public void run()
   {
-    if (expand)
-      treeViewer.expandAll();
-    else
-      treeViewer.collapseAll();
+    treeViewer.getControl().setRedraw(false);
+    try
+    {
+      if (expand)
+        treeViewer.expandAll();
+      else
+        treeViewer.collapseAll();
+    }
+    finally
+    {
+      treeViewer.getControl().setRedraw(true);
+    }
   }
 }
