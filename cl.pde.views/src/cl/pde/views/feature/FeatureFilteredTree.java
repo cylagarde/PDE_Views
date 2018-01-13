@@ -28,8 +28,8 @@ class FeatureFilteredTree extends FilteredTree
   Button seeWorkspaceFeatureButton;
   Button seeExternalFeatureButton;
   Button seeIncludedPluginsButton;
-  Button seIncludedFeaturesButton;
-  Button seDependenciesButton;
+  Button seeIncludedFeaturesButton;
+  Button seeDependenciesButton;
 
   FeatureFilteredTree(Composite parent, PatternFilter filter)
   {
@@ -79,18 +79,18 @@ class FeatureFilteredTree extends FilteredTree
     seeIncludedPluginsButton.setBackground(parent.getBackground());
 
     //
-    seIncludedFeaturesButton = new Button(buttonComposite, SWT.CHECK);
-    seIncludedFeaturesButton.setText(PDEUIMessages.FeatureEditor_IncludesPage_title);
-    seIncludedFeaturesButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_IncludesPage_title + " node");
-    seIncludedFeaturesButton.setSelection(true);
-    seIncludedFeaturesButton.setBackground(parent.getBackground());
+    seeIncludedFeaturesButton = new Button(buttonComposite, SWT.CHECK);
+    seeIncludedFeaturesButton.setText(PDEUIMessages.FeatureEditor_IncludesPage_title);
+    seeIncludedFeaturesButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_IncludesPage_title + " node");
+    seeIncludedFeaturesButton.setSelection(true);
+    seeIncludedFeaturesButton.setBackground(parent.getBackground());
 
     //
-    seDependenciesButton = new Button(buttonComposite, SWT.CHECK);
-    seDependenciesButton.setText(PDEUIMessages.FeatureEditor_DependenciesPage_title);
-    seDependenciesButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_DependenciesPage_title + " node");
-    seDependenciesButton.setSelection(true);
-    seDependenciesButton.setBackground(parent.getBackground());
+    seeDependenciesButton = new Button(buttonComposite, SWT.CHECK);
+    seeDependenciesButton.setText(PDEUIMessages.FeatureEditor_DependenciesPage_title);
+    seeDependenciesButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_DependenciesPage_title + " node");
+    seeDependenciesButton.setSelection(true);
+    seeDependenciesButton.setBackground(parent.getBackground());
 
     SelectionAdapter listener = new SelectionAdapter()
     {
@@ -103,8 +103,8 @@ class FeatureFilteredTree extends FilteredTree
     seeWorkspaceFeatureButton.addSelectionListener(listener);
     seeExternalFeatureButton.addSelectionListener(listener);
     seeIncludedPluginsButton.addSelectionListener(listener);
-    seIncludedFeaturesButton.addSelectionListener(listener);
-    seDependenciesButton.addSelectionListener(listener);
+    seeIncludedFeaturesButton.addSelectionListener(listener);
+    seeDependenciesButton.addSelectionListener(listener);
 
     buttonComposite.setVisible(true);
 
@@ -145,11 +145,11 @@ class FeatureFilteredTree extends FilteredTree
 
           // included features
           if (PDEUIMessages.FeatureEditor_IncludesPage_title.equals(treeParent.name))
-            return seIncludedFeaturesButton.getSelection();
+            return seeIncludedFeaturesButton.getSelection();
 
           //
           if (PDEUIMessages.FeatureEditor_DependenciesPage_title.equals(treeParent.name))
-            return seDependenciesButton.getSelection();
+            return seeDependenciesButton.getSelection();
         }
 
         return true;
