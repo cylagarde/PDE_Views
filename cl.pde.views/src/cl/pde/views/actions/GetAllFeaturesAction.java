@@ -1,16 +1,10 @@
 package cl.pde.views.actions;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Stream;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
-import org.eclipse.pde.internal.core.ifeature.IFeature;
-import org.eclipse.pde.internal.core.natures.PDE;
+import org.eclipse.pde.internal.core.PDECore;
+import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 
 import cl.pde.Activator;
 import cl.pde.Images;
@@ -35,35 +29,37 @@ public class GetAllFeaturesAction extends AbstractTreeViewerAction
   @Override
   public void run()
   {
-    List<IFeature> featureList = new ArrayList<>();
+    IFeatureModel[] allFeatureModels = PDECore.getDefault().getFeatureModelManager().getModels();
 
-    IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-    for(IProject workspaceProject : projects)
-    {
-      if (!workspaceProject.isOpen())
-        continue;
-      try
-      {
-        if (!workspaceProject.hasNature(PDE.FEATURE_NATURE))
-          continue;
-      }
-      catch(CoreException e)
-      {
-        continue;
-      }
+    Object[] features = Stream.of(allFeatureModels).map(IFeatureModel::getFeature).toArray();
+    //    List<IFeature> featureList = new ArrayList<>();
+    //    IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+    //    for(IProject workspaceProject : projects)
+    //    {
+    //      if (!workspaceProject.isOpen())
+    //        continue;
+    //      try
+    //      {
+    //        if (!workspaceProject.hasNature(PDE.FEATURE_NATURE))
+    //          continue;
+    //      }
+    //      catch(CoreException e)
+    //      {
+    //        continue;
+    //      }
+    //
+    //      //
+    //      IFile featureFile = workspaceProject.getFile("feature.xml");
+    //      if (!featureFile.exists())
+    //        continue;
+    //
+    //      WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(featureFile);
+    //      workspaceFeatureModel.load();
+    //
+    //      IFeature feature = workspaceFeatureModel.getFeature();
+    //      featureList.add(feature);
+    //    }
 
-      //
-      IFile featureFile = workspaceProject.getFile("feature.xml");
-      if (!featureFile.exists())
-        continue;
-
-      WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(featureFile);
-      workspaceFeatureModel.load();
-
-      IFeature feature = workspaceFeatureModel.getFeature();
-      featureList.add(feature);
-    }
-
-    treeViewer.setInput(featureList);
+    treeViewer.setInput(features);
   }
 }

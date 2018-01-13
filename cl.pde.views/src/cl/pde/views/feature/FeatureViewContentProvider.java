@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.eclipse.pde.internal.core.feature.FeatureChild;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
@@ -29,25 +30,32 @@ import cl.pde.views.Util;
 public class FeatureViewContentProvider extends UseCacheTreeContentProvider
 {
   @Override
-  public Object[] getElements(Object parent)
+  public Object[] getElements(Object inputElement)
   {
-    if (parent instanceof IFeature)
+    if (inputElement instanceof IFeature)
     {
-      IFeature feature = (IFeature) parent;
-      parent = Collections.singletonList(feature);
+      IFeature feature = (IFeature) inputElement;
+      inputElement = Collections.singletonList(feature);
     }
-    if (parent instanceof Collection)
+    if (inputElement instanceof Object[])
     {
-      Collection<?> collection = (Collection<?>) parent;
+      Object[] array = (Object[]) inputElement;
+      inputElement = Arrays.asList(array);
+    }
+    
+    if (inputElement instanceof Collection)
+    {
+      Collection<?> collection = (Collection<?>) inputElement;
       return collection.stream()
           .filter(IFeature.class::isInstance)
           .map(IFeature.class::cast)
+//          .peek(feature -> System.out.println(feature+" "+feature.getModel().getClass()))
           .sorted(Util.PDE_LABEL_COMPARATOR)
           .map(FeatureViewContentProvider::getTreeParent)
           .toArray();
     }
 
-    return getChildren(parent);
+    return getChildren(inputElement);
   }
 
   /**
