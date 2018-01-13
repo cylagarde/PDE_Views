@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
+import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.ui.PlatformUI;
 
 import cl.pde.views.Constants;
@@ -25,10 +26,10 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
   @Override
   public Object[] getElements(Object inputElement)
   {
-    if (inputElement instanceof IFeature)
+    if (inputElement instanceof IFeatureModel)
     {
-      IFeature feature = (IFeature) inputElement;
-      inputElement = Collections.singletonList(feature);
+      IFeatureModel featureModel = (IFeatureModel) inputElement;
+      inputElement = Collections.singletonList(featureModel);
     }
     if (inputElement instanceof Object[])
     {
@@ -39,13 +40,16 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
     if (inputElement instanceof Collection)
     {
       Collection<?> collection = (Collection<?>) inputElement;
-      Map<Boolean, List<IFeature>> map = collection.stream().filter(IFeature.class::isInstance).map(IFeature.class::cast)
+      Map<Boolean, List<IFeatureModel>> map = collection.stream()
+          .filter(IFeatureModel.class::isInstance)
+          .map(IFeatureModel.class::cast)
           //          .peek(feature -> System.out.println(feature+" "+feature.getModel().getClass()))
-          .sorted(Util.PDE_LABEL_COMPARATOR).collect(Collectors.partitioningBy(feature -> feature.getModel() instanceof WorkspaceFeatureModel));
+          .sorted(Util.PDE_LABEL_COMPARATOR)
+          .collect(Collectors.partitioningBy(featureModel -> featureModel instanceof WorkspaceFeatureModel));
 
       List<TreeParent> treeParentList = new ArrayList<>();
 
-      List<IFeature> workspaceFeatureList = map.get(Boolean.TRUE);
+      List<IFeatureModel> workspaceFeatureList = map.get(Boolean.TRUE);
       if (!workspaceFeatureList.isEmpty())
       {
         TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_FEATURE);
@@ -57,7 +61,7 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
         };
       }
 
-      List<IFeature> externalFeatureList = map.get(Boolean.FALSE);
+      List<IFeatureModel> externalFeatureList = map.get(Boolean.FALSE);
       if (!externalFeatureList.isEmpty())
       {
         TreeParent externalFeatureTreeParent = new TreeParent(Constants.EXTERNAL_FEATURE);

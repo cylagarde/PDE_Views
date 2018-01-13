@@ -16,7 +16,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.ICoreConstants;
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
-import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -127,9 +126,7 @@ public class FeatureView extends ViewPart
         IFile file = (IFile) resource;
         WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
         workspaceFeatureModel.load();
-
-        IFeature feature = workspaceFeatureModel.getFeature();
-        return feature;
+        return workspaceFeatureModel;
       }
       //      if (resource instanceof TreeObject)
       //        resource = ((TreeObject) resource).data;
