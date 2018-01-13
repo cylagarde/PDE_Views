@@ -24,7 +24,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   NotifyChangedResourceDeltaVisitor manifestChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
   Set<IResource> resourceSet = new HashSet<>();
   TreeViewer treeViewer;
-  Object resource;
+  Object inputResource;
   Function<Object, Object> inputProviderFunction;
 
   @Override
@@ -54,13 +54,13 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     @Override
     public boolean visit(IResourceDelta delta)
     {
-      IResource resource = delta.getResource();
+      IResource changedResource = delta.getResource();
       //      System.out.println("POST_CHANGE " + res + " " + delta.getFlags() + "  " + delta.getKind());
 
       if ((delta.getFlags() & IResourceDelta.CONTENT) != 0)
       {
-        if (resourceSet.contains(resource))
-          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, resource, inputProviderFunction));
+        if (resourceSet.contains(changedResource))
+          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, inputResource, inputProviderFunction));
       }
 
       //
@@ -70,19 +70,19 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
 
   /**
    * @param treeViewer
-   * @param resource
+   * @param inputResource
    * @param inputProviderFunction
    */
-  public void setUpdated(TreeViewer treeViewer, Object resource, Function<Object, Object> inputProviderFunction)
+  public void setUpdated(TreeViewer treeViewer, Object inputResource, Function<Object, Object> inputProviderFunction)
   {
     this.treeViewer = treeViewer;
-    this.resource = resource;
+    this.inputResource = inputResource;
     this.inputProviderFunction = inputProviderFunction;
 
     resourceSet.clear();
 
     // get input for treeViewer
-    Object input = inputProviderFunction.apply(resource);
+    Object input = inputProviderFunction.apply(inputResource);
     treeViewer.getTree().setRedraw(false);
     try
     {
@@ -95,8 +95,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       treeViewer.getTree().setRedraw(true);
     }
 
-    if (resource instanceof IResource)
-      resourceSet.add((IResource) resource);
+    if (inputResource instanceof IResource)
+      resourceSet.add((IResource) inputResource);
 
     // add all resources
     Consumer<Object> consumer = o -> {
@@ -112,6 +112,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       }
     };
     Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), input, consumer);
+
+    resourceSet.forEach(System.out::println);
   }
 
 }

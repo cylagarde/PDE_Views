@@ -1,12 +1,13 @@
-OK afficher une icone differente si le plugin est un singleton ou pas
 bug plugin n'est pas mis à jour ds la featureView lorsque le singleton change
-afficher toutes les features dans la vue feature view (ceux du workspace et de la targetplatform)
 afficher toutes les products dans la vue products view
-avoir une checkbox pour faire des recherches ds les includes plugins uniquement
-faire la vue Search all features
-avoir une popup pour afficher une feature d'un product ds la vue feature view
-avoir une popup ds l'onglet dépendencies pour faire une recherche des features le contenant
+
+A SUPPRIMER faire la vue Search all features
+CANCEL avoir une popup pour afficher une feature d'un product ds la vue feature view
+CANCEL avoir une popup ds l'onglet dépendencies pour faire une recherche des features le contenant
  
+OK avoir une checkbox pour faire des recherches ds les includes plugins uniquement
+OK afficher toutes les features dans la vue feature view (ceux du workspace et de la targetplatform)
+OK afficher une icone differente si le plugin est un singleton ou pas
 OK prendre le nom du fichier pour le product
 OK ecouter les changements de contenu de la feature
 OK labelProvider : differencier les infos par une couleur
