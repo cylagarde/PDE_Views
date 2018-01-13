@@ -15,6 +15,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 
+import cl.pde.views.Constants;
 import cl.pde.views.PdeLabelProvider;
 import cl.pde.views.TreeParent;
 
@@ -23,9 +24,11 @@ import cl.pde.views.TreeParent;
   */
 class FeatureFilteredTree extends FilteredTree
 {
-  Button searchInIncludedPluginsButton;
-  Button searchInIncludedFeaturesButton;
-  Button searchInDependenciesButton;
+  Button seeWorkspaceFeatureButton;
+  Button seeExternalFeatureButton;
+  Button seeIncludedPluginsButton;
+  Button seIncludedFeaturesButton;
+  Button seDependenciesButton;
 
   FeatureFilteredTree(Composite parent, PatternFilter filter)
   {
@@ -47,29 +50,46 @@ class FeatureFilteredTree extends FilteredTree
 
     Composite buttonComposite = new Composite(content, SWT.NONE);
     buttonComposite.setVisible(false);
-    GridLayout buttonLayout = new GridLayout(3, false);
+    GridLayout buttonLayout = new GridLayout(5, false);
     buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
     buttonLayout.horizontalSpacing = 10;
     buttonComposite.setLayout(buttonLayout);
     buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-    searchInIncludedPluginsButton = new Button(buttonComposite, SWT.CHECK);
-    searchInIncludedPluginsButton.setText("Included plugins");
-    searchInIncludedPluginsButton.setToolTipText("See included plugins node");
-    searchInIncludedPluginsButton.setSelection(true);
-    searchInIncludedPluginsButton.setBackground(parent.getBackground());
+    //
+    seeWorkspaceFeatureButton = new Button(buttonComposite, SWT.CHECK);
+    seeWorkspaceFeatureButton.setText(Constants.WORKSPACE_FEATURE);
+    seeWorkspaceFeatureButton.setToolTipText("See " + Constants.WORKSPACE_FEATURE + " node");
+    seeWorkspaceFeatureButton.setSelection(true);
+    seeWorkspaceFeatureButton.setBackground(parent.getBackground());
 
-    searchInIncludedFeaturesButton = new Button(buttonComposite, SWT.CHECK);
-    searchInIncludedFeaturesButton.setText("Included features");
-    searchInIncludedFeaturesButton.setToolTipText("See included features node");
-    searchInIncludedFeaturesButton.setSelection(true);
-    searchInIncludedFeaturesButton.setBackground(parent.getBackground());
+    //
+    seeExternalFeatureButton = new Button(buttonComposite, SWT.CHECK);
+    seeExternalFeatureButton.setText(Constants.EXTERNAL_FEATURE);
+    seeExternalFeatureButton.setToolTipText("See " + Constants.EXTERNAL_FEATURE + " node");
+    seeExternalFeatureButton.setSelection(true);
+    seeExternalFeatureButton.setBackground(parent.getBackground());
 
-    searchInDependenciesButton = new Button(buttonComposite, SWT.CHECK);
-    searchInDependenciesButton.setText("Dependencies");
-    searchInDependenciesButton.setToolTipText("See dependencies node");
-    searchInDependenciesButton.setSelection(true);
-    searchInDependenciesButton.setBackground(parent.getBackground());
+    //
+    seeIncludedPluginsButton = new Button(buttonComposite, SWT.CHECK);
+    seeIncludedPluginsButton.setText(PDEUIMessages.FeatureEditor_ReferencePage_title);
+    seeIncludedPluginsButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_ReferencePage_title + " node");
+    seeIncludedPluginsButton.setSelection(true);
+    seeIncludedPluginsButton.setBackground(parent.getBackground());
+
+    //
+    seIncludedFeaturesButton = new Button(buttonComposite, SWT.CHECK);
+    seIncludedFeaturesButton.setText(PDEUIMessages.FeatureEditor_IncludesPage_title);
+    seIncludedFeaturesButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_IncludesPage_title + " node");
+    seIncludedFeaturesButton.setSelection(true);
+    seIncludedFeaturesButton.setBackground(parent.getBackground());
+
+    //
+    seDependenciesButton = new Button(buttonComposite, SWT.CHECK);
+    seDependenciesButton.setText(PDEUIMessages.FeatureEditor_DependenciesPage_title);
+    seDependenciesButton.setToolTipText("See " + PDEUIMessages.FeatureEditor_DependenciesPage_title + " node");
+    seDependenciesButton.setSelection(true);
+    seDependenciesButton.setBackground(parent.getBackground());
 
     SelectionAdapter listener = new SelectionAdapter()
     {
@@ -79,9 +99,11 @@ class FeatureFilteredTree extends FilteredTree
         textChanged();
       }
     };
-    searchInIncludedPluginsButton.addSelectionListener(listener);
-    searchInIncludedFeaturesButton.addSelectionListener(listener);
-    searchInDependenciesButton.addSelectionListener(listener);
+    seeWorkspaceFeatureButton.addSelectionListener(listener);
+    seeExternalFeatureButton.addSelectionListener(listener);
+    seeIncludedPluginsButton.addSelectionListener(listener);
+    seIncludedFeaturesButton.addSelectionListener(listener);
+    seDependenciesButton.addSelectionListener(listener);
 
     buttonComposite.setVisible(true);
 
@@ -105,17 +127,28 @@ class FeatureFilteredTree extends FilteredTree
         if (element instanceof TreeParent)
         {
           TreeParent treeParent = (TreeParent) element;
+          if (treeParent.data != null)
+            return true;
+
+          // Workspace
+          if (Constants.WORKSPACE_FEATURE.equals(treeParent.name))
+            return seeWorkspaceFeatureButton.getSelection();
+
+          // External
+          if (Constants.EXTERNAL_FEATURE.equals(treeParent.name))
+            return seeExternalFeatureButton.getSelection();
+
           // included plugins
           if (PDEUIMessages.FeatureEditor_ReferencePage_title.equals(treeParent.name))
-            return searchInIncludedPluginsButton.getSelection();
+            return seeIncludedPluginsButton.getSelection();
 
           // included features
           if (PDEUIMessages.FeatureEditor_IncludesPage_title.equals(treeParent.name))
-            return searchInIncludedFeaturesButton.getSelection();
+            return seIncludedFeaturesButton.getSelection();
 
           //
           if (PDEUIMessages.FeatureEditor_DependenciesPage_title.equals(treeParent.name))
-            return searchInDependenciesButton.getSelection();
+            return seDependenciesButton.getSelection();
         }
 
         return true;

@@ -13,4 +13,7 @@ public interface Constants
   final Color PROJECT_FOREGROUND = null;
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
+
+  final String WORKSPACE_FEATURE = "Workspace";
+  final String EXTERNAL_FEATURE = "External";
 }

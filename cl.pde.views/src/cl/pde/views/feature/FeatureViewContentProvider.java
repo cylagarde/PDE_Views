@@ -5,9 +5,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.pde.internal.core.feature.FeatureChild;
+import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureChild;
 import org.eclipse.pde.internal.core.ifeature.IFeatureImport;
@@ -15,6 +17,7 @@ import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEPluginImages;
 import org.eclipse.pde.internal.ui.PDEUIMessages;
+import org.eclipse.ui.PlatformUI;
 
 import cl.pde.Activator;
 import cl.pde.Images;
@@ -42,17 +45,41 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
       Object[] array = (Object[]) inputElement;
       inputElement = Arrays.asList(array);
     }
-    
+
     if (inputElement instanceof Collection)
     {
       Collection<?> collection = (Collection<?>) inputElement;
-      return collection.stream()
-          .filter(IFeature.class::isInstance)
-          .map(IFeature.class::cast)
-//          .peek(feature -> System.out.println(feature+" "+feature.getModel().getClass()))
-          .sorted(Util.PDE_LABEL_COMPARATOR)
-          .map(FeatureViewContentProvider::getTreeParent)
-          .toArray();
+      Map<Boolean, List<IFeature>> map = collection.stream().filter(IFeature.class::isInstance).map(IFeature.class::cast)
+          //          .peek(feature -> System.out.println(feature+" "+feature.getModel().getClass()))
+          .sorted(Util.PDE_LABEL_COMPARATOR).collect(Collectors.partitioningBy(feature -> feature.getModel() instanceof WorkspaceFeatureModel));
+
+      List<TreeParent> treeParentList = new ArrayList<>();
+
+      List<IFeature> workspaceFeatureList = map.get(Boolean.TRUE);
+      if (!workspaceFeatureList.isEmpty())
+      {
+        TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_FEATURE);
+        workspaceFeatureTreeParent.image = PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);
+        treeParentList.add(workspaceFeatureTreeParent);
+
+        workspaceFeatureTreeParent.loadChildRunnable = () -> {
+          workspaceFeatureList.stream().map(FeatureViewContentProvider::getTreeParent).forEach(workspaceFeatureTreeParent::addChild);
+        };
+      }
+
+      List<IFeature> externalFeatureList = map.get(Boolean.FALSE);
+      if (!externalFeatureList.isEmpty())
+      {
+        TreeParent externalFeatureTreeParent = new TreeParent(Constants.EXTERNAL_FEATURE);
+        externalFeatureTreeParent.image = PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);
+        treeParentList.add(externalFeatureTreeParent);
+
+        externalFeatureTreeParent.loadChildRunnable = () -> {
+          externalFeatureList.stream().map(FeatureViewContentProvider::getTreeParent).forEach(externalFeatureTreeParent::addChild);
+        };
+      }
+
+      return treeParentList.toArray();
     }
 
     return getChildren(inputElement);
