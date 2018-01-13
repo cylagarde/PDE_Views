@@ -5,8 +5,11 @@ import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.jar.Attributes;
@@ -32,6 +35,7 @@ import org.eclipse.pde.core.plugin.PluginRegistry;
 import org.eclipse.pde.internal.core.FeatureModelManager;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.bundle.WorkspaceBundlePluginModel;
+import org.eclipse.pde.internal.core.feature.FeatureChild;
 import org.eclipse.pde.internal.core.ibundle.IBundle;
 import org.eclipse.pde.internal.core.ibundle.IBundlePluginModelBase;
 import org.eclipse.pde.internal.core.ibundle.IManifestHeader;
@@ -49,6 +53,8 @@ import org.eclipse.pde.internal.core.project.PDEProject;
 import org.eclipse.pde.internal.core.text.bundle.BundleSymbolicNameHeader;
 import org.eclipse.pde.internal.ui.IPDEUIConstants;
 import org.eclipse.pde.internal.ui.PDEPlugin;
+import org.eclipse.pde.internal.ui.PDEPluginImages;
+import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
 import org.eclipse.ui.IWorkbenchPage;
@@ -64,9 +70,8 @@ import cl.pde.Activator;
  */
 public class Util
 {
-  public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText,
-                                                                                     String.CASE_INSENSITIVE_ORDER);
-  
+  public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
+
   public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Consumer<Object> consumer)
   {
     Object[] elements = treeContentProvider.getElements(root);
@@ -929,4 +934,185 @@ public class Util
     return null;
   }
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @param feature
+   */
+  public static TreeParent getTreeParent(IFeature feature)
+  {
+    TreeParent featureTreeParent = new TreeParent(null, feature);
+    featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+    //    featureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_OBJ);
+
+    featureTreeParent.loadChildRunnable = () -> {
+      List<TreeParent> elements = getElementsFromFeature(feature);
+      elements.forEach(featureTreeParent::addChild);
+    };
+    return featureTreeParent;
+  }
+
+  /**
+   * @param includedFeature
+   */
+  public static TreeParent getTreeParent(IFeatureChild includedFeature)
+  {
+    TreeParent featureChildTreeParent = new TreeParent(null, includedFeature);
+    featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+
+    //
+    featureChildTreeParent.loadChildRunnable = () -> {
+      FeatureChild featureChildImpl = (FeatureChild) includedFeature;
+      IFeature referencedFeature = featureChildImpl.getReferencedFeature();
+      if (referencedFeature != null)
+      {
+        List<TreeParent> featureElements = getElementsFromFeature(referencedFeature);
+        featureElements.forEach(featureChildTreeParent::addChild);
+      }
+    };
+    return featureChildTreeParent;
+  }
+
+  /**
+   * @param featureImport
+   * @return
+   */
+  public static TreeParent getTreeParent(IFeatureImport featureImport)
+  {
+    TreeParent featureChildTreeParent = new TreeParent(null, featureImport);
+    featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+
+    //
+    if (featureImport.getFeature() != null)
+    {
+      featureChildTreeParent.loadChildRunnable = () -> {
+        List<TreeParent> featureElements = getElementsFromFeature(featureImport.getFeature());
+        featureElements.forEach(featureChildTreeParent::addChild);
+      };
+    }
+    return featureChildTreeParent;
+  }
+
+  /**
+   * @param feature
+   */
+  public static List<TreeParent> getElementsFromFeature(IFeature feature)
+  {
+    List<TreeParent> elements = new ArrayList<>();
+
+    // included plugins
+    loadIncludedPlugins(feature, elements);
+
+    // included features
+    loadIncludedFeatures(feature, elements);
+
+    // required features/plugins
+    loadRequiredPlugins(feature, elements);
+
+    return elements;
+  }
+
+  /**
+   * Load Included Plugins
+   * @param feature
+   * @param elements
+   */
+  private static void loadIncludedPlugins(IFeature feature, List<TreeParent> elements)
+  {
+    IFeaturePlugin[] includedPlugins = feature.getPlugins();
+    if (includedPlugins != null && includedPlugins.length != 0)
+    {
+      // sort
+      Arrays.sort(includedPlugins, Util.PDE_LABEL_COMPARATOR);
+
+      //
+      TreeParent includedPluginsTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_ReferencePage_title);
+      includedPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGINS_FRAGMENTS);
+      elements.add(includedPluginsTreeParent);
+
+      for(IFeaturePlugin featurePlugin : includedPlugins)
+      {
+        TreeObject childTreeObject = new TreeObject(null, featurePlugin);
+        childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+        includedPluginsTreeParent.addChild(childTreeObject);
+      }
+    }
+  }
+
+  /**
+   * Load Included Features
+   * @param feature
+   * @param elements
+   */
+  private static void loadIncludedFeatures(IFeature feature, List<TreeParent> elements)
+  {
+    IFeatureChild[] includedFeatures = feature.getIncludedFeatures();
+    if (includedFeatures != null && includedFeatures.length != 0)
+    {
+      // sort
+      Arrays.sort(includedFeatures, Util.PDE_LABEL_COMPARATOR);
+
+      //
+      TreeParent includedFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_IncludesPage_title);
+      includedFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_OBJ);
+      elements.add(includedFeaturesTreeParent);
+
+      for(IFeatureChild includedFeature : includedFeatures)
+      {
+        TreeParent featureChildTreeParent = getTreeParent(includedFeature);
+        includedFeaturesTreeParent.addChild(featureChildTreeParent);
+      }
+    }
+  }
+
+  /**
+   * Load Required Plugins
+   * @param feature
+   * @param elements
+   */
+  private static void loadRequiredPlugins(IFeature feature, List<TreeParent> elements)
+  {
+    IFeatureImport[] featureImports = feature.getImports();
+    if (featureImports != null && featureImports.length != 0)
+    {
+      // sort
+      Arrays.sort(featureImports, Util.PDE_LABEL_COMPARATOR);
+
+      //
+      TreeParent requiredFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_DependenciesPage_title);
+      requiredFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_REQ_PLUGINS_OBJ);
+      elements.add(requiredFeaturesTreeParent);
+
+      for(IFeatureImport featureImport : featureImports)
+      {
+        if (featureImport.getType() == IFeatureImport.FEATURE)
+        {
+          TreeParent featureChildTreeParent = getTreeParent(featureImport);
+          requiredFeaturesTreeParent.addChild(featureChildTreeParent);
+        }
+        else if (featureImport.getType() == IFeatureImport.PLUGIN)
+        {
+          TreeObject childTreeObject = new TreeObject(null, featureImport);
+          childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+          requiredFeaturesTreeParent.addChild(childTreeObject);
+        }
+      }
+    }
+  }
+
+  /**
+   * @param featureModel
+   */
+  public static TreeParent getTreeParent(IFeatureModel featureModel)
+  {
+    TreeParent treeParent = new TreeParent(null, featureModel);
+    treeParent.foreground = Constants.FEATURE_FOREGROUND;
+
+    treeParent.loadChildRunnable = () -> {
+      IFeature feature = featureModel.getFeature();
+      List<TreeParent> childElements = getElementsFromFeature(feature);
+      childElements.forEach(treeParent::addChild);
+    };
+    return treeParent;
+  }
 }

@@ -61,7 +61,7 @@ public class ProductViewContentProvider extends UseCacheTreeContentProvider
   /**
    * @param product
    */
-  private List<TreeParent> getElementsFromProduct(IProduct product)
+  private static List<TreeParent> getElementsFromProduct(IProduct product)
   {
     List<TreeParent> elements = new ArrayList<>();
 
@@ -84,7 +84,7 @@ public class ProductViewContentProvider extends UseCacheTreeContentProvider
    * @param productFeatures
    * @param elements
    */
-  private void loadFeatures(IProductFeature[] productFeatures, List<TreeParent> elements)
+  private static void loadFeatures(IProductFeature[] productFeatures, List<TreeParent> elements)
   {
     if (productFeatures != null && productFeatures.length != 0)
     {
@@ -110,7 +110,7 @@ public class ProductViewContentProvider extends UseCacheTreeContentProvider
             IFeature feature = featureModel.getFeature();
             if (feature != null)
             {
-              List<TreeParent> childElements = cl.pde.views.feature.FeatureViewContentProvider.getElementsFromFeature(feature);
+              List<TreeParent> childElements = Util.getElementsFromFeature(feature);
               childElements.forEach(featureTreeParent::addChild);
             }
           }
@@ -124,7 +124,7 @@ public class ProductViewContentProvider extends UseCacheTreeContentProvider
    * @param productPlugins
    * @param elements
    */
-  private void loadPlugins(IProductPlugin[] productPlugins, List<TreeParent> elements)
+  private static void loadPlugins(IProductPlugin[] productPlugins, List<TreeParent> elements)
   {
     if (productPlugins != null && productPlugins.length != 0)
     {

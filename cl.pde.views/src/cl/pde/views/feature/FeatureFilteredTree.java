@@ -10,6 +10,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
@@ -50,9 +51,9 @@ class FeatureFilteredTree extends FilteredTree
 
     Composite buttonComposite = new Composite(content, SWT.NONE);
     buttonComposite.setVisible(false);
-    GridLayout buttonLayout = new GridLayout(5, false);
+    RowLayout buttonLayout = new RowLayout();
     buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
-    buttonLayout.horizontalSpacing = 10;
+    buttonLayout.spacing = 10;
     buttonComposite.setLayout(buttonLayout);
     buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 

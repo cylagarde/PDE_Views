@@ -17,7 +17,6 @@ import org.eclipse.pde.core.plugin.IPluginModelBase;
 import org.eclipse.pde.core.plugin.PluginRegistry;
 import org.eclipse.pde.internal.core.FeatureModelManager;
 import org.eclipse.pde.internal.core.PDECore;
-import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEPluginImages;
@@ -31,7 +30,6 @@ import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.UseCacheTreeContentProvider;
 import cl.pde.views.Util;
-import cl.pde.views.feature.FeatureViewContentProvider;
 
 /**
  * The class <b>LaunchConfigurationViewContentProvider</b> allows to.<br>
@@ -63,7 +61,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
   /**
    * @param launchConfiguration
    */
-  private List<TreeObject> getElementsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration)
+  private static List<TreeObject> getElementsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration)
   {
     List<TreeObject> elements = new ArrayList<>();
 
@@ -96,7 +94,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
    * @param launchConfiguration
    * @param elements
    */
-  private void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeObject> elements)
+  private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeObject> elements)
   {
     TreeParent workspacePlugins = createTreeParent(launchConfiguration, PDEUIMessages.AdvancedLauncherTab_workspacePlugins, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS);
     elements.add(workspacePlugins);
@@ -111,7 +109,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
    * @param name
    * @param attributeKey
    */
-  private TreeParent createTreeParent(ILaunchConfiguration launchConfiguration, String name, String attributeKey)
+  private static TreeParent createTreeParent(ILaunchConfiguration launchConfiguration, String name, String attributeKey)
   {
     TreeParent treeParent = new TreeParent(name, null);
     treeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
@@ -139,7 +137,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
    * @param launchConfiguration
    * @param attributeKey
    */
-  private List<IPluginBase> loadPlugins(ILaunchConfiguration launchConfiguration, String attributeKey)
+  private static List<IPluginBase> loadPlugins(ILaunchConfiguration launchConfiguration, String attributeKey)
   {
     List<IPluginBase> pluginBases = new ArrayList<>();
     try
@@ -188,7 +186,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
    * @param launchConfiguration
    * @param elements
    */
-  private void loadFeaturesFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeObject> elements)
+  private static void loadFeaturesFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeObject> elements)
   {
     List<IFeatureModel> featureModels = new ArrayList<>();
     FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
@@ -228,18 +226,6 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
 
     // sort
     Collections.sort(featureModels, Util.PDE_LABEL_COMPARATOR);
-
-    featureModels.stream().map(featureModel -> {
-      TreeParent treeParent = new TreeParent(null, featureModel);
-      treeParent.foreground = Constants.FEATURE_FOREGROUND;
-
-      treeParent.loadChildRunnable = () -> {
-        IFeature feature = featureModel.getFeature();
-        List<TreeParent> childElements = FeatureViewContentProvider.getElementsFromFeature(feature);
-        childElements.forEach(treeParent::addChild);
-      };
-
-      return treeParent;
-    }).forEach(elements::add);
+    featureModels.stream().map(Util::getTreeParent).forEach(elements::add);
   }
 }

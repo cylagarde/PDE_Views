@@ -19,7 +19,6 @@ import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.UseCacheTreeContentProvider;
 import cl.pde.views.Util;
-import cl.pde.views.feature.FeatureViewContentProvider;
 
 /**
  * The class <b>SearchPDEViewContentProvider</b> allows to.<br>
@@ -114,7 +113,7 @@ public class SearchPDEViewContentProvider extends UseCacheTreeContentProvider
         IFeature feature = searchPluginIdInFeature(pluginId, featureFile);
         if (feature != null)
         {
-          TreeParent featureTreeParent = FeatureViewContentProvider.getTreeParent(feature);
+          TreeParent featureTreeParent = Util.getTreeParent(feature);
           elements.add(featureTreeParent);
         }
       }
