@@ -20,7 +20,6 @@ import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEPluginImages;
-import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.pde.launching.IPDELauncherConstants;
 
 import cl.pde.Activator;
@@ -48,7 +47,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
       launchConfigurationTreeParent.foreground = Constants.LAUNCH_CONFIGURATION_FOREGROUND;
 
       launchConfigurationTreeParent.loadChildRunnable = () -> {
-        List<TreeObject> elements = getElementsFromLaunchConfiguration(launchConfiguration);
+        List<TreeParent> elements = getElementsFromLaunchConfiguration(launchConfiguration);
         elements.forEach(launchConfigurationTreeParent::addChild);
       };
 
@@ -61,9 +60,9 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
   /**
    * @param launchConfiguration
    */
-  private static List<TreeObject> getElementsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration)
+  private static List<TreeParent> getElementsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration)
   {
-    List<TreeObject> elements = new ArrayList<>();
+    List<TreeParent> elements = new ArrayList<>();
 
     try
     {
@@ -94,12 +93,12 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
    * @param launchConfiguration
    * @param elements
    */
-  private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeObject> elements)
+  private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
   {
-    TreeParent workspacePlugins = createTreeParent(launchConfiguration, PDEUIMessages.AdvancedLauncherTab_workspacePlugins, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS);
+    TreeParent workspacePlugins = createTreeParent(launchConfiguration, Constants.WORKSPACE_FEATURE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS);
     elements.add(workspacePlugins);
 
-    TreeParent externalPlugins = createTreeParent(launchConfiguration, PDEUIMessages.PluginsTab_target, IPDELauncherConstants.SELECTED_TARGET_PLUGINS);
+    TreeParent externalPlugins = createTreeParent(launchConfiguration, Constants.TARGET_FEATURE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS);
     elements.add(externalPlugins);
   }
 
@@ -186,7 +185,7 @@ public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentP
    * @param launchConfiguration
    * @param elements
    */
-  private static void loadFeaturesFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeObject> elements)
+  private static void loadFeaturesFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
   {
     List<IFeatureModel> featureModels = new ArrayList<>();
     FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();

@@ -1,5 +1,6 @@
 package cl.pde.views;
 
+import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.swt.graphics.Color;
 
 /**
@@ -14,6 +15,6 @@ public interface Constants
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
 
-  final String WORKSPACE_FEATURE = "Workspace";
-  final String EXTERNAL_FEATURE = "External";
+  final String WORKSPACE_FEATURE = PDEUIMessages.AdvancedLauncherTab_workspacePlugins;
+  final String TARGET_FEATURE = PDEUIMessages.PluginsTab_target;
 }

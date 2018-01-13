@@ -943,7 +943,6 @@ public class Util
   {
     TreeParent featureTreeParent = new TreeParent(null, feature);
     featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
-    //    featureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_OBJ);
 
     featureTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromFeature(feature);

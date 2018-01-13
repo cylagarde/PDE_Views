@@ -9,9 +9,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
-import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.pde.internal.ui.PDEPlugin;
+import org.eclipse.pde.internal.ui.PDEPluginImages;
 
 import cl.pde.views.Constants;
 import cl.pde.views.TreeParent;
@@ -53,7 +53,7 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
       if (!workspaceFeatureList.isEmpty())
       {
         TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_FEATURE);
-        workspaceFeatureTreeParent.image = PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);
+        workspaceFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
         treeParentList.add(workspaceFeatureTreeParent);
 
         workspaceFeatureTreeParent.loadChildRunnable = () -> {
@@ -64,8 +64,8 @@ public class FeatureViewContentProvider extends UseCacheTreeContentProvider
       List<IFeatureModel> externalFeatureList = map.get(Boolean.FALSE);
       if (!externalFeatureList.isEmpty())
       {
-        TreeParent externalFeatureTreeParent = new TreeParent(Constants.EXTERNAL_FEATURE);
-        externalFeatureTreeParent.image = PlatformUI.getWorkbench().getSharedImages().getImage(org.eclipse.ui.ide.IDE.SharedImages.IMG_OBJ_PROJECT);
+        TreeParent externalFeatureTreeParent = new TreeParent(Constants.TARGET_FEATURE);
+        externalFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
         treeParentList.add(externalFeatureTreeParent);
 
         externalFeatureTreeParent.loadChildRunnable = () -> {

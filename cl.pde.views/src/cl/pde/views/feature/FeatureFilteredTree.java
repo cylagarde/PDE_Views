@@ -66,8 +66,8 @@ class FeatureFilteredTree extends FilteredTree
 
     //
     seeExternalFeatureButton = new Button(buttonComposite, SWT.CHECK);
-    seeExternalFeatureButton.setText(Constants.EXTERNAL_FEATURE);
-    seeExternalFeatureButton.setToolTipText("See " + Constants.EXTERNAL_FEATURE + " node");
+    seeExternalFeatureButton.setText(Constants.TARGET_FEATURE);
+    seeExternalFeatureButton.setToolTipText("See " + Constants.TARGET_FEATURE + " node");
     seeExternalFeatureButton.setSelection(true);
     seeExternalFeatureButton.setBackground(parent.getBackground());
 
@@ -136,7 +136,7 @@ class FeatureFilteredTree extends FilteredTree
             return seeWorkspaceFeatureButton.getSelection();
 
           // External
-          if (Constants.EXTERNAL_FEATURE.equals(treeParent.name))
+          if (Constants.TARGET_FEATURE.equals(treeParent.name))
             return seeExternalFeatureButton.getSelection();
 
           // included plugins
