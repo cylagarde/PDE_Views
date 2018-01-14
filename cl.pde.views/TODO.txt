@@ -1,4 +1,5 @@
 bug plugin n'est pas mis à jour ds la featureView lorsque le singleton change
+bug de refresh
 afficher toutes les products dans la vue products view
 
 A SUPPRIMER faire la vue Search all features

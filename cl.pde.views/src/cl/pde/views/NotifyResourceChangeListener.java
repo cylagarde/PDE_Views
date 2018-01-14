@@ -1,7 +1,7 @@
 package cl.pde.views;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -22,7 +22,7 @@ import cl.pde.Activator;
 public class NotifyResourceChangeListener implements IResourceChangeListener
 {
   NotifyChangedResourceDeltaVisitor manifestChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
-  Set<IResource> resourceSet = new HashSet<>();
+  Map<IResource, TreeObject> resourceMap = new HashMap<>();
   TreeViewer treeViewer;
   Object inputResource;
   Function<Object, Object> inputProviderFunction;
@@ -59,7 +59,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
 
       if ((delta.getFlags() & IResourceDelta.CONTENT) != 0)
       {
-        if (resourceSet.contains(changedResource))
+        if (resourceMap.containsKey(changedResource))
           treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, inputResource, inputProviderFunction));
       }
 
@@ -79,7 +79,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     this.inputResource = inputResource;
     this.inputProviderFunction = inputProviderFunction;
 
-    resourceSet.clear();
+    resourceMap.clear();
 
     // get input for treeViewer
     Object input = inputProviderFunction.apply(inputResource);
@@ -95,8 +95,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       treeViewer.getTree().setRedraw(true);
     }
 
-    if (inputResource instanceof IResource)
-      resourceSet.add((IResource) inputResource);
+    //    if (inputResource instanceof IResource)
+    //      resourceMap.add((IResource) inputResource);
 
     // add all resources
     Consumer<Object> consumer = o -> {
@@ -107,13 +107,13 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         {
           IResource res = Util.getResource(treeObject.data);
           if (res != null)
-            resourceSet.add(res);
+            resourceMap.put(res, treeObject);
         }
       }
     };
     Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), input, consumer);
 
-    resourceSet.forEach(System.out::println);
+    resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
   }
 
 }

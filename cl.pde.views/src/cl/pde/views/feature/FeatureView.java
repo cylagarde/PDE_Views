@@ -147,7 +147,7 @@ public class FeatureView extends ViewPart
       //        IFeatureModel featureModel = (IFeatureModel) resource;
       //        return featureModel.getFeature();
       //      }
-      return null;
+      return resource;
     };
     selectionListener = new PDESelectionListener(featureViewer, notifyResourceChangeListener, selectionPredicate, inputFunction);
     selectionService.addPostSelectionListener(selectionListener);
@@ -171,7 +171,7 @@ public class FeatureView extends ViewPart
   {
     MenuManager menuMgr = new MenuManager("#PopupMenu");
     menuMgr.setRemoveAllWhenShown(true);
-    menuMgr.addMenuListener(manager -> FeatureView.this.fillContextMenu(manager));
+    menuMgr.addMenuListener(manager -> fillContextMenu(manager));
     Menu menu = menuMgr.createContextMenu(featureViewer.getControl());
     featureViewer.getControl().setMenu(menu);
     getSite().registerContextMenu(menuMgr, featureViewer);
@@ -217,10 +217,19 @@ public class FeatureView extends ViewPart
     collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
 
     //
-    getAllFeaturesAction = new GetAllFeaturesAction(featureViewer);
+    getAllFeaturesAction = new GetAllFeaturesAction(this);
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);
+  }
+
+  /**
+   *
+   * @param input
+   */
+  public void refresh(Object input)
+  {
+    featureViewer.setInput(input);
   }
 
   private void hookDoubleClickAction()
