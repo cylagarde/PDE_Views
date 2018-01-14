@@ -154,6 +154,13 @@ public class FeatureView extends ViewPart
     selectionListener.selectionChanged(null, selectionService.getSelection());
   }
 
+  /**
+   */
+  public TreeViewer getFeatureViewer()
+  {
+    return featureViewer;
+  }
+
   @Override
   public void dispose()
   {

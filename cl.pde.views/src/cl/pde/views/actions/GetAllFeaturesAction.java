@@ -1,6 +1,7 @@
 package cl.pde.views.actions;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 
@@ -31,6 +32,17 @@ public class GetAllFeaturesAction extends Action
   public void run()
   {
     IFeatureModel[] allFeatureModels = PDECore.getDefault().getFeatureModelManager().getModels();
+
+    TreeViewer featureViewer = featureView.getFeatureViewer();
+    featureViewer.getControl().setRedraw(false);
     featureView.refresh(allFeatureModels);
+    try
+    {
+      featureViewer.expandToLevel(2);
+    }
+    finally
+    {
+      featureViewer.getControl().setRedraw(true);
+    }
   }
 }
