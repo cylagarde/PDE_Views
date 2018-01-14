@@ -10,6 +10,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 /**
  * The class <b>NotTreeParentPatternFilter</b> allows to.<br>
  */
+// TODO rename
 public class NotTreeParentPatternFilter extends PatternFilter
 {
   public NotTreeParentPatternFilter()
@@ -20,7 +21,9 @@ public class NotTreeParentPatternFilter extends PatternFilter
   @Override
   protected boolean isLeafMatch(Viewer viewer, Object element)
   {
-    if (element instanceof TreeParent)
+    //    if (element instanceof TreeParent)
+    //      return false;
+    if (element instanceof TreeObject && ((TreeObject) element).data == null)
       return false;
 
     String labelText = null;
