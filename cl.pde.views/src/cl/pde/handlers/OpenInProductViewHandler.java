@@ -9,9 +9,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.pde.internal.core.product.WorkspaceProductModel;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
@@ -52,9 +54,29 @@ public class OpenInProductViewHandler extends AbstractHandler
     IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
     try
     {
-      workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      // load product
+      WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(productFile, false);
+      workspaceProductModel.load();
+
+      // get FeatureView
+      IViewPart showView = workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      ProductView productView = (ProductView) showView;
+      TreeViewer productViewer = productView.getProductViewer();
+
+      productViewer.getControl().setRedraw(false);
+      try
+      {
+        productView.setInput(workspaceProductModel);
+
+        //
+        productViewer.expandToLevel(5);
+      }
+      finally
+      {
+        productViewer.getControl().setRedraw(true);
+      }
     }
-    catch(PartInitException e)
+    catch(Exception e)
     {
       String message = "Cannot open product file : " + productFile;
       Activator.logError(message, e);

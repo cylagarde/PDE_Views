@@ -1,9 +1,9 @@
 package cl.pde.views;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -15,6 +15,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import cl.pde.Activator;
+import cl.pde.views.actions.ExpandAllNodesAction;
 
 /**
  * The class <b>NotifyResourceChangeListener</b> allows to.<br>
@@ -22,7 +23,7 @@ import cl.pde.Activator;
 public class NotifyResourceChangeListener implements IResourceChangeListener
 {
   NotifyChangedResourceDeltaVisitor manifestChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
-  Map<IResource, TreeObject> resourceMap = new HashMap<>();
+  Map<IResource, TreeObject> resourceMap = new LinkedHashMap<>();
   TreeViewer treeViewer;
   Object inputResource;
   Function<Object, Object> inputProviderFunction;
@@ -60,7 +61,39 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       if ((delta.getFlags() & IResourceDelta.CONTENT) != 0)
       {
         if (resourceMap.containsKey(changedResource))
-          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, inputResource, inputProviderFunction));
+        {
+          TreeObject treeObject = resourceMap.get(changedResource);
+          if (treeObject != null)
+          {
+            //            System.out.println("refresh " + treeObject);
+
+            if (treeObject instanceof TreeParent)
+            {
+              TreeParent treeParent = (TreeParent) treeObject;
+              treeParent.reset();
+            }
+
+            treeViewer.getControl().getDisplay().asyncExec(() -> {
+              treeViewer.getControl().setRedraw(false);
+              try
+              {
+                Object[] expandedElements = treeViewer.getExpandedElements();
+
+                //treeViewer.update(treeObject, null);
+                treeViewer.refresh(treeObject);
+                //            treeViewer.refresh(treeObject.data);
+
+                treeViewer.setExpandedElements(expandedElements);
+                expandedElements = treeViewer.getExpandedElements();
+              }
+              finally
+              {
+                treeViewer.getControl().setRedraw(true);
+              }
+            });
+          }
+          //          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, inputResource, inputProviderFunction));
+        }
       }
 
       //
@@ -69,10 +102,48 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   }
 
   /**
+   *
+   * @param resourceMap
+   */
+  public void refreshWhenResourceChanged(TreeViewer treeViewer)
+  {
+    this.treeViewer = treeViewer;
+    resourceMap.clear();
+
+    //
+    long time = System.currentTimeMillis();
+
+    // add all resources
+    Predicate<Object> predicate = o -> {
+      if (o instanceof TreeObject)
+      {
+        TreeObject treeObject = (TreeObject) o;
+        if (treeObject.data != null)
+        {
+          //
+          if (Constants.TARGET_FEATURE.equals(treeObject.name))
+            return false;
+
+          IResource resource = Util.getResource(treeObject.data);
+          if (resource != null)
+            resourceMap.put(resource, treeObject);
+        }
+      }
+      return true;
+    };
+    Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate);
+
+    System.out.println("TIME=" + (System.currentTimeMillis() - time));
+
+    resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
+  }
+
+  /**
    * @param treeViewer
    * @param inputResource
    * @param inputProviderFunction
    */
+  @Deprecated
   public void setUpdated(TreeViewer treeViewer, Object inputResource, Function<Object, Object> inputProviderFunction)
   {
     this.treeViewer = treeViewer;
@@ -88,7 +159,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     {
       treeViewer.setInput(input);
 
-      treeViewer.expandAll();
+      new ExpandAllNodesAction(treeViewer, true).run();
     }
     finally
     {
@@ -98,8 +169,10 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     //    if (inputResource instanceof IResource)
     //      resourceMap.add((IResource) inputResource);
 
+    long time = System.currentTimeMillis();
+
     // add all resources
-    Consumer<Object> consumer = o -> {
+    Predicate<Object> consumer = o -> {
       if (o instanceof TreeObject)
       {
         TreeObject treeObject = (TreeObject) o;
@@ -110,8 +183,11 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
             resourceMap.put(res, treeObject);
         }
       }
+      return true;
     };
     Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), input, consumer);
+
+    System.out.println("TIME=" + (System.currentTimeMillis() - time));
 
     resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
   }

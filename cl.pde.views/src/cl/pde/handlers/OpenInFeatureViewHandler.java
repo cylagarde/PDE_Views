@@ -9,9 +9,11 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
@@ -50,16 +52,38 @@ public class OpenInFeatureViewHandler extends AbstractHandler
   private void openInFeatureView(ExecutionEvent event, IFile featureFile)
   {
     IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+
     try
     {
-      workbenchPage.showView(FeatureView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      // load feature
+      WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(featureFile);
+      workspaceFeatureModel.load();
+
+      // get FeatureView
+      IViewPart showView = workbenchPage.showView(FeatureView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      FeatureView featureView = (FeatureView) showView;
+      TreeViewer featureViewer = featureView.getFeatureViewer();
+
+      featureViewer.getControl().setRedraw(false);
+      try
+      {
+        featureView.setInput(workspaceFeatureModel);
+
+        //
+        featureViewer.expandToLevel(4);
+      }
+      finally
+      {
+        featureViewer.getControl().setRedraw(true);
+      }
     }
-    catch(PartInitException e)
+    catch(Exception e)
     {
       String message = "Cannot open feature file : " + featureFile;
       Activator.logError(message, e);
       Shell shell = HandlerUtil.getActiveShell(event);
       MessageDialog.openError(shell, "Error", message);
     }
+
   }
 }

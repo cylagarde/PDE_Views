@@ -24,10 +24,10 @@ import org.eclipse.pde.launching.IPDELauncherConstants;
 
 import cl.pde.Activator;
 import cl.pde.Images;
+import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
-import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Util;
 
 /**
@@ -144,9 +144,13 @@ public class LaunchConfigurationViewContentProvider extends AbstractTreeObjectCo
       String selected_target_plugins = launchConfiguration.getAttribute(attributeKey, "");
       for(String str : selected_target_plugins.split(","))
       {
-        str = str.substring(0, str.indexOf(':'));
-        str = str.substring(0, str.indexOf('@'));
-        int index = str.indexOf('*');
+        int index = str.indexOf(':');
+        if (index >= 0)
+          str = str.substring(0, index);
+        index = str.indexOf('@');
+        if (index >= 0)
+          str = str.substring(0, index);
+        index = str.indexOf('*');
         String pluginId = str;
 
         IPluginModelBase model = null;

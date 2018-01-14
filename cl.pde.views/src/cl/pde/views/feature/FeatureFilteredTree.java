@@ -51,7 +51,6 @@ class FeatureFilteredTree extends FilteredTree
     filterComposite.setParent(content);
 
     Composite buttonComposite = new Composite(content, SWT.NONE);
-    buttonComposite.setVisible(false);
     RowLayout buttonLayout = new RowLayout();
     buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
     buttonLayout.spacing = 10;
@@ -106,8 +105,6 @@ class FeatureFilteredTree extends FilteredTree
     seeIncludedPluginsButton.addSelectionListener(listener);
     seeIncludedFeaturesButton.addSelectionListener(listener);
     seeDependenciesButton.addSelectionListener(listener);
-
-    buttonComposite.setVisible(true);
 
     return filterComposite;
   }

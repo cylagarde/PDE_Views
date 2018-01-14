@@ -35,9 +35,9 @@ public class GetAllFeaturesAction extends Action
 
     TreeViewer featureViewer = featureView.getFeatureViewer();
     featureViewer.getControl().setRedraw(false);
-    featureView.refresh(allFeatureModels);
     try
     {
+      featureView.setInput(allFeatureModels);
       featureViewer.expandToLevel(2);
     }
     finally

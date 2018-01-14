@@ -83,7 +83,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         if (singletonState != null && singletonState)
         {
           //
-          ImageDescriptor singletonImageDescriptor = Activator.getDefault().getImageDescriptor(Images.SINGLETON);
+          ImageDescriptor singletonImageDescriptor = Activator.getImageDescriptor(Images.SINGLETON);
           String key = String.valueOf(img) + " " + String.valueOf(singletonImageDescriptor);
           Image overlayImage = Activator.getDefault().getImageRegistry().get(key);
           if (overlayImage == null)

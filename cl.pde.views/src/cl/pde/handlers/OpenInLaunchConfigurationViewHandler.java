@@ -6,12 +6,16 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
@@ -53,8 +57,30 @@ public class OpenInLaunchConfigurationViewHandler extends AbstractHandler
     try
     {
       workbenchPage.showView(LaunchConfigurationView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+
+      // load launch configuration
+      ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+      ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(launchConfigurationFile);
+
+      // get FeatureView
+      IViewPart showView = workbenchPage.showView(LaunchConfigurationView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
+      LaunchConfigurationView launchConfigurationView = (LaunchConfigurationView) showView;
+      TreeViewer launchConfigurationViewer = launchConfigurationView.getLaunchConfigurationViewer();
+
+      launchConfigurationViewer.getControl().setRedraw(false);
+      try
+      {
+        launchConfigurationView.setInput(launchConfiguration);
+
+        //
+        launchConfigurationViewer.expandToLevel(4);
+      }
+      finally
+      {
+        launchConfigurationViewer.getControl().setRedraw(true);
+      }
     }
-    catch(PartInitException e)
+    catch(Exception e)
     {
       String message = "Cannot open Launch configuration file : " + launchConfigurationFile;
       Activator.logError(message, e);

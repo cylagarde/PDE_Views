@@ -15,6 +15,9 @@ public interface Constants
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
 
+  // Workspace
   final String WORKSPACE_FEATURE = PDEUIMessages.AdvancedLauncherTab_workspacePlugins;
+
+  // Target Platform
   final String TARGET_FEATURE = PDEUIMessages.PluginsTab_target;
 }

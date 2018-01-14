@@ -1,10 +1,5 @@
 package cl.pde.views.feature;
 
-import java.util.Locale;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -14,8 +9,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.pde.internal.core.ICoreConstants;
-import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
@@ -33,7 +26,7 @@ import cl.pde.Activator;
 import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
-import cl.pde.views.PDESelectionListener;
+import cl.pde.views.Util;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.GetAllFeaturesAction;
 import cl.pde.views.actions.OpenNodeAction;
@@ -75,7 +68,6 @@ public class FeatureView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
-    //
     PatternFilter filter = new NotTreeParentPatternFilter();
     featureFilteredTree = new FeatureFilteredTree(parent, filter);
     featureViewer = featureFilteredTree.getViewer();
@@ -106,52 +98,52 @@ public class FeatureView extends ViewPart
     hookDoubleClickAction();
     contributeToActionBars();
 
+    //    //
+    //    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
     //
-    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
-
-    Predicate<Object> selectionPredicate = resource -> {
-      if (resource instanceof IFile)
-        return ICoreConstants.FEATURE_FILENAME_DESCRIPTOR.equals(((IFile) resource).getName().toLowerCase(Locale.ENGLISH));
-      //      if (resource instanceof TreeObject)
-      //      {
-      //        Object data = ((TreeObject) resource).data;
-      //        return (data instanceof IFeature) || (data instanceof IProductFeature) || (data instanceof IFeatureChild) || (data instanceof IFeatureModel);
-      //      }
-      //      System.err.println("selectionPredicate " + resource.getClass());
-      return false;
-    };
-    Function<Object, Object> inputFunction = resource -> {
-      if (resource instanceof IFile)
-      {
-        IFile file = (IFile) resource;
-        WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
-        workspaceFeatureModel.load();
-        return workspaceFeatureModel;
-      }
-      //      if (resource instanceof TreeObject)
-      //        resource = ((TreeObject) resource).data;
-      //      if (resource instanceof IFeature)
-      //        return resource;
-      //      if (resource instanceof IProductFeature)
-      //      {
-      //        IProductFeature productFeature = (IProductFeature) resource;
-      //        return Util.getFeature(productFeature);
-      //      }
-      //      if (resource instanceof IFeatureChild)
-      //      {
-      //        IFeatureChild featureChild = (IFeatureChild) resource;
-      //        return Util.getFeature(featureChild);
-      //      }
-      //      if (resource instanceof IFeatureModel)
-      //      {
-      //        IFeatureModel featureModel = (IFeatureModel) resource;
-      //        return featureModel.getFeature();
-      //      }
-      return resource;
-    };
-    selectionListener = new PDESelectionListener(featureViewer, notifyResourceChangeListener, selectionPredicate, inputFunction);
-    selectionService.addPostSelectionListener(selectionListener);
-    selectionListener.selectionChanged(null, selectionService.getSelection());
+    //    Predicate<Object> selectionPredicate = resource -> {
+    //      if (resource instanceof IFile)
+    //        return ICoreConstants.FEATURE_FILENAME_DESCRIPTOR.equals(((IFile) resource).getName().toLowerCase(Locale.ENGLISH));
+    //      //      if (resource instanceof TreeObject)
+    //      //      {
+    //      //        Object data = ((TreeObject) resource).data;
+    //      //        return (data instanceof IFeature) || (data instanceof IProductFeature) || (data instanceof IFeatureChild) || (data instanceof IFeatureModel);
+    //      //      }
+    //      //      System.err.println("selectionPredicate " + resource.getClass());
+    //      return false;
+    //    };
+    //    Function<Object, Object> inputFunction = resource -> {
+    //      if (resource instanceof IFile)
+    //      {
+    //        IFile file = (IFile) resource;
+    //        WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
+    //        workspaceFeatureModel.load();
+    //        return workspaceFeatureModel;
+    //      }
+    //      //      if (resource instanceof TreeObject)
+    //      //        resource = ((TreeObject) resource).data;
+    //      //      if (resource instanceof IFeature)
+    //      //        return resource;
+    //      //      if (resource instanceof IProductFeature)
+    //      //      {
+    //      //        IProductFeature productFeature = (IProductFeature) resource;
+    //      //        return Util.getFeature(productFeature);
+    //      //      }
+    //      //      if (resource instanceof IFeatureChild)
+    //      //      {
+    //      //        IFeatureChild featureChild = (IFeatureChild) resource;
+    //      //        return Util.getFeature(featureChild);
+    //      //      }
+    //      //      if (resource instanceof IFeatureModel)
+    //      //      {
+    //      //        IFeatureModel featureModel = (IFeatureModel) resource;
+    //      //        return featureModel.getFeature();
+    //      //      }
+    //      return resource;
+    //    };
+    //    selectionListener = new PDESelectionListener(featureViewer, notifyResourceChangeListener, selectionPredicate, inputFunction);
+    //    selectionService.addPostSelectionListener(selectionListener);
+    //    selectionListener.selectionChanged(null, selectionService.getSelection());
   }
 
   /**
@@ -231,12 +223,24 @@ public class FeatureView extends ViewPart
   }
 
   /**
-   *
+   * Set input
    * @param input
    */
-  public void refresh(Object input)
+  public void setInput(Object input)
   {
-    featureViewer.setInput(input);
+    Util.setUseCache(true);
+
+    try
+    {
+      featureViewer.setInput(input);
+
+      // refresh
+      notifyResourceChangeListener.refreshWhenResourceChanged(featureViewer);
+    }
+    finally
+    {
+      Util.setUseCache(false);
+    }
   }
 
   private void hookDoubleClickAction()

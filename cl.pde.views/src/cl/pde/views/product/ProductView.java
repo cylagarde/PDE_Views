@@ -1,25 +1,16 @@
 package cl.pde.views.product;
 
-import java.util.Locale;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.pde.internal.core.iproduct.IProduct;
-import org.eclipse.pde.internal.core.product.WorkspaceProductModel;
+import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.ui.PDEPlugin;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -36,8 +27,7 @@ import cl.pde.Activator;
 import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
-import cl.pde.views.PDESelectionListener;
-import cl.pde.views.PdeLabelProvider;
+import cl.pde.views.Util;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
@@ -52,7 +42,6 @@ public class ProductView extends ViewPart
   public static final String ID = "cl.pde.productView";
 
   private FilteredTree productFilteredTree;
-  private PatternFilter filter;
   private TreeViewer productViewer;
 
   private DrillDownAdapter drillDownAdapter;
@@ -78,16 +67,11 @@ public class ProductView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
-    filter = new NotTreeParentPatternFilter();
-    productFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
-    productFilteredTree.setInitialText("Product name filter");
+    PatternFilter filter = new NotTreeParentPatternFilter();
+    productFilteredTree = new ProductFilteredTree(parent, filter);
     productViewer = productFilteredTree.getViewer();
-    productFilteredTree.setBackground(productViewer.getTree().getBackground());
 
     drillDownAdapter = new DrillDownAdapter(productViewer);
-
-    productViewer.setContentProvider(new ProductViewContentProvider());
-    productViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
 
     //
     PDEPlugin.getDefault().getLabelProvider().connect(this);
@@ -113,38 +97,38 @@ public class ProductView extends ViewPart
     hookDoubleClickAction();
     contributeToActionBars();
 
+    //    //
+    //    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
     //
-    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
-
-    Predicate<Object> predicate = resource -> {
-      if (resource instanceof IFile)
-        return ((IFile) resource).getName().toLowerCase(Locale.ENGLISH).endsWith(".product");
-      return false;
-    };
-    Function<Object, Object> inputFunction = resource -> {
-      if (resource instanceof IFile)
-      {
-        try
-        {
-          IFile file = (IFile) resource;
-          WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(file, true);
-          workspaceProductModel.load();
-
-          IProduct product = workspaceProductModel.getProduct();
-          return product;
-        }
-        catch(CoreException e)
-        {
-          e.printStackTrace();
-          Activator.logError("Cannot open product file", e);
-          return null;
-        }
-      }
-      return null;
-    };
-    selectionListener = new PDESelectionListener(productViewer, notifyResourceChangeListener, predicate, inputFunction);
-    selectionService.addPostSelectionListener(selectionListener);
-    selectionListener.selectionChanged(null, selectionService.getSelection());
+    //    Predicate<Object> predicate = resource -> {
+    //      if (resource instanceof IFile)
+    //        return ((IFile) resource).getName().toLowerCase(Locale.ENGLISH).endsWith(".product");
+    //      return false;
+    //    };
+    //    Function<Object, Object> inputFunction = resource -> {
+    //      if (resource instanceof IFile)
+    //      {
+    //        try
+    //        {
+    //          IFile file = (IFile) resource;
+    //          WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(file, true);
+    //          workspaceProductModel.load();
+    //
+    //          IProduct product = workspaceProductModel.getProduct();
+    //          return product;
+    //        }
+    //        catch(CoreException e)
+    //        {
+    //          e.printStackTrace();
+    //          Activator.logError("Cannot open product file", e);
+    //          return null;
+    //        }
+    //      }
+    //      return null;
+    //    };
+    //    selectionListener = new PDESelectionListener(productViewer, notifyResourceChangeListener, predicate, inputFunction);
+    //    selectionService.addPostSelectionListener(selectionListener);
+    //    selectionListener.selectionChanged(null, selectionService.getSelection());
   }
 
   @Override
@@ -225,4 +209,31 @@ public class ProductView extends ViewPart
     productViewer.getControl().setFocus();
   }
 
+  /**
+   * @return
+   */
+  public TreeViewer getProductViewer()
+  {
+    return productViewer;
+  }
+
+  /**
+   * @param productModel
+   */
+  public void setInput(IProductModel productModel)
+  {
+    Util.setUseCache(true);
+
+    try
+    {
+      productViewer.setInput(productModel);
+
+      // refresh
+      notifyResourceChangeListener.refreshWhenResourceChanged(productViewer);
+    }
+    finally
+    {
+      Util.setUseCache(false);
+    }
+  }
 }

@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
@@ -72,20 +73,33 @@ public class Util
 {
   public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
 
-  public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Consumer<Object> consumer)
+  /**
+   *
+   * @param treeContentProvider
+   * @param root
+   * @param predicate
+   */
+  public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Predicate<Object> predicate)
   {
     Object[] elements = treeContentProvider.getElements(root);
     for(Object element : elements)
-      traverseElement(treeContentProvider, element, consumer);
+      traverseElement(treeContentProvider, element, predicate);
   }
 
-  public static void traverseElement(ITreeContentProvider treeContentProvider, Object element, Consumer<Object> consumer)
+  /**
+   *
+   * @param treeContentProvider
+   * @param element
+   * @param predicate
+   */
+  public static void traverseElement(ITreeContentProvider treeContentProvider, Object element, Predicate<Object> predicate)
   {
-    consumer.accept(element);
-
-    Object[] children = treeContentProvider.getChildren(element);
-    for(Object child : children)
-      traverseElement(treeContentProvider, child, consumer);
+    if (predicate.test(element))
+    {
+      Object[] children = treeContentProvider.getChildren(element);
+      for(Object child : children)
+        traverseElement(treeContentProvider, child, predicate);
+    }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -375,9 +389,6 @@ public class Util
     if (pdeObject instanceof IFeature)
       return getFeatureLocation((IFeature) pdeObject);
 
-    //    else if (pdeObject instanceof IProduct)
-    //      return getProductLocation((IProduct) pdeObject);
-
     if (pdeObject instanceof IProductFeature)
       return getProductFeatureLocation((IProductFeature) pdeObject);
 
@@ -543,12 +554,37 @@ public class Util
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
+  final static Map<Object, Object> RESOURCE_CACHEMAP = new HashMap<>();
+
   /**
    * Get resource
    * @param pdeObject
    */
   public static IResource getResource(Object pdeObject)
   {
+    Object key = PDEPlugin.getDefault().getLabelProvider().getText(pdeObject);
+    Object resource = RESOURCE_CACHEMAP.get(key);
+    if (resource == null || !USE_CACHE)
+    {
+      resource = getResourceImpl(pdeObject);
+      if (resource == null)
+        resource = NULL;
+      if (USE_CACHE)
+        RESOURCE_CACHEMAP.put(key, resource);
+    }
+    //    else
+    //      System.out.println("++++++++++++ " + key);
+
+    return resource == NULL? null : (IResource) resource;
+  }
+
+  /**
+   * Get resource
+   * @param pdeObject
+   */
+  private static IResource getResourceImpl(Object pdeObject)
+  {
+    //    System.out.println(" " + pdeObject);
     if (pdeObject instanceof IModel)
       return getModelResource((IModel) pdeObject);
 
@@ -760,6 +796,7 @@ public class Util
   {
     USE_CACHE = useCache;
     SINGLETONSTATE_CACHEMAP.clear();
+    RESOURCE_CACHEMAP.clear();
   }
 
   /**
@@ -782,7 +819,6 @@ public class Util
     //      System.out.println("++++++++++++ " + key);
 
     return singletonState == NULL? null : (Boolean) singletonState;
-
   }
 
   /**
@@ -1033,20 +1069,21 @@ public class Util
     IFeaturePlugin[] includedPlugins = feature.getPlugins();
     if (includedPlugins != null && includedPlugins.length != 0)
     {
-      // sort
-      Arrays.sort(includedPlugins, Util.PDE_LABEL_COMPARATOR);
-
       //
       TreeParent includedPluginsTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_ReferencePage_title);
       includedPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGINS_FRAGMENTS);
       elements.add(includedPluginsTreeParent);
 
-      for(IFeaturePlugin featurePlugin : includedPlugins)
-      {
-        TreeObject childTreeObject = new TreeObject(null, featurePlugin);
-        childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
-        includedPluginsTreeParent.addChild(childTreeObject);
-      }
+      includedPluginsTreeParent.loadChildRunnable = () -> {
+        // sort
+        Arrays.sort(includedPlugins, Util.PDE_LABEL_COMPARATOR);
+        for(IFeaturePlugin featurePlugin : includedPlugins)
+        {
+          TreeObject childTreeObject = new TreeObject(null, featurePlugin);
+          childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+          includedPluginsTreeParent.addChild(childTreeObject);
+        }
+      };
     }
   }
 
@@ -1060,19 +1097,20 @@ public class Util
     IFeatureChild[] includedFeatures = feature.getIncludedFeatures();
     if (includedFeatures != null && includedFeatures.length != 0)
     {
-      // sort
-      Arrays.sort(includedFeatures, Util.PDE_LABEL_COMPARATOR);
-
       //
       TreeParent includedFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_IncludesPage_title);
       includedFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_OBJ);
       elements.add(includedFeaturesTreeParent);
 
-      for(IFeatureChild includedFeature : includedFeatures)
-      {
-        TreeParent featureChildTreeParent = getTreeParent(includedFeature);
-        includedFeaturesTreeParent.addChild(featureChildTreeParent);
-      }
+      includedFeaturesTreeParent.loadChildRunnable = () -> {
+        // sort
+        Arrays.sort(includedFeatures, Util.PDE_LABEL_COMPARATOR);
+        for(IFeatureChild includedFeature : includedFeatures)
+        {
+          TreeParent featureChildTreeParent = getTreeParent(includedFeature);
+          includedFeaturesTreeParent.addChild(featureChildTreeParent);
+        }
+      };
     }
   }
 
@@ -1086,28 +1124,30 @@ public class Util
     IFeatureImport[] featureImports = feature.getImports();
     if (featureImports != null && featureImports.length != 0)
     {
-      // sort
-      Arrays.sort(featureImports, Util.PDE_LABEL_COMPARATOR);
 
       //
       TreeParent requiredFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_DependenciesPage_title);
       requiredFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_REQ_PLUGINS_OBJ);
       elements.add(requiredFeaturesTreeParent);
 
-      for(IFeatureImport featureImport : featureImports)
-      {
-        if (featureImport.getType() == IFeatureImport.FEATURE)
+      requiredFeaturesTreeParent.loadChildRunnable = () -> {
+        // sort
+        Arrays.sort(featureImports, Util.PDE_LABEL_COMPARATOR);
+        for(IFeatureImport featureImport : featureImports)
         {
-          TreeParent featureChildTreeParent = getTreeParent(featureImport);
-          requiredFeaturesTreeParent.addChild(featureChildTreeParent);
+          if (featureImport.getType() == IFeatureImport.FEATURE)
+          {
+            TreeParent featureChildTreeParent = getTreeParent(featureImport);
+            requiredFeaturesTreeParent.addChild(featureChildTreeParent);
+          }
+          else if (featureImport.getType() == IFeatureImport.PLUGIN)
+          {
+            TreeObject childTreeObject = new TreeObject(null, featureImport);
+            childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+            requiredFeaturesTreeParent.addChild(childTreeObject);
+          }
         }
-        else if (featureImport.getType() == IFeatureImport.PLUGIN)
-        {
-          TreeObject childTreeObject = new TreeObject(null, featureImport);
-          childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
-          requiredFeaturesTreeParent.addChild(childTreeObject);
-        }
-      }
+      };
     }
   }
 

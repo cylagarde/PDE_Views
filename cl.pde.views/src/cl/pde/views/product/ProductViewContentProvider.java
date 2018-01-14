@@ -20,10 +20,10 @@ import org.eclipse.pde.internal.ui.PDEPluginImages;
 
 import cl.pde.Activator;
 import cl.pde.Images;
+import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
-import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Util;
 
 /**
@@ -34,15 +34,15 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
   @Override
   public Object[] getElements(Object parent)
   {
-    if (parent instanceof IProduct)
+    if (parent instanceof IProductModel)
     {
-      IProduct product = (IProduct) parent;
-      IProductModel productModel = product.getModel();
-      IResource underlyingResource = productModel.getUnderlyingResource();
+      IProductModel productModel = (IProductModel) parent;
 
-      TreeParent productTreeParent = new TreeParent(null, product);
-      productTreeParent.name = underlyingResource.getName();
+      TreeParent productTreeParent = new TreeParent(null, productModel);
       productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
+      IResource underlyingResource = productModel.getUnderlyingResource();
+      productTreeParent.name = underlyingResource.getName();
+      IProduct product = productModel.getProduct();
       if (!VersionUtil.isEmptyVersion(product.getVersion()))
         productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
       productTreeParent.image = Activator.getImage(Images.PRODUCT);
@@ -66,15 +66,9 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
     List<TreeParent> elements = new ArrayList<>();
 
     if (product.useFeatures())
-    {
-      // IProductFeatures
-      loadFeatures(product.getFeatures(), elements);
-    }
+      loadFeatures(product, elements);
     else
-    {
-      // IProductPlugins
-      loadPlugins(product.getPlugins(), elements);
-    }
+      loadPlugins(product, elements);
 
     return elements;
   }
@@ -84,17 +78,18 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
    * @param productFeatures
    * @param elements
    */
-  private static void loadFeatures(IProductFeature[] productFeatures, List<TreeParent> elements)
+  private static void loadFeatures(IProduct product, List<TreeParent> elements)
   {
-    if (productFeatures != null && productFeatures.length != 0)
-    {
+    //
+    TreeParent featuresTreeParent = new TreeParent("Features");
+    featuresTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_MF_OBJ);
+    elements.add(featuresTreeParent);
+
+    featuresTreeParent.loadChildRunnable = () -> {
+      IProductFeature[] productFeatures = product.getFeatures();
+
       // sort
       Arrays.sort(productFeatures, Util.PDE_LABEL_COMPARATOR);
-
-      //
-      TreeParent featuresTreeParent = new TreeParent("Features");
-      featuresTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_MF_OBJ);
-      elements.add(featuresTreeParent);
 
       for(IProductFeature productFeature : productFeatures)
       {
@@ -116,7 +111,7 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
           }
         };
       }
-    }
+    };
   }
 
   /**
@@ -124,17 +119,18 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
    * @param productPlugins
    * @param elements
    */
-  private static void loadPlugins(IProductPlugin[] productPlugins, List<TreeParent> elements)
+  private static void loadPlugins(IProduct product, List<TreeParent> elements)
   {
-    if (productPlugins != null && productPlugins.length != 0)
-    {
+    //
+    TreeParent pluginsTreeParent = new TreeParent("Plugins");
+    pluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGIN_OBJ);
+    elements.add(pluginsTreeParent);
+
+    pluginsTreeParent.loadChildRunnable = () -> {
+      IProductPlugin[] productPlugins = product.getPlugins();
+
       // sort
       Arrays.sort(productPlugins, Util.PDE_LABEL_COMPARATOR);
-
-      //
-      TreeParent pluginsTreeParent = new TreeParent("Plugins");
-      pluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGIN_OBJ);
-      elements.add(pluginsTreeParent);
 
       for(IProductPlugin productPlugin : productPlugins)
       {
@@ -142,6 +138,6 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
         productPluginTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
         pluginsTreeParent.addChild(productPluginTreeObject);
       }
-    }
+    };
   }
 }

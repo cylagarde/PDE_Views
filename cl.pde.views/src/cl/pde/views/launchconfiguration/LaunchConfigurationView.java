@@ -1,25 +1,16 @@
 package cl.pde.views.launchconfiguration;
 
-import java.util.Locale;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -36,8 +27,7 @@ import cl.pde.Activator;
 import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
-import cl.pde.views.PDESelectionListener;
-import cl.pde.views.PdeLabelProvider;
+import cl.pde.views.Util;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.OpenNodeAction;
 
@@ -52,7 +42,6 @@ public class LaunchConfigurationView extends ViewPart
   public static final String ID = "cl.pde.launchConfigurationView";
 
   private FilteredTree launchConfigurationFilteredTree;
-  private PatternFilter filter;
   private TreeViewer launchConfigurationViewer;
 
   private DrillDownAdapter drillDownAdapter;
@@ -78,16 +67,11 @@ public class LaunchConfigurationView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
-    filter = new NotTreeParentPatternFilter();
-    launchConfigurationFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
-    launchConfigurationFilteredTree.setInitialText("Launch configuration name filter");
+    PatternFilter filter = new NotTreeParentPatternFilter();
+    launchConfigurationFilteredTree = new LaunchConfigurationFilteredTree(parent, filter);
     launchConfigurationViewer = launchConfigurationFilteredTree.getViewer();
-    launchConfigurationFilteredTree.setBackground(launchConfigurationViewer.getTree().getBackground());
 
     drillDownAdapter = new DrillDownAdapter(launchConfigurationViewer);
-
-    launchConfigurationViewer.setContentProvider(new LaunchConfigurationViewContentProvider());
-    launchConfigurationViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
 
     //
     PDEPlugin.getDefault().getLabelProvider().connect(this);
@@ -113,27 +97,27 @@ public class LaunchConfigurationView extends ViewPart
     hookDoubleClickAction();
     contributeToActionBars();
 
+    //    //
+    //    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
     //
-    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
-
-    Predicate<Object> predicate = resource -> {
-      if (resource instanceof IFile)
-        return ((IFile) resource).getName().toLowerCase(Locale.ENGLISH).endsWith(".launch");
-      return false;
-    };
-    Function<Object, Object> inputFunction = resource -> {
-      if (resource instanceof IFile)
-      {
-        IFile file = (IFile) resource;
-        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(file);
-        return launchConfiguration;
-      }
-      return null;
-    };
-    selectionListener = new PDESelectionListener(launchConfigurationViewer, notifyResourceChangeListener, predicate, inputFunction);
-    selectionService.addPostSelectionListener(selectionListener);
-    selectionListener.selectionChanged(null, selectionService.getSelection());
+    //    Predicate<Object> predicate = resource -> {
+    //      if (resource instanceof IFile)
+    //        return ((IFile) resource).getName().toLowerCase(Locale.ENGLISH).endsWith(".launch");
+    //      return false;
+    //    };
+    //    Function<Object, Object> inputFunction = resource -> {
+    //      if (resource instanceof IFile)
+    //      {
+    //        IFile file = (IFile) resource;
+    //        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+    //        ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(file);
+    //        return launchConfiguration;
+    //      }
+    //      return null;
+    //    };
+    //    selectionListener = new PDESelectionListener(launchConfigurationViewer, notifyResourceChangeListener, predicate, inputFunction);
+    //    selectionService.addPostSelectionListener(selectionListener);
+    //    selectionListener.selectionChanged(null, selectionService.getSelection());
   }
 
   @Override
@@ -214,4 +198,31 @@ public class LaunchConfigurationView extends ViewPart
     launchConfigurationViewer.getControl().setFocus();
   }
 
+  /**
+   * @return
+   */
+  public TreeViewer getLaunchConfigurationViewer()
+  {
+    return launchConfigurationViewer;
+  }
+
+  /**
+   * @param launchConfiguration
+   */
+  public void setInput(ILaunchConfiguration launchConfiguration)
+  {
+    Util.setUseCache(true);
+
+    try
+    {
+      launchConfigurationViewer.setInput(launchConfiguration);
+
+      // refresh
+      notifyResourceChangeListener.refreshWhenResourceChanged(launchConfigurationViewer);
+    }
+    finally
+    {
+      Util.setUseCache(false);
+    }
+  }
 }
