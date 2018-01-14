@@ -750,7 +750,17 @@ public class Util
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   final static Object NULL = new Object();
+  static boolean USE_CACHE = false;
   final static Map<Object, Object> SINGLETONSTATE_CACHEMAP = new HashMap<>();
+
+  /**
+   * @param useCache
+   */
+  public static void setUseCache(boolean useCache)
+  {
+    USE_CACHE = useCache;
+    SINGLETONSTATE_CACHEMAP.clear();
+  }
 
   /**
    * Open PDE object
@@ -760,17 +770,19 @@ public class Util
   {
     Object key = PDEPlugin.getDefault().getLabelProvider().getText(pdeObject);
     Object singletonState = SINGLETONSTATE_CACHEMAP.get(key);
-    if (singletonState == null)
+    if (singletonState == null || !USE_CACHE)
     {
       singletonState = getSingletonStateImpl(pdeObject);
       if (singletonState == null)
         singletonState = NULL;
-      SINGLETONSTATE_CACHEMAP.put(key, singletonState);
+      if (USE_CACHE)
+        SINGLETONSTATE_CACHEMAP.put(key, singletonState);
     }
     //    else
     //      System.out.println("++++++++++++ " + key);
 
     return singletonState == NULL? null : (Boolean) singletonState;
+
   }
 
   /**
@@ -1114,4 +1126,5 @@ public class Util
     };
     return treeParent;
   }
+
 }

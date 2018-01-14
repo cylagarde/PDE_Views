@@ -15,13 +15,13 @@ import org.eclipse.pde.internal.ui.PDEPluginImages;
 
 import cl.pde.views.Constants;
 import cl.pde.views.TreeParent;
-import cl.pde.views.UseCacheTreeContentProvider;
+import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Util;
 
 /**
  * The class <b>FeatureViewContentProvider</b> allows to.<br>
  */
-public class FeatureViewContentProvider extends UseCacheTreeContentProvider
+public class FeatureViewContentProvider extends AbstractTreeObjectContentProvider
 {
   @Override
   public Object[] getElements(Object inputElement)

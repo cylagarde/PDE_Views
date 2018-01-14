@@ -27,13 +27,13 @@ import cl.pde.Images;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
-import cl.pde.views.UseCacheTreeContentProvider;
+import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Util;
 
 /**
  * The class <b>LaunchConfigurationViewContentProvider</b> allows to.<br>
  */
-public class LaunchConfigurationViewContentProvider extends UseCacheTreeContentProvider
+public class LaunchConfigurationViewContentProvider extends AbstractTreeObjectContentProvider
 {
   @Override
   public Object[] getElements(Object parent)

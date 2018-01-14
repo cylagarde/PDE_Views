@@ -4,6 +4,7 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 
 import cl.pde.Activator;
 import cl.pde.Images;
+import cl.pde.views.Util;
 
 /**
  * The class <b>ExpandAllNodesAction</b> allows to.<br>
@@ -33,6 +34,7 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
   public void run()
   {
     treeViewer.getControl().setRedraw(false);
+    Util.setUseCache(true);
     try
     {
       if (expand)
@@ -42,6 +44,7 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     }
     finally
     {
+      Util.setUseCache(false);
       treeViewer.getControl().setRedraw(true);
     }
   }

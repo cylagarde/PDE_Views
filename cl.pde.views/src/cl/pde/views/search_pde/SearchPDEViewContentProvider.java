@@ -17,13 +17,13 @@ import cl.pde.Activator;
 import cl.pde.views.Constants;
 import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
-import cl.pde.views.UseCacheTreeContentProvider;
+import cl.pde.views.AbstractTreeObjectContentProvider;
 import cl.pde.views.Util;
 
 /**
  * The class <b>SearchPDEViewContentProvider</b> allows to.<br>
  */
-public class SearchPDEViewContentProvider extends UseCacheTreeContentProvider
+public class SearchPDEViewContentProvider extends AbstractTreeObjectContentProvider
 {
   @Override
   public Object[] getElements(Object parent)

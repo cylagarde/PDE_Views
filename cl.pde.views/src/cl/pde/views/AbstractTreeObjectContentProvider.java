@@ -4,16 +4,14 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 
 /**
- * The class <b>UseCacheTreeContentProvider</b> allows to.<br>
+ * The class <b>AbstractTreeObjectContentProvider</b> allows to.<br>
  */
-public abstract class UseCacheTreeContentProvider implements ITreeContentProvider
+public abstract class AbstractTreeObjectContentProvider implements ITreeContentProvider
 {
-  /*
-   */
   @Override
   public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
   {
-    Util.SINGLETONSTATE_CACHEMAP.clear();
+    // Util.SINGLETONSTATE_CACHEMAP.clear();
   }
 
   @Override
