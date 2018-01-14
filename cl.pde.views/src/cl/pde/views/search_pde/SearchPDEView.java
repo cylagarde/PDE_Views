@@ -79,6 +79,7 @@ public class SearchPDEView extends ViewPart
   {
     filter = new NotTreeParentPatternFilter();
     searchFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    searchFilteredTree.setInitialText("Search name filter");
     searchViewer = searchFilteredTree.getViewer();
     searchFilteredTree.setBackground(searchViewer.getTree().getBackground());
 

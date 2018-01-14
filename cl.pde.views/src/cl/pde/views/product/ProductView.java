@@ -80,6 +80,7 @@ public class ProductView extends ViewPart
   {
     filter = new NotTreeParentPatternFilter();
     productFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    productFilteredTree.setInitialText("Product name filter");
     productViewer = productFilteredTree.getViewer();
     productFilteredTree.setBackground(productViewer.getTree().getBackground());
 

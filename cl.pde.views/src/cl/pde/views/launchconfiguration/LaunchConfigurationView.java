@@ -80,6 +80,7 @@ public class LaunchConfigurationView extends ViewPart
   {
     filter = new NotTreeParentPatternFilter();
     launchConfigurationFilteredTree = new FilteredTree(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    launchConfigurationFilteredTree.setInitialText("Launch configuration name filter");
     launchConfigurationViewer = launchConfigurationFilteredTree.getViewer();
     launchConfigurationFilteredTree.setBackground(launchConfigurationViewer.getTree().getBackground());
 

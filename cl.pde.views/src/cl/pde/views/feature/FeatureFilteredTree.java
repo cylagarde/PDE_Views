@@ -34,6 +34,7 @@ class FeatureFilteredTree extends FilteredTree
   FeatureFilteredTree(Composite parent, PatternFilter filter)
   {
     super(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    setInitialText("Plugin name filter");
   }
 
   @Override
