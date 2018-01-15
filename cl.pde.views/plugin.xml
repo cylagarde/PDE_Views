@@ -31,13 +31,6 @@
             id="cl.pde.launchConfigurationView"
             name="Launch Configuration View">
       </view>
-      <view
-            category="cl.pde.views"
-            class="cl.pde.views.search_pde.SearchPDEView"
-            icon="icons/ftr_xml_obj.png"
-            id="cl.pde.searchPDEView"
-            name="Search PDE View">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
@@ -267,7 +260,7 @@
                <with
                      variable="activeMenuSelection">
                   <reference
-                        definitionId="is.pde">
+                        definitionId="is.pde_fake">
                   </reference>
                </with>
             </visibleWhen>

@@ -21,7 +21,7 @@ import cl.pde.Activator;
  */
 public class NotifyResourceChangeListener implements IResourceChangeListener
 {
-  NotifyChangedResourceDeltaVisitor manifestChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
+  NotifyChangedResourceDeltaVisitor notifyChangedResourceDeltaVisitor = new NotifyChangedResourceDeltaVisitor();
   Map<IResource, TreeObject> resourceMap = new LinkedHashMap<>();
   TreeViewer treeViewer;
   Object inputResource;
@@ -36,7 +36,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       case IResourceChangeEvent.POST_CHANGE:
         try
         {
-          event.getDelta().accept(manifestChangedResourceDeltaVisitor);
+          event.getDelta().accept(notifyChangedResourceDeltaVisitor);
         }
         catch(CoreException e)
         {
@@ -78,9 +78,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
               {
                 Object[] expandedElements = treeViewer.getExpandedElements();
 
-                //treeViewer.update(treeObject, null);
+                // refresh node
                 treeViewer.refresh(treeObject);
-                //            treeViewer.refresh(treeObject.data);
 
                 treeViewer.setExpandedElements(expandedElements);
                 expandedElements = treeViewer.getExpandedElements();
@@ -91,7 +90,6 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
               }
             });
           }
-          //          treeViewer.getTree().getDisplay().asyncExec(() -> setUpdated(treeViewer, inputResource, inputProviderFunction));
         }
       }
 
@@ -101,8 +99,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
   }
 
   /**
-   *
-   * @param resourceMap
+   * Refresh treeViewer when resource changes
+   * @param treeViewer
    */
   public void refreshWhenResourceChanged(TreeViewer treeViewer)
   {
@@ -119,10 +117,6 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         TreeObject treeObject = (TreeObject) o;
         if (treeObject.data != null)
         {
-          //
-          if (Constants.TARGET_FEATURE.equals(treeObject.name))
-            return false;
-
           IResource resource = Util.getResource(treeObject.data);
           if (resource != null)
             resourceMap.put(resource, treeObject);
@@ -134,61 +128,6 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
 
     System.out.println("TIME=" + (System.currentTimeMillis() - time));
 
-    resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
+    // resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
   }
-
-  /**
-   * @param treeViewer
-   * @param inputResource
-   * @param inputProviderFunction
-   */
-  //  @Deprecated
-  //  public void setUpdated(TreeViewer treeViewer, Object inputResource, Function<Object, Object> inputProviderFunction)
-  //  {
-  //    this.treeViewer = treeViewer;
-  //    this.inputResource = inputResource;
-  //    this.inputProviderFunction = inputProviderFunction;
-  //
-  //    resourceMap.clear();
-  //
-  //    // get input for treeViewer
-  //    Object input = inputProviderFunction.apply(inputResource);
-  //    treeViewer.getTree().setRedraw(false);
-  //    try
-  //    {
-  //      treeViewer.setInput(input);
-  //
-  //      new ExpandAllNodesAction(treeViewer, true).run();
-  //    }
-  //    finally
-  //    {
-  //      treeViewer.getTree().setRedraw(true);
-  //    }
-  //
-  //    //    if (inputResource instanceof IResource)
-  //    //      resourceMap.add((IResource) inputResource);
-  //
-  //    long time = System.currentTimeMillis();
-  //
-  //    // add all resources
-  //    Predicate<Object> consumer = o -> {
-  //      if (o instanceof TreeObject)
-  //      {
-  //        TreeObject treeObject = (TreeObject) o;
-  //        if (treeObject.data != null)
-  //        {
-  //          IResource res = Util.getResource(treeObject.data);
-  //          if (res != null)
-  //            resourceMap.put(res, treeObject);
-  //        }
-  //      }
-  //      return true;
-  //    };
-  //    Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), input, consumer);
-  //
-  //    System.out.println("TIME=" + (System.currentTimeMillis() - time));
-  //
-  //    resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
-  //  }
-
 }

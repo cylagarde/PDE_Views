@@ -89,9 +89,9 @@ public class TreeObject implements IAdaptable
       return false;
 
     //
-    if (data == null)
-      return false;
-    if (otherTreeObject.data == null)
+    if (data == null && otherTreeObject.data == null)
+      return Objects.equals(parent, otherTreeObject.parent);
+    if (data == null || otherTreeObject.data == null)
       return false;
 
     if (!data.equals(otherTreeObject.data))
