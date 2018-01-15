@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.core.IModel;
 import org.eclipse.pde.core.plugin.IFragment;
@@ -58,6 +59,8 @@ import org.eclipse.pde.internal.ui.PDEPluginImages;
 import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -237,7 +240,12 @@ public class Util
       ManifestEditor.open(plugin, false);
     }
     else
-      Activator.logError("Cannot open plugin id=" + pluginId + ", version=" + pluginVersion, new Exception());
+    {
+      String message = "Cannot found plugin with id=" + pluginId + " and version=" + pluginVersion;
+      Activator.logError(message);
+      Shell shell = Display.getDefault().getActiveShell();
+      MessageDialog.openError(shell, "Error", message);
+    }
   }
 
   /**
@@ -1022,7 +1030,6 @@ public class Util
 
   /**
    * @param featureImport
-   * @return
    */
   public static TreeParent getTreeParent(IFeatureImport featureImport)
   {

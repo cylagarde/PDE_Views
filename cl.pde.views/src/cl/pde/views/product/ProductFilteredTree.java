@@ -1,5 +1,7 @@
 package cl.pde.views.product;
 
+import java.util.function.Predicate;
+
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -14,23 +16,52 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.dialogs.PatternFilter;
 
+import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.PdeLabelProvider;
 import cl.pde.views.TreeParent;
 
 /**
-  * The class <b>ProductFilteredTree</b> allows to.<br>
-  */
+ * The class <b>ProductFilteredTree</b> allows to.<br>
+ */
 class ProductFilteredTree extends FilteredTree
 {
   Button seeIncludedPluginsButton;
   Button seeIncludedFeaturesButton;
   Button seeDependenciesButton;
 
-  ProductFilteredTree(Composite parent, PatternFilter filter)
+  Predicate<Object> visiblePredicate = element -> {
+    if (element instanceof TreeParent)
+    {
+      TreeParent treeParent = (TreeParent) element;
+      if (treeParent.data != null)
+        return true;
+
+      // included plugins
+      if (PDEUIMessages.FeatureEditor_ReferencePage_title.equals(treeParent.name))
+        return seeIncludedPluginsButton.getSelection();
+
+      // included features
+      if (PDEUIMessages.FeatureEditor_IncludesPage_title.equals(treeParent.name))
+        return seeIncludedFeaturesButton.getSelection();
+
+      //
+      if (PDEUIMessages.FeatureEditor_DependenciesPage_title.equals(treeParent.name))
+        return seeDependenciesButton.getSelection();
+    }
+
+    return true;
+  };
+
+  /**
+   * Constructor
+   * @param parent
+   * @param filter
+   */
+  ProductFilteredTree(Composite parent, NotTreeParentPatternFilter filter)
   {
     super(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    filter.visiblePredicate = visiblePredicate;
     setInitialText("Plugin name filter");
   }
 
@@ -104,26 +135,7 @@ class ProductFilteredTree extends FilteredTree
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element)
       {
-        if (element instanceof TreeParent)
-        {
-          TreeParent treeParent = (TreeParent) element;
-          if (treeParent.data != null)
-            return true;
-
-          // included plugins
-          if (PDEUIMessages.FeatureEditor_ReferencePage_title.equals(treeParent.name))
-            return seeIncludedPluginsButton.getSelection();
-
-          // included features
-          if (PDEUIMessages.FeatureEditor_IncludesPage_title.equals(treeParent.name))
-            return seeIncludedFeaturesButton.getSelection();
-
-          //
-          if (PDEUIMessages.FeatureEditor_DependenciesPage_title.equals(treeParent.name))
-            return seeDependenciesButton.getSelection();
-        }
-
-        return true;
+        return visiblePredicate.test(element);
       }
     };
 

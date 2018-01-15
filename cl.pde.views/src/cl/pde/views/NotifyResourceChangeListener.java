@@ -15,7 +15,6 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 
 import cl.pde.Activator;
-import cl.pde.views.actions.ExpandAllNodesAction;
 
 /**
  * The class <b>NotifyResourceChangeListener</b> allows to.<br>
@@ -143,53 +142,53 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
    * @param inputResource
    * @param inputProviderFunction
    */
-  @Deprecated
-  public void setUpdated(TreeViewer treeViewer, Object inputResource, Function<Object, Object> inputProviderFunction)
-  {
-    this.treeViewer = treeViewer;
-    this.inputResource = inputResource;
-    this.inputProviderFunction = inputProviderFunction;
-
-    resourceMap.clear();
-
-    // get input for treeViewer
-    Object input = inputProviderFunction.apply(inputResource);
-    treeViewer.getTree().setRedraw(false);
-    try
-    {
-      treeViewer.setInput(input);
-
-      new ExpandAllNodesAction(treeViewer, true).run();
-    }
-    finally
-    {
-      treeViewer.getTree().setRedraw(true);
-    }
-
-    //    if (inputResource instanceof IResource)
-    //      resourceMap.add((IResource) inputResource);
-
-    long time = System.currentTimeMillis();
-
-    // add all resources
-    Predicate<Object> consumer = o -> {
-      if (o instanceof TreeObject)
-      {
-        TreeObject treeObject = (TreeObject) o;
-        if (treeObject.data != null)
-        {
-          IResource res = Util.getResource(treeObject.data);
-          if (res != null)
-            resourceMap.put(res, treeObject);
-        }
-      }
-      return true;
-    };
-    Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), input, consumer);
-
-    System.out.println("TIME=" + (System.currentTimeMillis() - time));
-
-    resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
-  }
+  //  @Deprecated
+  //  public void setUpdated(TreeViewer treeViewer, Object inputResource, Function<Object, Object> inputProviderFunction)
+  //  {
+  //    this.treeViewer = treeViewer;
+  //    this.inputResource = inputResource;
+  //    this.inputProviderFunction = inputProviderFunction;
+  //
+  //    resourceMap.clear();
+  //
+  //    // get input for treeViewer
+  //    Object input = inputProviderFunction.apply(inputResource);
+  //    treeViewer.getTree().setRedraw(false);
+  //    try
+  //    {
+  //      treeViewer.setInput(input);
+  //
+  //      new ExpandAllNodesAction(treeViewer, true).run();
+  //    }
+  //    finally
+  //    {
+  //      treeViewer.getTree().setRedraw(true);
+  //    }
+  //
+  //    //    if (inputResource instanceof IResource)
+  //    //      resourceMap.add((IResource) inputResource);
+  //
+  //    long time = System.currentTimeMillis();
+  //
+  //    // add all resources
+  //    Predicate<Object> consumer = o -> {
+  //      if (o instanceof TreeObject)
+  //      {
+  //        TreeObject treeObject = (TreeObject) o;
+  //        if (treeObject.data != null)
+  //        {
+  //          IResource res = Util.getResource(treeObject.data);
+  //          if (res != null)
+  //            resourceMap.put(res, treeObject);
+  //        }
+  //      }
+  //      return true;
+  //    };
+  //    Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), input, consumer);
+  //
+  //    System.out.println("TIME=" + (System.currentTimeMillis() - time));
+  //
+  //    resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
+  //  }
 
 }

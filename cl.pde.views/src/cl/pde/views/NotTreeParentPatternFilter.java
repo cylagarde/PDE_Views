@@ -1,5 +1,7 @@
 package cl.pde.views;
 
+import java.util.function.Predicate;
+
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -10,20 +12,31 @@ import org.eclipse.ui.dialogs.PatternFilter;
 /**
  * The class <b>NotTreeParentPatternFilter</b> allows to.<br>
  */
-// TODO rename
 public class NotTreeParentPatternFilter extends PatternFilter
 {
+  public Predicate<Object> visiblePredicate;
+
   public NotTreeParentPatternFilter()
   {
     setIncludeLeadingWildcard(true);
   }
 
   @Override
+  protected boolean isParentMatch(Viewer viewer, Object element)
+  {
+    if (visiblePredicate != null)
+    {
+      boolean visible = visiblePredicate.test(element);
+      if (! visible)
+        return visible;
+    }
+    return super.isParentMatch(viewer, element);
+  }
+
+  @Override
   protected boolean isLeafMatch(Viewer viewer, Object element)
   {
-    //    if (element instanceof TreeParent)
-    //      return false;
-    if (element instanceof TreeObject && ((TreeObject) element).data == null)
+    if (element instanceof TreeParent)
       return false;
 
     String labelText = null;

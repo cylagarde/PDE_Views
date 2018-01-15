@@ -19,7 +19,6 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
@@ -67,7 +66,7 @@ public class ProductView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
-    PatternFilter filter = new NotTreeParentPatternFilter();
+    NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter();
     productFilteredTree = new ProductFilteredTree(parent, filter);
     productViewer = productFilteredTree.getViewer();
 

@@ -62,8 +62,8 @@ public class TreeObject implements IAdaptable
   {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((name == null)? 0 : name.hashCode());
-    result = prime * result + ((data == null)? 0 : data.hashCode());
+    result = prime * result + (name == null? 0 : name.hashCode());
+    result = prime * result + (data == null? 0 : data.hashCode());
     return result;
   }
 
@@ -87,14 +87,14 @@ public class TreeObject implements IAdaptable
     }
     else if (!name.equals(otherTreeObject.name))
       return false;
+
+    //
     if (data == null)
-    {
-      if (otherTreeObject.data != null)
-        return false;
-    }
-    else if (otherTreeObject.data == null)
       return false;
-    else if (!data.equals(otherTreeObject.data))
+    if (otherTreeObject.data == null)
+      return false;
+
+    if (!data.equals(otherTreeObject.data))
     {
       //
       if (data.getClass() != otherTreeObject.data.getClass())

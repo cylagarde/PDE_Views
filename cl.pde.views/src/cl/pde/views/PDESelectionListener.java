@@ -52,7 +52,7 @@ public class PDESelectionListener implements ISelectionListener
           this.resource = firstElement;
           lastTime = System.currentTimeMillis();
 
-          notifyResourceChangeListener.setUpdated(treeViewer, resource, inputFunction);
+          //          notifyResourceChangeListener.setUpdated(treeViewer, resource, inputFunction);
         }
       }
 
