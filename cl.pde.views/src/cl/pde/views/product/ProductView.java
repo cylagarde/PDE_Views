@@ -11,6 +11,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.ui.PDEPlugin;
+import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -23,6 +24,7 @@ import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
 import cl.pde.Activator;
+import cl.pde.views.AbstractCheckboxFilteredTree;
 import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
@@ -67,8 +69,17 @@ public class ProductView extends ViewPart
   public void createPartControl(Composite parent)
   {
     NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter();
-    productFilteredTree = new ProductFilteredTree(parent, filter);
+    String[] checkboxLabels = {PDEUIMessages.FeatureEditor_ReferencePage_title, PDEUIMessages.FeatureEditor_IncludesPage_title, PDEUIMessages.FeatureEditor_DependenciesPage_title};
+    productFilteredTree = new AbstractCheckboxFilteredTree(parent, filter)
+    {
+      @Override
+      protected String[] getCheckboxLabels()
+      {
+        return checkboxLabels;
+      }
+    };
     productViewer = productFilteredTree.getViewer();
+    productViewer.setContentProvider(new ProductViewContentProvider());
 
     drillDownAdapter = new DrillDownAdapter(productViewer);
 
