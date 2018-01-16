@@ -1,30 +1,40 @@
 package cl.pde.handlers;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashSet;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Comparator;
 import java.util.Set;
-import java.util.function.Predicate;
+import java.util.TreeSet;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.operations.OperationHistoryFactory;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ListSelectionDialog;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.eclipse.ui.ide.undo.CreateProjectOperation;
+
+import cl.pde.Activator;
+import cl.pde.Images;
 
 /**
  * The class <b>SearchInvalidProjectHandler</b> allows to.<br>
@@ -34,9 +44,37 @@ public class SearchInvalidProjectHandler extends AbstractHandler
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException
   {
-    Set<IProject> invalidProjectSet = new HashSet<>();
+    Shell shell = HandlerUtil.getActiveShell(event);
 
+    InvalidProjectLabelProvider labelProvider = new InvalidProjectLabelProvider();
+    Comparator<Object> invalidProjectComparator = Comparator.comparing(labelProvider::getText, String.CASE_INSENSITIVE_ORDER);
+
+    //
+    Set<Object> invalidProjectSet = new TreeSet<>(invalidProjectComparator);
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+
+    //
+    Predicate filePredicate = resource -> {
+      if (resource instanceof IFile && resource.getName().equals(IProjectDescription.DESCRIPTION_FILE_NAME))
+      {
+        IFile file = (IFile) resource;
+        //        System.out.println(resource);
+
+        IContainer folder = file.getParent();
+        IProjectDescription projectDescription = ResourcesPlugin.getWorkspace().loadProjectDescription(folder.getLocation().append(IProjectDescription.DESCRIPTION_FILE_NAME));
+        projectDescription.setLocation(folder.getLocation());
+
+        String projectName = projectDescription.getName();
+        IProject project = root.getProject(projectName);
+        if (!project.exists())
+          invalidProjectSet.add(projectDescription);
+      }
+
+      return true;
+    };
+
+    // search
+    MultiStatus errorStatus = null;
     IProject[] projects = root.getProjects();
     for(IProject workspaceProject : projects)
     {
@@ -46,79 +84,113 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         continue;
       }
 
-      Predicate<IResource> filePredicate = resource -> {
-        if (resource instanceof IFile && resource.getName().equals(".project"))
-        {
-          IFile file = (IFile) resource;
-//          System.out.println(resource);
-
-          try (InputStream inputStream = file.getContents(true))
-          {
-            new BufferedReader(new InputStreamReader(inputStream)).lines()
-            .map(String::trim)
-            .filter(line -> line.startsWith("<name>"))
-            .filter(line -> line.endsWith("</name>"))
-            .findFirst()
-            .map(line -> line.substring("<name>".length()))
-            .map(line -> line.substring(0, line.length()-"</name>".length()))
-            .map(name -> root.getProject(name))
-            .filter(project -> !project.exists())
-            .ifPresent(invalidProjectSet::add);
-            ;
-          }
-          catch(Exception e)
-          {
-
-          }
-        }
-
-        return true;
-      };
       try
       {
         processContainer(workspaceProject, filePredicate);
       }
       catch(CoreException e)
       {
-        e.printStackTrace();
+        if (errorStatus == null)
+          errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Cannot process project " + workspaceProject, e);
+        errorStatus.add(e.getStatus());
       }
     }
+
+    if (errorStatus != null)
+      MessageDialog.openError(shell, "Error", "Some errors were found when processing: " + errorStatus.getMessage());
 
     if (!invalidProjectSet.isEmpty())
     {
-      Shell shell = HandlerUtil.getActiveShell(event);
-      ListSelectionDialog dlg = new ListSelectionDialog(shell, invalidProjectSet, ArrayContentProvider.getInstance(), new WorkbenchLabelProvider(), "Select the projects to open/import");
-      dlg.setTitle("Project not open or not imported");
-      if (dlg.open() == IDialogConstants.OK_ID)
+      //      invalidProjectSet.forEach(o -> Activator.logInfo(labelProvider.getText(o)));
+
+      ListSelectionDialog listSelectionDialog = new ListSelectionDialog(shell, invalidProjectSet, ArrayContentProvider.getInstance(), labelProvider, "Select the projects to be opened/imported:");
+      listSelectionDialog.setTitle("Open Project");
+      if (listSelectionDialog.open() == IDialogConstants.OK_ID)
       {
-        Object[] result = dlg.getResult();
-        IProject project = (IProject) result[0];
+        Object[] result = listSelectionDialog.getResult();
+
+        IWorkspaceRunnable openProjectRunnable = createRunnable(result);
         try
         {
-          NullProgressMonitor monitor = new NullProgressMonitor();
-          if (!project.exists())
-            project.create(monitor);
-          project.open(monitor);
+          PlatformUI.getWorkbench().getProgressService().run(true, true, monitor -> {
+            try
+            {
+              openProjectRunnable.run(monitor);
+            }
+            catch(CoreException ce)
+            {
+              throw new InvocationTargetException(ce);
+            }
+          });
         }
-        catch(CoreException e)
+        catch(Exception e)
         {
-          e.printStackTrace();
-          MessageDialog.openError(shell, "Error", "Cannot open project "+project);
+          MessageDialog.openError(shell, "Error", "Cannot open projects " + e);
         }
       }
     }
-
 
     return null;
   }
 
   /**
-  *
-  * @param container
-  * @param fileConsumer
-  * @throws CoreException
-  */
-  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
+   *
+   * @param invalidProjects
+   */
+  private static IWorkspaceRunnable createRunnable(final Object[] invalidProjects)
+  {
+    return monitor -> {
+      monitor.beginTask("", invalidProjects.length); //$NON-NLS-1$
+      MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Cannot open projects", null);
+      for(int i = 0; i < invalidProjects.length; i++)
+      {
+        if (invalidProjects[i] instanceof IProject)
+        {
+          IProject project = (IProject) invalidProjects[i];
+          try
+          {
+            project.open(SubMonitor.convert(monitor, 1));
+          }
+          catch(CoreException e)
+          {
+            errorStatus.add(e.getStatus());
+          }
+        }
+        else if (invalidProjects[i] instanceof IProjectDescription)
+        {
+          IProjectDescription projectDescription = (IProjectDescription) invalidProjects[i];
+          CreateProjectOperation operation = new CreateProjectOperation(projectDescription, projectDescription.getName());
+          try
+          {
+            IStatus status = OperationHistoryFactory.getOperationHistory().execute(operation, SubMonitor.convert(monitor, 1), null);
+            if (!status.isOK())
+              errorStatus.add(status);
+          }
+          catch(ExecutionException e)
+          {
+          }
+        }
+      }
+      monitor.done();
+      if (errorStatus.getChildren().length != 0)
+        throw new CoreException(errorStatus);
+    };
+  }
+
+  /**
+   */
+  static interface Predicate
+  {
+    boolean test(IResource resource) throws CoreException;
+  }
+
+  /**
+   * Process container
+   * @param container
+   * @param fileConsumer
+   * @throws CoreException
+   */
+  public static void processContainer(IContainer container, Predicate filePredicate) throws CoreException
   {
     if (filePredicate.test(container))
     {
@@ -128,8 +200,54 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         if (member instanceof IContainer)
           processContainer((IContainer) member, filePredicate);
         else if (member instanceof IFile)
-          filePredicate.test(member);
+        {
+          if (!filePredicate.test(member))
+            break;
+        }
       }
     }
   }
+
+  /**
+   */
+  static class InvalidProjectLabelProvider extends LabelProvider
+  {
+    public String getId(Object element)
+    {
+      if (element instanceof IProject)
+      {
+        IProject project = (IProject) element;
+        return project.getName();
+      }
+      else if (element instanceof IProjectDescription)
+      {
+        IProjectDescription projectDescription = (IProjectDescription) element;
+        return projectDescription.getName();
+      }
+      return null;
+    }
+
+    @Override
+    public String getText(Object element)
+    {
+      String id = getId(element);
+      if (id != null)
+        return id;
+      return super.getText(element);
+    }
+
+    @Override
+    public Image getImage(Object element)
+    {
+      if (element instanceof IProject)
+      {
+        return Activator.getImage(Images.INVALID_PROJECT);
+      }
+      else if (element instanceof IProjectDescription)
+      {
+        return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+      }
+      return super.getImage(element);
+    }
+  };
 }

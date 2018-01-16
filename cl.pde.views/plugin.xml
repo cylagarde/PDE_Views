@@ -193,9 +193,9 @@
       <command
             categoryId="cl.pde.commands"
             defaultHandler="cl.pde.handlers.SearchInvalidProjectHandler"
-            description="Search invalid projects"
+            description="Search the projects to be opened/imported"
             id="cl.pde.search_invalid_project"
-            name="Search invalid projects">
+            name="Search projects to be opened/imported">
       </command>
       
       <command
@@ -204,6 +204,13 @@
             defaultHandler="cl.pde.handlers.SearchAllFeaturesHandler"
             description="Search all features containing the selected plugin/project"
             id="cl.pde.search_all_features">
+      </command>
+      <command
+            categoryId="cl.pde.commands"
+            defaultHandler="cl.pde.handlers.TryToOpenInvalidProjectHandler"
+            description="Try to open/import the project"
+            id="cl.pde.try_open_invalid_project"
+            name="Try to open/import project">
       </command>
    </extension>
    
@@ -255,14 +262,6 @@
                </with>
             </visibleWhen>
          </command>
-         <command
-               commandId="cl.pde.search_invalid_project"
-               icon="icons/invalid_project.png"
-               id="cl.consistency.searchInvalidProjectHandler.command"
-               label="Search invalid projects"
-               style="push"
-               tooltip="Search invalid projects">
-         </command>
          
          <command
                commandId="cl.pde.search_all_features"
@@ -279,6 +278,46 @@
                   </reference>
                </with>
             </visibleWhen>
+         </command>
+         <command
+               commandId="cl.pde.try_open_invalid_project"
+               icon="icons/invalid_project.png"
+               id="cl.consistency.tryOpenInvalidProjectHandler.command"
+               label="Try to open/import project"
+               style="push"
+               tooltip="Try to open/import project">
+            <visibleWhen>
+               <iterate
+                     ifEmpty="false">
+                  <instanceof
+                        value="org.eclipse.pde.internal.core.plugin.ImportObject">
+                  </instanceof>
+               </iterate>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
+         <command
+               commandId="cl.pde.search_invalid_project"
+               icon="icons/invalid_project.png"
+               id="cl.consistency.searchInvalidProjectHandler.command"
+               label="Search projects to be opened/imported"
+               style="push"
+               tooltip="Search invalid projects">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?after=additions">
+         <command
+               commandId="cl.pde.search_invalid_project"
+               icon="icons/invalid_project.png"
+               id="cl.consistency.searchInvalidProjectHandler.command"
+               label="Search projects to be opened/imported"
+               style="push"
+               tooltip="Search invalid projects">
          </command>
       </menuContribution>
    </extension>

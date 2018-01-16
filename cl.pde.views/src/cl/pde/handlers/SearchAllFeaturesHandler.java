@@ -22,6 +22,7 @@ import cl.pde.views.search_pde.SearchPDEView;
 /**
  * The class <b>SearchAllFeaturesViewHandler</b> allows to.<br>
  */
+@Deprecated
 public class SearchAllFeaturesHandler extends AbstractHandler
 {
   @Override
