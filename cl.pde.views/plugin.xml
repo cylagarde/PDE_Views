@@ -199,13 +199,6 @@
       </command>
       
       <command
-            name="Search all features"
-            categoryId="cl.pde.commands"
-            defaultHandler="cl.pde.handlers.SearchAllFeaturesHandler"
-            description="Search all features containing the selected plugin/project"
-            id="cl.pde.search_all_features">
-      </command>
-      <command
             categoryId="cl.pde.commands"
             defaultHandler="cl.pde.handlers.TryToOpenInvalidProjectHandler"
             description="Try to open/import the project"
@@ -263,22 +256,6 @@
             </visibleWhen>
          </command>
          
-         <command
-               commandId="cl.pde.search_all_features"
-               icon="icons/ftr_xml_obj.png"
-               id="cl.pde.search_all_features.command"
-               label="Search all features"
-               style="push">
-            <visibleWhen
-                  checkEnabled="false">
-               <with
-                     variable="activeMenuSelection">
-                  <reference
-                        definitionId="is.pde_fake">
-                  </reference>
-               </with>
-            </visibleWhen>
-         </command>
          <command
                commandId="cl.pde.try_open_invalid_project"
                icon="icons/invalid_project.png"
