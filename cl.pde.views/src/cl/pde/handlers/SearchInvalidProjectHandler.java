@@ -2,6 +2,7 @@ package cl.pde.handlers;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -52,9 +53,13 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     //
     Set<Object> invalidProjectSet = new TreeSet<>(invalidProjectComparator);
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+    Set<Object> alreadyTreatedCacheSet = new HashSet<>();
 
     //
     Predicate filePredicate = resource -> {
+      if (! alreadyTreatedCacheSet.add(resource.getLocation()))
+        return false;
+
       if (resource instanceof IFile && resource.getName().equals(IProjectDescription.DESCRIPTION_FILE_NAME))
       {
         IFile file = (IFile) resource;
@@ -81,6 +86,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       if (!workspaceProject.isOpen())
       {
         invalidProjectSet.add(workspaceProject);
+        alreadyTreatedCacheSet.add(workspaceProject.getLocation());
         continue;
       }
 
@@ -99,6 +105,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     if (errorStatus != null)
       MessageDialog.openError(shell, "Error", "Some errors were found when processing: " + errorStatus.getMessage());
 
+    //
     if (!invalidProjectSet.isEmpty())
     {
       //      invalidProjectSet.forEach(o -> Activator.logInfo(labelProvider.getText(o)));
