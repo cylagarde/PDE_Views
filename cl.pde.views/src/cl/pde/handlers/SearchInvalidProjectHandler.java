@@ -1,6 +1,7 @@
 package cl.pde.handlers;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,18 +25,20 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.ListSelectionDialog;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
 import cl.pde.Activator;
 import cl.pde.Images;
+import cl.pde.dialog.SearchElementTreeSelectionDialog;
 
 /**
  * The class <b>SearchInvalidProjectHandler</b> allows to.<br>
@@ -57,7 +60,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
 
     //
     Predicate filePredicate = resource -> {
-      if (! alreadyTreatedCacheSet.add(resource.getLocation()))
+      if (!alreadyTreatedCacheSet.add(resource.getLocation()))
         return false;
 
       if (resource instanceof IFile && resource.getName().equals(IProjectDescription.DESCRIPTION_FILE_NAME))
@@ -110,11 +113,19 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     {
       //      invalidProjectSet.forEach(o -> Activator.logInfo(labelProvider.getText(o)));
 
-      ListSelectionDialog listSelectionDialog = new ListSelectionDialog(shell, invalidProjectSet, ArrayContentProvider.getInstance(), labelProvider, "Select the projects to be opened/imported:");
-      listSelectionDialog.setTitle("Open Project");
-      if (listSelectionDialog.open() == IDialogConstants.OK_ID)
+//      ListSelectionDialog listSelectionDialog = new ListSelectionDialog(shell, invalidProjectSet, ArrayContentProvider.getInstance(), labelProvider, "Select the projects to be opened/imported:");
+//      listSelectionDialog.open();
+
+      InvalidProjectTreeContentProvider invalidProjectTreeContentProvider = new InvalidProjectTreeContentProvider();
+      PatternFilter patternFilter = new PatternFilter();
+      patternFilter.setIncludeLeadingWildcard(true);
+      SearchElementTreeSelectionDialog searchElementTreeSelectionDialog = new SearchElementTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, patternFilter);
+      searchElementTreeSelectionDialog.setInput(invalidProjectSet);
+      searchElementTreeSelectionDialog.setMessage("Select the projects to be opened/imported:");
+      searchElementTreeSelectionDialog.setTitle("Open Project");
+      if (searchElementTreeSelectionDialog.open() == IDialogConstants.OK_ID)
       {
-        Object[] result = listSelectionDialog.getResult();
+        Object[] result = searchElementTreeSelectionDialog.getResult();
 
         IWorkspaceRunnable openProjectRunnable = createRunnable(result);
         try
@@ -256,5 +267,47 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       }
       return super.getImage(element);
     }
-  };
+  }
+
+  /**
+   * The class <b>InvalidProjectTreeContentProvider</b> allows to.<br>
+   */
+  static class InvalidProjectTreeContentProvider implements ITreeContentProvider
+  {
+    @Override
+    public void dispose()
+    {
+    }
+
+    @Override
+    public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+    {
+    }
+
+    @Override
+    public Object[] getElements(Object inputElement)
+    {
+      if (inputElement instanceof Collection)
+        return ((Collection) inputElement).toArray();
+      return getChildren(inputElement);
+    }
+
+    @Override
+    public Object[] getChildren(Object parentElement)
+    {
+      return new Object[0];
+    }
+
+    @Override
+    public Object getParent(Object element)
+    {
+      return null;
+    }
+
+    @Override
+    public boolean hasChildren(Object element)
+    {
+      return false;
+    }
+  }
 }
