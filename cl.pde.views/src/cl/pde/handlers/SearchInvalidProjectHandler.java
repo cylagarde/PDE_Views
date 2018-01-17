@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Predicate;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -20,6 +21,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.SubMonitor;
@@ -59,7 +61,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     Set<Object> alreadyTreatedCacheSet = new HashSet<>();
 
     //
-    Predicate filePredicate = resource -> {
+    Predicate<IResource> filePredicate = resource -> {
       if (!alreadyTreatedCacheSet.add(resource.getLocation()))
         return false;
 
@@ -69,20 +71,28 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         //        System.out.println(resource);
 
         IContainer folder = file.getParent();
-        IProjectDescription projectDescription = ResourcesPlugin.getWorkspace().loadProjectDescription(folder.getLocation().append(IProjectDescription.DESCRIPTION_FILE_NAME));
-        projectDescription.setLocation(folder.getLocation());
+        try
+        {
+          IPath projectDescriptionPath = folder.getLocation().append(IProjectDescription.DESCRIPTION_FILE_NAME);
+          IProjectDescription projectDescription = ResourcesPlugin.getWorkspace().loadProjectDescription(projectDescriptionPath);
+          projectDescription.setLocation(folder.getLocation());
 
-        String projectName = projectDescription.getName();
-        IProject project = root.getProject(projectName);
-        if (!project.exists())
-          invalidProjectSet.add(projectDescription);
+          String projectName = projectDescription.getName();
+          IProject project = root.getProject(projectName);
+          if (!project.exists())
+            invalidProjectSet.add(projectDescription);
+        }
+        catch(CoreException e)
+        {
+          Activator.logError("Error loading project description "+file, e);
+        }
       }
 
       return true;
     };
 
     // search
-    MultiStatus errorStatus = null;
+    MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
     IProject[] projects = root.getProjects();
     for(IProject workspaceProject : projects)
     {
@@ -99,13 +109,11 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       }
       catch(CoreException e)
       {
-        if (errorStatus == null)
-          errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Cannot process project " + workspaceProject, e);
         errorStatus.add(e.getStatus());
       }
     }
 
-    if (errorStatus != null)
+    if (errorStatus.getChildren().length != 0)
       MessageDialog.openError(shell, "Error", "Some errors were found when processing: " + errorStatus.getMessage());
 
     //
@@ -196,19 +204,12 @@ public class SearchInvalidProjectHandler extends AbstractHandler
   }
 
   /**
-   */
-  static interface Predicate
-  {
-    boolean test(IResource resource) throws CoreException;
-  }
-
-  /**
    * Process container
    * @param container
    * @param fileConsumer
    * @throws CoreException
    */
-  public static void processContainer(IContainer container, Predicate filePredicate) throws CoreException
+  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
   {
     if (filePredicate.test(container))
     {

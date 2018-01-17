@@ -1,6 +1,7 @@
 package cl.pde.handlers;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.function.Predicate;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -10,6 +11,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -29,7 +31,6 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
 import cl.pde.Activator;
 import cl.pde.handlers.SearchInvalidProjectHandler.InvalidProjectLabelProvider;
-import cl.pde.handlers.SearchInvalidProjectHandler.Predicate;
 
 /**
  * The class <b>TryToOpenInvalidProjectHandler</b> allows to.<br>
@@ -62,7 +63,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
       if (importObject.isResolved() || iimport.isOptional())
         return null;
 
-      Predicate filePredicate = resource -> {
+      Predicate<IResource> filePredicate = resource -> {
         if (invalidProject[0] != null)
           return false;
 
@@ -72,20 +73,27 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
           //        System.out.println(resource);
 
           IContainer folder = file.getParent();
-          IProjectDescription desc = ResourcesPlugin.getWorkspace().loadProjectDescription(folder.getLocation().append(IProjectDescription.DESCRIPTION_FILE_NAME));
-          desc.setLocation(folder.getLocation());
-
-          if (pluginId.equals(labelProvider.getId(desc)))
+          try
           {
-            String projectName = desc.getName();
-            IProject project = root.getProject(projectName);
-            if (! project.exists())
+            IProjectDescription desc = ResourcesPlugin.getWorkspace().loadProjectDescription(folder.getLocation().append(IProjectDescription.DESCRIPTION_FILE_NAME));
+            desc.setLocation(folder.getLocation());
+
+            if (pluginId.equals(labelProvider.getId(desc)))
             {
-              invalidProject[0] = desc;
-              return false;
+              String projectName = desc.getName();
+              IProject project = root.getProject(projectName);
+              if (! project.exists())
+              {
+                invalidProject[0] = desc;
+                return false;
+              }
+              else
+                validProject[0] = project;
             }
-            else
-              validProject[0] = project;
+          }
+          catch(Exception e)
+          {
+            Activator.logError("Error loading project description "+file, e);
           }
         }
 
