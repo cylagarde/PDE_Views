@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <bundle id="cl.pde.views" version="1.3.0.qualifier">
-      <category name="PDE Views features"/>
-   </bundle>
+   <feature url="features/cl.pde.views.features_1.0.0.qualifier.jar" id="cl.pde.views.features" version="1.0.0.qualifier">
+      <category name="PDE Views features"/>
+   </feature>
    <category-def name="PDE Views features" label="PDE Views features">
       <description>
          PDE Views features

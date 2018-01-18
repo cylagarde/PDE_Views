@@ -1,9 +1,7 @@
-Utiliser un ProductPatternFilter comme la FeaturePatternFilter 
-bug plugin n'est pas mis à jour ds la featureView lorsque le singleton change
-bug de refresh
-afficher toutes les products dans la vue products view
-
+ds la feature view, avec les all features, lorsque l'on rajoute un plugin ds un feature, la vue n'est pas mis à jour
 A SUPPRIMER faire la vue Search all features
+rajouter un filteredtree ds le Open invalid project
+
 CANCEL avoir une popup pour afficher une feature d'un product ds la vue feature view
 CANCEL avoir une popup ds l'onglet dépendencies pour faire une recherche des features le contenant
  
