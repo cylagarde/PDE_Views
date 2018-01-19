@@ -29,6 +29,7 @@ import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.Util;
+import cl.pde.views.actions.CopyIdToClipboardAction;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.GetAllFeaturesAction;
 import cl.pde.views.actions.OpenNodeAction;
@@ -50,6 +51,7 @@ public class FeatureView extends ViewPart
 
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
+  private Action copyIdToClipboardAction;
   private Action getAllFeaturesAction;
   private Action doubleClickOpenNodeAction;
 
@@ -203,8 +205,13 @@ public class FeatureView extends ViewPart
 
   private void fillContextMenu(IMenuManager manager)
   {
-    manager.add(expandAllNodesAction);
-    manager.add(collapseAllNodesAction);
+    if (copyIdToClipboardAction.isEnabled())
+      manager.add(copyIdToClipboardAction);
+    manager.add(new Separator());
+    if (expandAllNodesAction.isEnabled())
+      manager.add(expandAllNodesAction);
+    if (collapseAllNodesAction.isEnabled())
+      manager.add(collapseAllNodesAction);
     manager.add(new Separator());
     drillDownAdapter.addNavigationActions(manager);
     // Other plug-ins can contribute there actions here
@@ -225,6 +232,8 @@ public class FeatureView extends ViewPart
   {
     expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true);
     collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
+
+    copyIdToClipboardAction = new CopyIdToClipboardAction(featureViewer);
 
     //
     getAllFeaturesAction = new GetAllFeaturesAction(this);

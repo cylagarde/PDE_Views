@@ -1186,4 +1186,45 @@ public class Util
     return treeParent;
   }
 
+  /**
+   * Open PDE object
+   * @param pdeObject
+   */
+  public static String getId(Object pdeObject)
+  {
+    if (pdeObject instanceof IPlugin)
+      return ((IPlugin) pdeObject).getId();
+
+    else if (pdeObject instanceof IFeaturePlugin)
+      return ((IFeaturePlugin) pdeObject).getId();
+
+    else if (pdeObject instanceof IFeatureChild)
+      return ((IFeatureChild) pdeObject).getId();
+
+    else if (pdeObject instanceof IFeatureImport)
+      return ((IFeatureImport) pdeObject).getId();
+
+    else if (pdeObject instanceof IFeature)
+      return ((IFeature) pdeObject).getId();
+
+    else if (pdeObject instanceof IProduct)
+      return ((IProduct) pdeObject).getId();
+
+    else if (pdeObject instanceof IProductFeature)
+      return ((IProductFeature) pdeObject).getId();
+
+    else if (pdeObject instanceof IProductPlugin)
+      return ((IProductPlugin) pdeObject).getId();
+
+    else if (pdeObject instanceof IFragment)
+      return ((IFragment) pdeObject).getId();
+
+    else if (pdeObject instanceof IFeatureModel)
+      return ((IFeatureModel) pdeObject).getFeature().getId();
+
+    else if (pdeObject != null)
+      Activator.logError("Cannot get id " + pdeObject.getClass().getName(), new Exception());
+    return null;
+  }
+
 }
