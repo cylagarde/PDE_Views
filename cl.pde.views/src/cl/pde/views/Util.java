@@ -22,6 +22,8 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -78,31 +80,46 @@ public class Util
   public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
 
   /**
-   *
+   * Traverse Root
    * @param treeContentProvider
    * @param root
    * @param predicate
+   * @param monitor
    */
-  public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Predicate<Object> predicate)
+  public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Predicate<Object> predicate, IProgressMonitor monitor)
   {
     Object[] elements = treeContentProvider.getElements(root);
+    //    monitor.beginTask("", elements.length);
+    SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
     for(Object element : elements)
-      traverseElement(treeContentProvider, element, predicate);
+    {
+      traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
+      if (subMonitor.isCanceled())
+        break;
+    }
+    subMonitor.done();
   }
 
   /**
-   *
+   * Traverse Element
    * @param treeContentProvider
    * @param element
    * @param predicate
+   * @param monitor
    */
-  public static void traverseElement(ITreeContentProvider treeContentProvider, Object element, Predicate<Object> predicate)
+  public static void traverseElement(ITreeContentProvider treeContentProvider, Object element, Predicate<Object> predicate, IProgressMonitor monitor)
   {
     if (predicate.test(element))
     {
       Object[] children = treeContentProvider.getChildren(element);
+      SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
       for(Object child : children)
-        traverseElement(treeContentProvider, child, predicate);
+      {
+        traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
+        if (subMonitor.isCanceled())
+          break;
+      }
+      subMonitor.done();
     }
   }
 

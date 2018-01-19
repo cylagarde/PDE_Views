@@ -11,6 +11,10 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 
@@ -79,6 +83,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
                 Object[] expandedElements = treeViewer.getExpandedElements();
 
                 // refresh node
+                Activator.logInfo("refresh "+treeObject);
                 treeViewer.refresh(treeObject);
 
                 treeViewer.setExpandedElements(expandedElements);
@@ -108,26 +113,37 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     resourceMap.clear();
 
     //
-    long time = System.currentTimeMillis();
-
-    // add all resources
-    Predicate<Object> predicate = o -> {
-      if (o instanceof TreeObject)
+    Job job = new Job("Search all resources")
+    {
+      @Override
+      protected IStatus run(IProgressMonitor monitor)
       {
-        TreeObject treeObject = (TreeObject) o;
-        if (treeObject.data != null)
+        // search all resources
+        Predicate<Object> predicate = o -> {
+          if (o instanceof TreeObject)
+          {
+            TreeObject treeObject = (TreeObject) o;
+            if (treeObject.data != null)
+            {
+              IResource resource = Util.getResource(treeObject.data);
+              if (resource != null)
+                resourceMap.put(resource, treeObject);
+            }
+          }
+          return true;
+        };
+        Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate, monitor);
+
+        if (!resourceMap.isEmpty())
         {
-          IResource resource = Util.getResource(treeObject.data);
-          if (resource != null)
-            resourceMap.put(resource, treeObject);
+          StringBuilder buffer = new StringBuilder(1024);
+          resourceMap.forEach((key, value) -> buffer.append(key + " " + value).append("\n"));
+          Activator.logInfo(buffer.toString());
         }
+
+        return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
       }
-      return true;
     };
-    Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate);
-
-    System.out.println("TIME=" + (System.currentTimeMillis() - time));
-
-    // resourceMap.forEach((key, value) -> System.out.println(key + " " + value));
+    job.schedule();
   }
 }
