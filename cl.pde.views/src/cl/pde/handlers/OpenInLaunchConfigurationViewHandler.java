@@ -56,13 +56,11 @@ public class OpenInLaunchConfigurationViewHandler extends AbstractHandler
     IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
     try
     {
-      workbenchPage.showView(LaunchConfigurationView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
-
       // load launch configuration
       ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
       ILaunchConfiguration launchConfiguration = launchManager.getLaunchConfiguration(launchConfigurationFile);
 
-      // get FeatureView
+      // get LaunchConfigurationView
       IViewPart showView = workbenchPage.showView(LaunchConfigurationView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       LaunchConfigurationView launchConfigurationView = (LaunchConfigurationView) showView;
       TreeViewer launchConfigurationViewer = launchConfigurationView.getLaunchConfigurationViewer();

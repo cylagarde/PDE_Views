@@ -97,7 +97,6 @@ public class Util
       if (subMonitor.isCanceled())
         break;
     }
-    subMonitor.done();
   }
 
   /**
@@ -119,7 +118,6 @@ public class Util
         if (subMonitor.isCanceled())
           break;
       }
-      subMonitor.done();
     }
   }
 
