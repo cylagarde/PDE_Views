@@ -9,7 +9,7 @@ Cette vue permet de visualiser le contenu d'une feature en affichant les plugins
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu de la feature.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/feature_view.png"/>
 Pour ouvrir la vue, une sélection sur un fichier 'features.xml' et faire un clic droit pour afficher le menu contextuel : clic sur le menu "Open in feature view" <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/open_in_feature_view.png"/>
-Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllFeatures.png"/> permet d'afficher toutes les features contenu dans la target platform.
+Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllFeatures.png"/> permet d'afficher toutes les features contenu dans la target platform.<br>
 Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
 
 <br>
