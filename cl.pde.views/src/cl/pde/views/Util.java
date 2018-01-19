@@ -30,6 +30,7 @@ import org.eclipse.pde.core.plugin.IFragment;
 import org.eclipse.pde.core.plugin.IFragmentModel;
 import org.eclipse.pde.core.plugin.IMatchRules;
 import org.eclipse.pde.core.plugin.IPlugin;
+import org.eclipse.pde.core.plugin.IPluginBase;
 import org.eclipse.pde.core.plugin.IPluginModel;
 import org.eclipse.pde.core.plugin.IPluginModelBase;
 import org.eclipse.pde.core.plugin.ISharedPluginModel;
@@ -1045,6 +1046,17 @@ public class Util
       };
     }
     return featureChildTreeParent;
+  }
+
+  /**
+   * @param pluginBase
+   */
+  public static TreeObject getTreeObject(IPluginBase pluginBase)
+  {
+    TreeObject treeObject = new TreeObject(null, pluginBase);
+    treeObject.foreground = Constants.PLUGIN_FOREGROUND;
+
+    return treeObject;
   }
 
   /**

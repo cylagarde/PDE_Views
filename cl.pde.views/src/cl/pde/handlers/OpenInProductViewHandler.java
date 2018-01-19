@@ -58,7 +58,7 @@ public class OpenInProductViewHandler extends AbstractHandler
       WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(productFile, false);
       workspaceProductModel.load();
 
-      // get FeatureView
+      // get ProductView
       IViewPart showView = workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       ProductView productView = (ProductView) showView;
       TreeViewer productViewer = productView.getProductViewer();

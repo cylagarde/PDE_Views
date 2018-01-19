@@ -20,4 +20,6 @@ public interface Constants
 
   // Target Platform
   final String TARGET_FEATURE = PDEUIMessages.PluginsTab_target;
+
+  final String ADDITIONAL_PLUGIN = PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins;
 }

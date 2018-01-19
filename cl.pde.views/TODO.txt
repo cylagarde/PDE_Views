@@ -1,3 +1,5 @@
+launch configuration : revoir le parsing
+ds la launch view, si la lunch est basé sur des features et que l'on rajoute des plugins : ils ne sont pas pris en compte ds la vue
 ds la feature view, avec les all features, lorsque l'on rajoute un plugin ds un feature, la vue n'est pas mis à jour
 A SUPPRIMER faire la vue Search all features
 rajouter un filteredtree ds le Open invalid project

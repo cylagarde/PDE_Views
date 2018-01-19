@@ -40,7 +40,7 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
 import cl.pde.Activator;
 import cl.pde.Images;
-import cl.pde.dialog.SearchElementTreeSelectionDialog;
+import cl.pde.dialog.CheckedFilteredTreeSelectionDialog;
 
 /**
  * The class <b>SearchInvalidProjectHandler</b> allows to.<br>
@@ -84,7 +84,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         }
         catch(CoreException e)
         {
-          Activator.logError("Error loading project description "+file, e);
+          Activator.logError("Error loading project description " + file, e);
         }
       }
 
@@ -119,15 +119,12 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     //
     if (!invalidProjectSet.isEmpty())
     {
-      //      invalidProjectSet.forEach(o -> Activator.logInfo(labelProvider.getText(o)));
-
-//      ListSelectionDialog listSelectionDialog = new ListSelectionDialog(shell, invalidProjectSet, ArrayContentProvider.getInstance(), labelProvider, "Select the projects to be opened/imported:");
-//      listSelectionDialog.open();
-
       InvalidProjectTreeContentProvider invalidProjectTreeContentProvider = new InvalidProjectTreeContentProvider();
       PatternFilter patternFilter = new PatternFilter();
       patternFilter.setIncludeLeadingWildcard(true);
-      SearchElementTreeSelectionDialog searchElementTreeSelectionDialog = new SearchElementTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, patternFilter);
+
+      //
+      CheckedFilteredTreeSelectionDialog searchElementTreeSelectionDialog = new CheckedFilteredTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, patternFilter);
       searchElementTreeSelectionDialog.setInput(invalidProjectSet);
       searchElementTreeSelectionDialog.setMessage("Select the projects to be opened/imported:");
       searchElementTreeSelectionDialog.setTitle("Open Project");
@@ -259,13 +256,9 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     public Image getImage(Object element)
     {
       if (element instanceof IProject)
-      {
         return Activator.getImage(Images.INVALID_PROJECT);
-      }
       else if (element instanceof IProjectDescription)
-      {
         return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-      }
       return super.getImage(element);
     }
   }
@@ -289,7 +282,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     public Object[] getElements(Object inputElement)
     {
       if (inputElement instanceof Collection)
-        return ((Collection) inputElement).toArray();
+        return ((Collection<?>) inputElement).toArray();
       return getChildren(inputElement);
     }
 

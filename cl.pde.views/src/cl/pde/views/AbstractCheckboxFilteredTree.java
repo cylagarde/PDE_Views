@@ -3,6 +3,8 @@ package cl.pde.views;
 import java.util.function.Predicate;
 
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.ITreeViewerListener;
+import org.eclipse.jface.viewers.TreeExpansionEvent;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -110,6 +112,24 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   protected TreeViewer doCreateTreeViewer(Composite parent, int style)
   {
     TreeViewer treeViewer = super.doCreateTreeViewer(parent, style);
+
+    treeViewer.addTreeListener(new ITreeViewerListener()
+    {
+      @Override
+      public void treeExpanded(TreeExpansionEvent event)
+      {
+        if (event.getElement() instanceof TreeParent)
+        {
+          ((TreeParent) event.getElement()).reset();
+        }
+        treeViewer.getTree().getDisplay().asyncExec(() -> treeViewer.refresh(event.getElement()));
+      }
+
+      @Override
+      public void treeCollapsed(TreeExpansionEvent event)
+      {
+      }
+    });
 
     treeViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
     setBackground(treeViewer.getTree().getBackground());
