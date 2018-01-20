@@ -51,6 +51,7 @@ import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
 import org.eclipse.pde.internal.core.iproduct.IProduct;
 import org.eclipse.pde.internal.core.iproduct.IProductFeature;
+import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.core.iproduct.IProductPlugin;
 import org.eclipse.pde.internal.core.natures.PDE;
 import org.eclipse.pde.internal.core.plugin.ExternalPluginModelBase;
@@ -224,8 +225,32 @@ public class Util
     else if (pdeObject instanceof IFeatureModel)
       openFeatureModel((IFeatureModel) pdeObject);
 
+    else if (pdeObject instanceof IProductModel)
+      openProductModel((IProductModel) pdeObject);
+
     else if (pdeObject != null)
       Activator.logError("Cannot open data " + pdeObject.getClass().getName(), new Exception());
+  }
+
+  /**
+   * Open featureModel
+   * @param productModel
+   */
+  private static void openProductModel(IProductModel productModel)
+  {
+    IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    IResource productModelResource = getProductModelResource(productModel);
+    if (workbenchPage != null && productModelResource instanceof IFile)
+    {
+      try
+      {
+        IDE.openEditor(workbenchPage, (IFile) productModelResource, IPDEUIConstants.PRODUCT_EDITOR_ID);
+      }
+      catch(PartInitException e)
+      {
+        Activator.logError("Cannot open product " + productModelResource, e);
+      }
+    }
   }
 
   /**
@@ -425,7 +450,19 @@ public class Util
     if (pdeObject instanceof IFeatureModel)
       return getFeatureModelLocation((IFeatureModel) pdeObject);
 
+    if (pdeObject instanceof IProductModel)
+      return getProductModelLocation((IProductModel) pdeObject);
+
     return null;
+  }
+
+  /**
+   * Get IProductModel location
+   * @param productModel
+   */
+  private static String getProductModelLocation(IProductModel productModel)
+  {
+    return productModel.getInstallLocation();
   }
 
   /**
@@ -639,7 +676,19 @@ public class Util
     if (pdeObject instanceof ILaunchConfiguration)
       return getLaunchConfigurationResource((ILaunchConfiguration) pdeObject);
 
+    if (pdeObject instanceof IProductModel)
+      return getProductModelResource((IProductModel) pdeObject);
+
     return null;
+  }
+
+  /**
+   * Get productModel resource
+   * @param productModel
+   */
+  private static IResource getProductModelResource(IProductModel productModel)
+  {
+    return productModel.getUnderlyingResource();
   }
 
   /**
