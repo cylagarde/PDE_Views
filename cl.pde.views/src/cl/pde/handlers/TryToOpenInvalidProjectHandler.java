@@ -120,7 +120,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
 
         try
         {
-          Util.processContainer(workspaceProject, filePredicate);
+          Util.traverseContainer(workspaceProject, filePredicate);
         }
         catch(CoreException e)
         {

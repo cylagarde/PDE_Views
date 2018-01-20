@@ -178,7 +178,7 @@ public class Util
    * @param fileConsumer
    * @throws CoreException
    */
-  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
+  public static void traverseContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
   {
     if (filePredicate.test(container))
     {
@@ -186,7 +186,7 @@ public class Util
       for(IResource member : members)
       {
         if (member instanceof IContainer)
-          processContainer((IContainer) member, filePredicate);
+          traverseContainer((IContainer) member, filePredicate);
         else if (member instanceof IFile)
         {
           if (!filePredicate.test(member))

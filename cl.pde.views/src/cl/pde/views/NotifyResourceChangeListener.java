@@ -145,7 +145,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
 
         StringBuilder buffer = new StringBuilder(1024);
         buffer.append(resourceMap.size() + " resources found TIME=" + (System.currentTimeMillis() - time) + "\n");
-        resourceMap.forEach((key, value) -> buffer.append(key + " " + value).append("\n"));
+        resourceMap.forEach((key, value) -> buffer.append(key + " " + value + "\n"));
         Activator.logInfo(buffer.toString());
 
         return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
