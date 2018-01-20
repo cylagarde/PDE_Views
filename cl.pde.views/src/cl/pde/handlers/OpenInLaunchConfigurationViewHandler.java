@@ -48,6 +48,7 @@ public class OpenInLaunchConfigurationViewHandler extends AbstractHandler
   }
 
   /**
+   * Open in LaunchConfigurationView
    * @param event
    * @param launchConfigurationFile
    */

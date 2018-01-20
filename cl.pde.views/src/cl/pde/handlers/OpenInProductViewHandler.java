@@ -46,19 +46,24 @@ public class OpenInProductViewHandler extends AbstractHandler
   }
 
   /**
+   * Open in ProductView
    * @param event
    * @param productFile
    */
   private void openInProductView(ExecutionEvent event, IFile productFile)
   {
-    IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
     try
     {
       // load product
       WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(productFile, false);
       workspaceProductModel.load();
 
+      // check if product loaded
+      if (!workspaceProductModel.isLoaded())
+        throw new Exception("Cannot load " + productFile);
+
       // get ProductView
+      IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
       IViewPart showView = workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       ProductView productView = (ProductView) showView;
       TreeViewer productViewer = productView.getProductViewer();

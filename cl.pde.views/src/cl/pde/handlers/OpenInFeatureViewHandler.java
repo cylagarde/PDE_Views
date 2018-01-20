@@ -46,6 +46,7 @@ public class OpenInFeatureViewHandler extends AbstractHandler
   }
 
   /**
+   * Open in FeatureView
    * @param event
    * @param featureFile
    */
@@ -58,6 +59,10 @@ public class OpenInFeatureViewHandler extends AbstractHandler
       // load feature
       WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(featureFile);
       workspaceFeatureModel.load();
+
+      // check if feature loaded
+      if (!workspaceFeatureModel.isLoaded())
+        throw new Exception("Cannot load " + featureFile);
 
       // get FeatureView
       IViewPart showView = workbenchPage.showView(FeatureView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
