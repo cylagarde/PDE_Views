@@ -56,7 +56,9 @@ import org.eclipse.pde.internal.core.natures.PDE;
 import org.eclipse.pde.internal.core.plugin.ExternalPluginModelBase;
 import org.eclipse.pde.internal.core.project.PDEProject;
 import org.eclipse.pde.internal.core.text.bundle.BundleSymbolicNameHeader;
+import org.eclipse.pde.internal.core.util.VersionUtil;
 import org.eclipse.pde.internal.ui.IPDEUIConstants;
+import org.eclipse.pde.internal.ui.PDELabelProvider;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEPluginImages;
 import org.eclipse.pde.internal.ui.PDEUIMessages;
@@ -73,6 +75,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
 import cl.pde.Activator;
+import cl.pde.Images;
 
 /**
  * The class <b>Util</b> allows to.<br>
@@ -1148,6 +1151,110 @@ public class Util
       externalFeatureList.stream().map(Util::getTreeParent).forEach(externalFeatureTreeParent::addChild);
     };
     return externalFeatureTreeParent;
+  }
+
+  /**
+   * @param productModel
+   */
+  public static TreeParent getProductModelTreeParent(IProductModel productModel)
+  {
+    TreeParent productTreeParent = new TreeParent(null, productModel);
+    productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
+    IResource underlyingResource = productModel.getUnderlyingResource();
+    productTreeParent.name = underlyingResource.getName();
+    IProduct product = productModel.getProduct();
+    if (!VersionUtil.isEmptyVersion(product.getVersion()))
+      productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
+    productTreeParent.image = Activator.getImage(Images.PRODUCT);
+
+    productTreeParent.loadChildRunnable = () -> {
+      List<TreeParent> elements = getElementsFromProduct(product);
+      elements.forEach(productTreeParent::addChild);
+    };
+    return productTreeParent;
+  }
+
+  /**
+   * @param product
+   */
+  private static List<TreeParent> getElementsFromProduct(IProduct product)
+  {
+    List<TreeParent> elements = new ArrayList<>();
+
+    if (product.useFeatures())
+      loadFeatures(product, elements);
+    else
+      loadPlugins(product, elements);
+
+    return elements;
+  }
+
+  /**
+   * Load IProductFeatures
+   * @param productFeatures
+   * @param elements
+   */
+  private static void loadFeatures(IProduct product, List<TreeParent> elements)
+  {
+    //
+    TreeParent featuresTreeParent = new TreeParent("Features");
+    featuresTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_MF_OBJ);
+    elements.add(featuresTreeParent);
+
+    featuresTreeParent.loadChildRunnable = () -> {
+      IProductFeature[] productFeatures = product.getFeatures();
+
+      // sort
+      Arrays.sort(productFeatures, Util.PDE_LABEL_COMPARATOR);
+
+      for(IProductFeature productFeature : productFeatures)
+      {
+        TreeParent featureTreeParent = new TreeParent(null, productFeature);
+        featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+        featuresTreeParent.addChild(featureTreeParent);
+
+        featureTreeParent.loadChildRunnable = () -> {
+          FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
+          IFeatureModel featureModel = manager.findFeatureModel(productFeature.getId(), productFeature.getVersion());
+          if (featureModel != null)
+          {
+            IFeature feature = featureModel.getFeature();
+            if (feature != null)
+            {
+              List<TreeParent> childElements = Util.getElementsFromFeature(feature);
+              childElements.forEach(featureTreeParent::addChild);
+            }
+          }
+        };
+      }
+    };
+  }
+
+  /**
+   * Load IProductPlugins
+   * @param productPlugins
+   * @param elements
+   */
+  private static void loadPlugins(IProduct product, List<TreeParent> elements)
+  {
+    //
+    TreeParent pluginsTreeParent = new TreeParent("Plugins");
+    pluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGIN_OBJ);
+    elements.add(pluginsTreeParent);
+
+    pluginsTreeParent.loadChildRunnable = () -> {
+      IProductPlugin[] productPlugins = product.getPlugins();
+
+      // sort
+      Arrays.sort(productPlugins, Util.PDE_LABEL_COMPARATOR);
+
+      for(IProductPlugin productPlugin : productPlugins)
+      {
+        TreeObject productPluginTreeObject = new TreeObject(null, productPlugin);
+        productPluginTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+        pluginsTreeParent.addChild(productPluginTreeObject);
+      }
+    };
   }
 
   /**

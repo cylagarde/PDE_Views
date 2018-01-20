@@ -12,6 +12,7 @@ public enum Images
   LAUNCH_CONFIGURATION("icons/launchConfiguration.png"),
   SINGLETON("icons/singleton.png"),
   GET_ALL_FEATURES("icons/getAllFeatures.png"),
+  GET_ALL_PRODUCTS("icons/getAllProducts.png"),
   INVALID_PROJECT("icons/invalid_project.png"),
   ;
 
