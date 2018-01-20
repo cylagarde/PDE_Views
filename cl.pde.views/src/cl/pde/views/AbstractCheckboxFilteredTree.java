@@ -131,7 +131,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       }
     });
 
-    treeViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider()));
+    treeViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider((NotTreeParentPatternFilter) getPatternFilter())));
     setBackground(treeViewer.getTree().getBackground());
 
     ViewerFilter featureViewerFilter = new ViewerFilter()

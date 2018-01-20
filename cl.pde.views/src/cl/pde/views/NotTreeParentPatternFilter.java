@@ -7,6 +7,7 @@ import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.pde.internal.ui.util.StringMatcher;
 import org.eclipse.ui.dialogs.PatternFilter;
 
 /**
@@ -14,11 +15,16 @@ import org.eclipse.ui.dialogs.PatternFilter;
  */
 public class NotTreeParentPatternFilter extends PatternFilter
 {
+  private final boolean includeLeadingWildcard = true;
   public Predicate<Object> visiblePredicate;
+  private StringMatcher matcher;
 
+  /**
+   * Constructor
+   */
   public NotTreeParentPatternFilter()
   {
-    setIncludeLeadingWildcard(true);
+    setIncludeLeadingWildcard(includeLeadingWildcard);
   }
 
   @Override
@@ -27,7 +33,7 @@ public class NotTreeParentPatternFilter extends PatternFilter
     if (visiblePredicate != null)
     {
       boolean visible = visiblePredicate.test(element);
-      if (! visible)
+      if (!visible)
         return visible;
     }
     return super.isParentMatch(viewer, element);
@@ -52,5 +58,30 @@ public class NotTreeParentPatternFilter extends PatternFilter
     if (labelText == null)
       return false;
     return wordMatches(labelText);
+  }
+
+  @Override
+  public void setPattern(String patternString)
+  {
+    if (patternString == null || patternString.equals("")) //$NON-NLS-1$
+      matcher = null;
+    else
+    {
+      String pattern = patternString + "*"; //$NON-NLS-1$
+      if (includeLeadingWildcard)
+        pattern = "*" + pattern; //$NON-NLS-1$
+      matcher = new StringMatcher(pattern, true, false);
+    }
+
+    super.setPattern(patternString);
+  }
+
+  /**
+   * Get first position of text
+   * @param text
+   */
+  public StringMatcher.Position getFirstPosition(String text, int start, int end)
+  {
+    return matcher == null? null : matcher.find(text, start, end);
   }
 }

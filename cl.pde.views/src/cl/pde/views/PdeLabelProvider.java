@@ -1,5 +1,6 @@
 package cl.pde.views;
 
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
@@ -9,10 +10,14 @@ import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.pde.internal.ui.PDEPlugin;
+import org.eclipse.pde.internal.ui.util.StringMatcher.Position;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.graphics.TextStyle;
 
 import cl.pde.Activator;
 import cl.pde.Images;
@@ -22,7 +27,34 @@ import cl.pde.Images;
  */
 public class PdeLabelProvider extends LabelProvider implements IFontProvider, IColorProvider, IStyledLabelProvider
 {
+  final static String SELECTION_FOREGROUND = "SELECTION_FOREGROUND";
+  final static ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+  static
+  {
+    colorRegistry.put(SELECTION_FOREGROUND, new RGB(255, 0, 0));
+  }
+
   final Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
+  private final Styler selectionStyler = new Styler()
+  {
+    @Override
+    public void applyStyles(TextStyle textStyle)
+    {
+      textStyle.font = boldFont;
+      textStyle.foreground = colorRegistry.get(SELECTION_FOREGROUND);
+    }
+  };
+
+  final NotTreeParentPatternFilter patternFilter;
+
+  /**
+   * Constructor
+   * @param patternFilter
+   */
+  public PdeLabelProvider(NotTreeParentPatternFilter patternFilter)
+  {
+    this.patternFilter = patternFilter;
+  }
 
   @Override
   public String getText(Object element)
@@ -62,6 +94,17 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         //          styledString.append(" - " + resource, StyledString.DECORATIONS_STYLER);
         //        else
         //          styledString.append(" ERROR " + treeObject.data.getClass(), StyledString.DECORATIONS_STYLER);
+      }
+
+      //
+      if (!(element instanceof TreeParent))
+      {
+        String text = styledString.getString();
+        Position firstPosition = patternFilter.getFirstPosition(text, 0, text.length());
+        if (firstPosition != null)
+        {
+          styledString.setStyle(firstPosition.getStart(), firstPosition.getEnd() - firstPosition.getStart(), selectionStyler);
+        }
       }
     }
     else
