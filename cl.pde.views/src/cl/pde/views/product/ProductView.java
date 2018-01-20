@@ -211,6 +211,9 @@ public class ProductView extends ViewPart
     expandAllNodesAction = new ExpandAllNodesAction(productViewer, true);
     collapseAllNodesAction = new ExpandAllNodesAction(productViewer, false);
 
+    copyIdToClipboardAction = new CopyIdToClipboardAction(productViewer);
+    getAllProductsAction = new GetAllProductsAction(this);
+
     //
     doubleClickOpenNodeAction = new OpenNodeAction(productViewer);
   }
