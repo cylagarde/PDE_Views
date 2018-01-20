@@ -64,6 +64,8 @@ import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -80,23 +82,69 @@ public class Util
   public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
 
   /**
+   * Traverse tree
+   * @param tree
+   * @param predicate
+   * @param monitor
+   */
+  public static int traverseTree(Tree tree, Predicate<Object> predicate, IProgressMonitor monitor)
+  {
+    int count = 1;
+    TreeItem[] items = tree.getItems();
+    //    monitor.beginTask("", elements.length);
+    SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
+    for(TreeItem item : items)
+    {
+      count += traverseItem(item, predicate, subMonitor.split(1));
+      if (subMonitor.isCanceled())
+        break;
+    }
+    return count;
+  }
+
+  /**
+   * Traverse item
+   * @param item
+   * @param predicate
+   * @param monitor
+   */
+  public static int traverseItem(TreeItem item, Predicate<Object> predicate, IProgressMonitor monitor)
+  {
+    int count = 1;
+    if (predicate.test(item.getData()))
+    {
+      TreeItem[] items = item.getItems();
+      SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
+      for(TreeItem child : items)
+      {
+        count += traverseItem(child, predicate, subMonitor.split(1));
+        if (subMonitor.isCanceled())
+          break;
+      }
+    }
+    return count;
+  }
+
+  /**
    * Traverse Root
    * @param treeContentProvider
    * @param root
    * @param predicate
    * @param monitor
    */
-  public static void traverseRoot(ITreeContentProvider treeContentProvider, Object root, Predicate<Object> predicate, IProgressMonitor monitor)
+  public static int traverseRoot(ITreeContentProvider treeContentProvider, Object root, Predicate<Object> predicate, IProgressMonitor monitor)
   {
+    int count = 1;
     Object[] elements = treeContentProvider.getElements(root);
     //    monitor.beginTask("", elements.length);
     SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
     for(Object element : elements)
     {
-      traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
+      count += traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
       if (subMonitor.isCanceled())
         break;
     }
+    return count;
   }
 
   /**
@@ -106,17 +154,44 @@ public class Util
    * @param predicate
    * @param monitor
    */
-  public static void traverseElement(ITreeContentProvider treeContentProvider, Object element, Predicate<Object> predicate, IProgressMonitor monitor)
+  public static int traverseElement(ITreeContentProvider treeContentProvider, Object element, Predicate<Object> predicate, IProgressMonitor monitor)
   {
+    int count = 1;
     if (predicate.test(element))
     {
       Object[] children = treeContentProvider.getChildren(element);
+      //      count += children.length;
       SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
       for(Object child : children)
       {
-        traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
+        count += traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
         if (subMonitor.isCanceled())
           break;
+      }
+    }
+    return count;
+  }
+
+  /**
+   * Process container
+   * @param container
+   * @param fileConsumer
+   * @throws CoreException
+   */
+  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
+  {
+    if (filePredicate.test(container))
+    {
+      IResource[] members = container.members();
+      for(IResource member : members)
+      {
+        if (member instanceof IContainer)
+          processContainer((IContainer) member, filePredicate);
+        else if (member instanceof IFile)
+        {
+          if (!filePredicate.test(member))
+            break;
+        }
       }
     }
   }
@@ -165,30 +240,6 @@ public class Util
     IFile manifest = PDEProject.getManifest(project);
     WorkspaceBundlePluginModel pluginModel = new WorkspaceBundlePluginModel(manifest, pluginXml);
     return pluginModel;
-  }
-
-  /**
-   * Process container
-   * @param container
-   * @param fileConsumer
-   * @throws CoreException
-   */
-  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
-  {
-    if (filePredicate.test(container))
-    {
-      IResource[] members = container.members();
-      for(IResource member : members)
-      {
-        if (member instanceof IContainer)
-          processContainer((IContainer) member, filePredicate);
-        else if (member instanceof IFile)
-        {
-          if (!filePredicate.test(member))
-            break;
-        }
-      }
-    }
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1060,6 +1111,34 @@ public class Util
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @param workspaceFeatureList
+   */
+  public static TreeParent getWorkspaceFeatureTreeParent(List<IFeatureModel> workspaceFeatureList)
+  {
+    TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_FEATURE);
+    workspaceFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+
+    workspaceFeatureTreeParent.loadChildRunnable = () -> {
+      workspaceFeatureList.stream().map(Util::getTreeParent).forEach(workspaceFeatureTreeParent::addChild);
+    };
+    return workspaceFeatureTreeParent;
+  }
+
+  /**
+   * @param externalFeatureList
+   */
+  public static TreeParent getTargetFeatureTreeParent(List<IFeatureModel> externalFeatureList)
+  {
+    TreeParent externalFeatureTreeParent = new TreeParent(Constants.TARGET_FEATURE);
+    externalFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+
+    externalFeatureTreeParent.loadChildRunnable = () -> {
+      externalFeatureList.stream().map(Util::getTreeParent).forEach(externalFeatureTreeParent::addChild);
+    };
+    return externalFeatureTreeParent;
+  }
 
   /**
    * @param feature

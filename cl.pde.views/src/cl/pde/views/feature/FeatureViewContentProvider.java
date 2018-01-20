@@ -10,12 +10,9 @@ import java.util.stream.Collectors;
 
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
-import org.eclipse.pde.internal.ui.PDEPlugin;
-import org.eclipse.pde.internal.ui.PDEPluginImages;
 
-import cl.pde.views.Constants;
-import cl.pde.views.TreeParent;
 import cl.pde.views.AbstractTreeObjectContentProvider;
+import cl.pde.views.TreeParent;
 import cl.pde.views.Util;
 
 /**
@@ -52,25 +49,15 @@ public class FeatureViewContentProvider extends AbstractTreeObjectContentProvide
       List<IFeatureModel> workspaceFeatureList = map.get(Boolean.TRUE);
       if (!workspaceFeatureList.isEmpty())
       {
-        TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_FEATURE);
-        workspaceFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+        TreeParent workspaceFeatureTreeParent = Util.getWorkspaceFeatureTreeParent(workspaceFeatureList);
         treeParentList.add(workspaceFeatureTreeParent);
-
-        workspaceFeatureTreeParent.loadChildRunnable = () -> {
-          workspaceFeatureList.stream().map(Util::getTreeParent).forEach(workspaceFeatureTreeParent::addChild);
-        };
       }
 
       List<IFeatureModel> externalFeatureList = map.get(Boolean.FALSE);
       if (!externalFeatureList.isEmpty())
       {
-        TreeParent externalFeatureTreeParent = new TreeParent(Constants.TARGET_FEATURE);
-        externalFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+        TreeParent externalFeatureTreeParent = Util.getTargetFeatureTreeParent(externalFeatureList);
         treeParentList.add(externalFeatureTreeParent);
-
-        externalFeatureTreeParent.loadChildRunnable = () -> {
-          externalFeatureList.stream().map(Util::getTreeParent).forEach(externalFeatureTreeParent::addChild);
-        };
       }
 
       return treeParentList.toArray();
@@ -78,5 +65,4 @@ public class FeatureViewContentProvider extends AbstractTreeObjectContentProvide
 
     return getChildren(inputElement);
   }
-
 }
