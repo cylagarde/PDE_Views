@@ -41,6 +41,7 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import cl.pde.Activator;
 import cl.pde.Images;
 import cl.pde.dialog.CheckedFilteredTreeSelectionDialog;
+import cl.pde.views.Util;
 
 /**
  * The class <b>SearchInvalidProjectHandler</b> allows to.<br>
@@ -105,7 +106,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
 
       try
       {
-        processContainer(workspaceProject, filePredicate);
+        Util.processContainer(workspaceProject, filePredicate);
       }
       catch(CoreException e)
       {
@@ -198,30 +199,6 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       if (errorStatus.getChildren().length != 0)
         throw new CoreException(errorStatus);
     };
-  }
-
-  /**
-   * Process container
-   * @param container
-   * @param fileConsumer
-   * @throws CoreException
-   */
-  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
-  {
-    if (filePredicate.test(container))
-    {
-      IResource[] members = container.members();
-      for(IResource member : members)
-      {
-        if (member instanceof IContainer)
-          processContainer((IContainer) member, filePredicate);
-        else if (member instanceof IFile)
-        {
-          if (!filePredicate.test(member))
-            break;
-        }
-      }
-    }
   }
 
   /**

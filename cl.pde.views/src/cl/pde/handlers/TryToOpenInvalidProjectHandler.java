@@ -31,6 +31,7 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
 import cl.pde.Activator;
 import cl.pde.handlers.SearchInvalidProjectHandler.InvalidProjectLabelProvider;
+import cl.pde.views.Util;
 
 /**
  * The class <b>TryToOpenInvalidProjectHandler</b> allows to.<br>
@@ -119,7 +120,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
 
         try
         {
-          SearchInvalidProjectHandler.processContainer(workspaceProject, filePredicate);
+          Util.processContainer(workspaceProject, filePredicate);
         }
         catch(CoreException e)
         {

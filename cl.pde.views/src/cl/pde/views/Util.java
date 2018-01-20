@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -169,21 +168,26 @@ public class Util
   }
 
   /**
-   *
+   * Process container
    * @param container
    * @param fileConsumer
    * @throws CoreException
    */
-  public static void processContainer(IContainer container, Consumer<IFile> fileConsumer) throws CoreException
+  public static void processContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
   {
-    IResource[] members = container.members();
-
-    for(IResource member : members)
+    if (filePredicate.test(container))
     {
-      if (member instanceof IContainer)
-        processContainer((IContainer) member, fileConsumer);
-      else if (member instanceof IFile)
-        fileConsumer.accept((IFile) member);
+      IResource[] members = container.members();
+      for(IResource member : members)
+      {
+        if (member instanceof IContainer)
+          processContainer((IContainer) member, filePredicate);
+        else if (member instanceof IFile)
+        {
+          if (!filePredicate.test(member))
+            break;
+        }
+      }
     }
   }
 
