@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <bundle id="cl.pde.views" version="1.4.0.qualifier">
+   <bundle id="cl.pde.views" version="1.4.0.201801201553">
       <category name="PDE Views features"/>
    </bundle>
    <category-def name="PDE Views features" label="PDE Views features">
