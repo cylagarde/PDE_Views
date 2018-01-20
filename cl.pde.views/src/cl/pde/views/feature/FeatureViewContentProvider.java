@@ -44,7 +44,7 @@ public class FeatureViewContentProvider extends AbstractTreeObjectContentProvide
           .sorted(Util.PDE_LABEL_COMPARATOR)
           .collect(Collectors.partitioningBy(featureModel -> featureModel instanceof WorkspaceFeatureModel));
 
-      List<TreeParent> treeParentList = new ArrayList<>();
+      List<TreeParent> treeParentList = new ArrayList<>(2);
 
       List<IFeatureModel> workspaceFeatureList = map.get(Boolean.TRUE);
       if (!workspaceFeatureList.isEmpty())

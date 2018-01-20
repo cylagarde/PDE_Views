@@ -9,7 +9,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.swt.widgets.Composite;
@@ -29,7 +28,9 @@ import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.Util;
+import cl.pde.views.actions.CopyIdToClipboardAction;
 import cl.pde.views.actions.ExpandAllNodesAction;
+import cl.pde.views.actions.GetAllProductsAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
@@ -47,6 +48,8 @@ public class ProductView extends ViewPart
 
   private DrillDownAdapter drillDownAdapter;
 
+  private Action copyIdToClipboardAction;
+  private Action getAllProductsAction;
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
   private Action doubleClickOpenNodeAction;
@@ -180,6 +183,9 @@ public class ProductView extends ViewPart
 
   private void fillContextMenu(IMenuManager manager)
   {
+    if (copyIdToClipboardAction.isEnabled())
+      manager.add(copyIdToClipboardAction);
+    manager.add(new Separator());
     manager.add(expandAllNodesAction);
     manager.add(collapseAllNodesAction);
     manager.add(new Separator());
@@ -190,6 +196,8 @@ public class ProductView extends ViewPart
 
   private void fillLocalToolBar(IToolBarManager manager)
   {
+    manager.add(getAllProductsAction);
+    manager.add(new Separator());
     manager.add(expandAllNodesAction);
     manager.add(collapseAllNodesAction);
     manager.add(new Separator());
@@ -198,6 +206,8 @@ public class ProductView extends ViewPart
 
   private void makeActions()
   {
+    copyIdToClipboardAction = new CopyIdToClipboardAction(productViewer);
+    getAllProductsAction = new GetAllProductsAction(this);
     expandAllNodesAction = new ExpandAllNodesAction(productViewer, true);
     collapseAllNodesAction = new ExpandAllNodesAction(productViewer, false);
 
@@ -220,7 +230,7 @@ public class ProductView extends ViewPart
   }
 
   /**
-   * @return
+   * Return the product viewer
    */
   public TreeViewer getProductViewer()
   {
@@ -228,15 +238,16 @@ public class ProductView extends ViewPart
   }
 
   /**
-   * @param productModel
+   * Set input
+   * @param input
    */
-  public void setInput(IProductModel productModel)
+  public void setInput(Object input)
   {
     Util.setUseCache(true);
 
     try
     {
-      productViewer.setInput(productModel);
+      productViewer.setInput(input);
 
       // refresh
       notifyResourceChangeListener.refreshWhenResourceChanged(productViewer);

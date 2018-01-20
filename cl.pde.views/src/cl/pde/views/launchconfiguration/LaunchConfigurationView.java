@@ -3,7 +3,6 @@ package cl.pde.views.launchconfiguration;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -30,7 +29,9 @@ import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.Util;
+import cl.pde.views.actions.CopyIdToClipboardAction;
 import cl.pde.views.actions.ExpandAllNodesAction;
+import cl.pde.views.actions.GetAllLaunchConfigurationsAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
@@ -48,6 +49,8 @@ public class LaunchConfigurationView extends ViewPart
 
   private DrillDownAdapter drillDownAdapter;
 
+  private Action copyIdToClipboardAction;
+  private Action getAllLaunchConfigurationsAction;
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
   private Action doubleClickOpenNodeAction;
@@ -170,6 +173,9 @@ public class LaunchConfigurationView extends ViewPart
 
   private void fillContextMenu(IMenuManager manager)
   {
+    if (copyIdToClipboardAction.isEnabled())
+      manager.add(copyIdToClipboardAction);
+    manager.add(new Separator());
     manager.add(expandAllNodesAction);
     manager.add(collapseAllNodesAction);
     manager.add(new Separator());
@@ -180,6 +186,8 @@ public class LaunchConfigurationView extends ViewPart
 
   private void fillLocalToolBar(IToolBarManager manager)
   {
+    manager.add(getAllLaunchConfigurationsAction);
+    manager.add(new Separator());
     manager.add(expandAllNodesAction);
     manager.add(collapseAllNodesAction);
     manager.add(new Separator());
@@ -188,6 +196,8 @@ public class LaunchConfigurationView extends ViewPart
 
   private void makeActions()
   {
+    copyIdToClipboardAction = new CopyIdToClipboardAction(launchConfigurationViewer);
+    getAllLaunchConfigurationsAction = new GetAllLaunchConfigurationsAction(this);
     expandAllNodesAction = new ExpandAllNodesAction(launchConfigurationViewer, true);
     collapseAllNodesAction = new ExpandAllNodesAction(launchConfigurationViewer, false);
 
@@ -210,7 +220,7 @@ public class LaunchConfigurationView extends ViewPart
   }
 
   /**
-   * @return
+   * Return the launchConfiguration viewer
    */
   public TreeViewer getLaunchConfigurationViewer()
   {
@@ -218,15 +228,16 @@ public class LaunchConfigurationView extends ViewPart
   }
 
   /**
-   * @param launchConfiguration
+   * Set input
+   * @param input
    */
-  public void setInput(ILaunchConfiguration launchConfiguration)
+  public void setInput(Object input)
   {
     Util.setUseCache(true);
 
     try
     {
-      launchConfigurationViewer.setInput(launchConfiguration);
+      launchConfigurationViewer.setInput(input);
 
       // refresh
       notifyResourceChangeListener.refreshWhenResourceChanged(launchConfigurationViewer);

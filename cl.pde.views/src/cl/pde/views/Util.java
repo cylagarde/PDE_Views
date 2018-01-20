@@ -7,10 +7,12 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -56,12 +58,15 @@ import org.eclipse.pde.internal.core.natures.PDE;
 import org.eclipse.pde.internal.core.plugin.ExternalPluginModelBase;
 import org.eclipse.pde.internal.core.project.PDEProject;
 import org.eclipse.pde.internal.core.text.bundle.BundleSymbolicNameHeader;
+import org.eclipse.pde.internal.core.util.VersionUtil;
 import org.eclipse.pde.internal.ui.IPDEUIConstants;
+import org.eclipse.pde.internal.ui.PDELabelProvider;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEPluginImages;
 import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
+import org.eclipse.pde.launching.IPDELauncherConstants;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
@@ -73,6 +78,7 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
 import cl.pde.Activator;
+import cl.pde.Images;
 
 /**
  * The class <b>Util</b> allows to.<br>
@@ -1151,6 +1157,115 @@ public class Util
   }
 
   /**
+   * @param productModel
+   */
+  public static TreeParent getProductModelTreeParent(IProductModel productModel)
+  {
+    TreeParent productTreeParent = new TreeParent(null, productModel);
+    productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
+    IResource underlyingResource = productModel.getUnderlyingResource();
+    productTreeParent.name = underlyingResource.getName();
+    IProduct product = productModel.getProduct();
+    if (!VersionUtil.isEmptyVersion(product.getVersion()))
+      productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
+    productTreeParent.image = Activator.getImage(Images.PRODUCT);
+
+    productTreeParent.loadChildRunnable = () -> {
+      List<TreeParent> elements = getElementsFromProduct(product);
+      elements.forEach(productTreeParent::addChild);
+    };
+    return productTreeParent;
+  }
+
+  /**
+   * @param product
+   */
+  private static List<TreeParent> getElementsFromProduct(IProduct product)
+  {
+    List<TreeParent> elements = new ArrayList<>();
+
+    if (product.useFeatures())
+      loadFeatures(product, elements);
+    else
+      loadPlugins(product, elements);
+
+    return elements;
+  }
+
+  /**
+   * Load IProductFeatures
+   * @param productFeatures
+   * @param elements
+   */
+  private static void loadFeatures(IProduct product, List<TreeParent> elements)
+  {
+    IProductFeature[] productFeatures = product.getFeatures();
+    if (productFeatures.length == 0)
+      return;
+
+    //
+    TreeParent featuresTreeParent = new TreeParent("Features");
+    featuresTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_MF_OBJ);
+    elements.add(featuresTreeParent);
+
+    featuresTreeParent.loadChildRunnable = () -> {
+      // sort
+      Arrays.sort(productFeatures, Util.PDE_LABEL_COMPARATOR);
+
+      for(IProductFeature productFeature : productFeatures)
+      {
+        TreeParent featureTreeParent = new TreeParent(null, productFeature);
+        featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+        featuresTreeParent.addChild(featureTreeParent);
+
+        featureTreeParent.loadChildRunnable = () -> {
+          FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
+          IFeatureModel featureModel = manager.findFeatureModel(productFeature.getId(), productFeature.getVersion());
+          if (featureModel != null)
+          {
+            IFeature feature = featureModel.getFeature();
+            if (feature != null)
+            {
+              List<TreeParent> childElements = Util.getElementsFromFeature(feature);
+              childElements.forEach(featureTreeParent::addChild);
+            }
+          }
+        };
+      }
+    };
+  }
+
+  /**
+   * Load IProductPlugins
+   * @param productPlugins
+   * @param elements
+   */
+  private static void loadPlugins(IProduct product, List<TreeParent> elements)
+  {
+    IProductPlugin[] productPlugins = product.getPlugins();
+    if (productPlugins.length == 0)
+      return;
+
+    //
+    TreeParent pluginsTreeParent = new TreeParent("Plugins");
+    pluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGIN_OBJ);
+    elements.add(pluginsTreeParent);
+
+    pluginsTreeParent.loadChildRunnable = () -> {
+
+      // sort
+      Arrays.sort(productPlugins, Util.PDE_LABEL_COMPARATOR);
+
+      for(IProductPlugin productPlugin : productPlugins)
+      {
+        TreeObject productPluginTreeObject = new TreeObject(null, productPlugin);
+        productPluginTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+        pluginsTreeParent.addChild(productPluginTreeObject);
+      }
+    };
+  }
+
+  /**
    * @param feature
    */
   public static TreeParent getTreeParent(IFeature feature)
@@ -1342,6 +1457,250 @@ public class Util
     };
     return treeParent;
   }
+
+  /**
+   * @param launchConfiguration
+   */
+  public static TreeParent getLaunchConfigurationTreeParent(ILaunchConfiguration launchConfiguration)
+  {
+    TreeParent launchConfigurationTreeParent = new TreeParent(null, launchConfiguration);
+    launchConfigurationTreeParent.image = Activator.getImage(Images.LAUNCH_CONFIGURATION);
+    launchConfigurationTreeParent.foreground = Constants.LAUNCH_CONFIGURATION_FOREGROUND;
+
+    launchConfigurationTreeParent.loadChildRunnable = () -> {
+      List<TreeParent> elements = getElementsFromLaunchConfiguration(launchConfiguration);
+      elements.forEach(launchConfigurationTreeParent::addChild);
+    };
+    return launchConfigurationTreeParent;
+  }
+
+  /**
+   * @param launchConfiguration
+   */
+  private static List<TreeParent> getElementsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration)
+  {
+    List<TreeParent> elements = new ArrayList<>();
+
+    try
+    {
+      // use features or plugins
+      boolean useCustomFeatures = launchConfiguration.getAttribute(IPDELauncherConstants.USE_CUSTOM_FEATURES, false);
+      if (useCustomFeatures)
+      {
+        // load features
+        loadFeaturesFromLaunchConfiguration(launchConfiguration, elements);
+      }
+      else
+      {
+        // load plugins
+        loadPluginsFromLaunchConfiguration(launchConfiguration, elements);
+      }
+    }
+    catch(CoreException e)
+    {
+      e.printStackTrace();
+      Activator.logError(e.toString(), e);
+    }
+
+    return elements;
+  }
+
+  /**
+   * Load plugins from launchConfiguration
+   * @param launchConfiguration
+   * @param elements
+   */
+  private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
+  {
+    TreeParent workspacePlugins = createTreeParent(launchConfiguration, Constants.WORKSPACE_FEATURE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS);
+    elements.add(workspacePlugins);
+
+    TreeParent externalPlugins = createTreeParent(launchConfiguration, Constants.TARGET_FEATURE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS);
+    elements.add(externalPlugins);
+  }
+
+  /**
+   * Create TreeParent from launchConfiguration
+   * @param launchConfiguration
+   * @param name
+   * @param attributeKey
+   */
+  private static TreeParent createTreeParent(ILaunchConfiguration launchConfiguration, String name, String attributeKey)
+  {
+    TreeParent treeParent = new TreeParent(name, null);
+    treeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+
+    //
+    treeParent.loadChildRunnable = () -> {
+      List<IPluginBase> pluginBases = loadPlugins(launchConfiguration, attributeKey);
+
+      // sort
+      Collections.sort(pluginBases, Util.PDE_LABEL_COMPARATOR);
+
+      //
+      pluginBases.stream().map(Util::getTreeObject).forEach(treeParent::addChild);
+    };
+
+    return treeParent;
+  }
+
+  /**
+   * Load plugins from launchConfiguration
+   * @param launchConfiguration
+   * @param attributeKey
+   */
+  private static List<IPluginBase> loadPlugins(ILaunchConfiguration launchConfiguration, String attributeKey)
+  {
+    List<IPluginBase> pluginBases = new ArrayList<>();
+    try
+    {
+      String selected_target_plugins = launchConfiguration.getAttribute(attributeKey, "");
+      for(String str : selected_target_plugins.split(","))
+      {
+        int index = str.indexOf(':');
+        if (index >= 0)
+          str = str.substring(0, index);
+        index = str.indexOf('@');
+        if (index >= 0)
+          str = str.substring(0, index);
+        index = str.indexOf('*');
+        String pluginId = str;
+
+        IPluginModelBase model = null;
+        if (index >= 0)
+        {
+          pluginId = str.substring(0, index);
+          String pluginVersion = str.substring(index + 1);
+          model = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.PERFECT, null);
+        }
+        if (model == null)
+          model = PluginRegistry.findModel(pluginId);
+
+        if (model instanceof IFragmentModel)
+        {
+          IFragment fragment = ((IFragmentModel) model).getFragment();
+          pluginBases.add(fragment);
+        }
+        else if (model instanceof IPluginModel)
+        {
+          IPlugin plugin = ((IPluginModel) model).getPlugin();
+          pluginBases.add(plugin);
+        }
+      }
+    }
+    catch(CoreException e)
+    {
+      e.printStackTrace();
+      Activator.logError(e.toString(), e);
+    }
+
+    return pluginBases;
+  }
+
+  /**
+   * Load features from launchConfiguration
+   * @param launchConfiguration
+   * @param elements
+   */
+  private static void loadFeaturesFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
+  {
+    try
+    {
+      List<IFeatureModel> featureModels = new ArrayList<>();
+      FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
+      Set<String> selected_features = launchConfiguration.getAttribute(IPDELauncherConstants.SELECTED_FEATURES, Collections.emptySet());
+      for(String str : selected_features)
+      {
+        if (str.isEmpty())
+          continue;
+        str = str.substring(0, str.indexOf(':'));
+        //        str = str.substring(0, str.indexOf('@'));
+        int index = str.indexOf('*');
+        String pluginId = str;
+
+        IFeatureModel featureModel = null;
+        if (index >= 0)
+        {
+          pluginId = str.substring(0, index);
+          String pluginVersion = str.substring(index + 1);
+          featureModel = manager.findFeatureModel(pluginId, pluginVersion);
+        }
+        if (featureModel == null)
+          featureModel = manager.findFeatureModel(pluginId);
+
+        if (featureModel != null)
+          featureModels.add(featureModel);
+      }
+
+      // sort
+      Collections.sort(featureModels, Util.PDE_LABEL_COMPARATOR);
+      featureModels.stream().map(Util::getTreeParent).forEach(elements::add);
+
+      // Additional plugins
+      Set<String> additional_plugins = launchConfiguration.getAttribute(IPDELauncherConstants.ADDITIONAL_PLUGINS, Collections.emptySet());
+      if (!additional_plugins.isEmpty())
+      {
+        List<IPluginBase> pluginBases = new ArrayList<>();
+        for(String additional_plugin : additional_plugins)
+        {
+          if (additional_plugin.isEmpty())
+            continue;
+          if (additional_plugin.endsWith("default:false"))
+            continue;
+
+          //
+          String pluginId = additional_plugin;
+          String pluginVersion = null;
+
+          int index = additional_plugin.indexOf(':');
+          if (index >= 0)
+          {
+            pluginId = additional_plugin.substring(0, index);
+            pluginVersion = additional_plugin.substring(index + 1);
+            if (pluginVersion.endsWith("default:true"))
+              pluginVersion = pluginVersion.substring(0, pluginVersion.length() - "default:true".length() - 1);
+          }
+
+          IPluginModelBase model = null;
+          if (pluginVersion != null)
+            model = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.PERFECT, null);
+          if (model == null)
+            model = PluginRegistry.findModel(pluginId);
+
+          if (model instanceof IFragmentModel)
+          {
+            IFragment fragment = ((IFragmentModel) model).getFragment();
+            pluginBases.add(fragment);
+          }
+          else if (model instanceof IPluginModel)
+          {
+            IPlugin plugin = ((IPluginModel) model).getPlugin();
+            pluginBases.add(plugin);
+          }
+        }
+
+        if (!pluginBases.isEmpty())
+        {
+          TreeParent additionalPluginsTreeParent = new TreeParent(Constants.ADDITIONAL_PLUGIN);
+          additionalPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+          elements.add(additionalPluginsTreeParent);
+
+          // sort
+          Collections.sort(pluginBases, Util.PDE_LABEL_COMPARATOR);
+
+          //
+          pluginBases.stream().map(Util::getTreeObject).forEach(additionalPluginsTreeParent::addChild);
+        }
+      }
+    }
+    catch(CoreException e)
+    {
+      e.printStackTrace();
+      Activator.logError(e.toString(), e);
+    }
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
    * Open PDE object

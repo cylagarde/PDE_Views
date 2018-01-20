@@ -49,10 +49,10 @@ public class FeatureView extends ViewPart
 
   private DrillDownAdapter drillDownAdapter;
 
-  private Action expandAllNodesAction;
-  private Action collapseAllNodesAction;
   private Action copyIdToClipboardAction;
   private Action getAllFeaturesAction;
+  private Action expandAllNodesAction;
+  private Action collapseAllNodesAction;
   private Action doubleClickOpenNodeAction;
 
   private ISelectionListener selectionListener;
@@ -160,6 +160,7 @@ public class FeatureView extends ViewPart
   }
 
   /**
+   * Return the feature viewer
    */
   public TreeViewer getFeatureViewer()
   {
@@ -208,10 +209,8 @@ public class FeatureView extends ViewPart
     if (copyIdToClipboardAction.isEnabled())
       manager.add(copyIdToClipboardAction);
     manager.add(new Separator());
-    if (expandAllNodesAction.isEnabled())
-      manager.add(expandAllNodesAction);
-    if (collapseAllNodesAction.isEnabled())
-      manager.add(collapseAllNodesAction);
+    manager.add(expandAllNodesAction);
+    manager.add(collapseAllNodesAction);
     manager.add(new Separator());
     drillDownAdapter.addNavigationActions(manager);
     // Other plug-ins can contribute there actions here
@@ -230,13 +229,10 @@ public class FeatureView extends ViewPart
 
   private void makeActions()
   {
+    copyIdToClipboardAction = new CopyIdToClipboardAction(featureViewer);
+    getAllFeaturesAction = new GetAllFeaturesAction(this);
     expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true);
     collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
-
-    copyIdToClipboardAction = new CopyIdToClipboardAction(featureViewer);
-
-    //
-    getAllFeaturesAction = new GetAllFeaturesAction(this);
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);
