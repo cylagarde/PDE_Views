@@ -1,7 +1,9 @@
 package cl.pde.views;
 
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -83,7 +85,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
                 Object[] expandedElements = treeViewer.getExpandedElements();
 
                 // refresh node
-                Activator.logInfo("refresh "+treeObject);
+                Activator.logInfo("refresh " + treeObject);
                 treeViewer.refresh(treeObject);
 
                 treeViewer.setExpandedElements(expandedElements);
@@ -118,40 +120,35 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       @Override
       protected IStatus run(IProgressMonitor monitor)
       {
-        Util.setUseCache(true);
-        try
-        {
-          // search all resources
-          Predicate<Object> predicate = o -> {
-            if (o instanceof TreeObject)
-            {
-              TreeObject treeObject = (TreeObject) o;
-              if (treeObject.data != null)
-              {
-                IResource resource = Util.getResource(treeObject.data);
-                if (resource != null)
-                  resourceMap.put(resource, treeObject);
-              }
-            }
-            return true;
-          };
+        Set<Object> cacheSet = new HashSet<>();
 
-          Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate, monitor);
-
-          if (!resourceMap.isEmpty())
+        // search all resources
+        Predicate<Object> predicate = o -> {
+          if (o instanceof TreeObject)
           {
-            StringBuilder buffer = new StringBuilder(1024);
-            buffer.append(resourceMap.size() + " resources found\n");
-            resourceMap.forEach((key, value) -> buffer.append(key + " " + value).append("\n"));
-            Activator.logInfo(buffer.toString());
-          }
+            if (!cacheSet.add(o))
+              return false;
 
-          return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
-        }
-        finally
-        {
-          Util.setUseCache(false);
-        }
+            TreeObject treeObject = (TreeObject) o;
+            if (treeObject.data != null)
+            {
+              IResource resource = Util.getResource(treeObject.data);
+              if (resource != null)
+                resourceMap.put(resource, treeObject);
+            }
+          }
+          return true;
+        };
+
+        long time = System.currentTimeMillis();
+        Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate, monitor);
+
+        StringBuilder buffer = new StringBuilder(1024);
+        buffer.append(resourceMap.size() + " resources found TIME=" + (System.currentTimeMillis() - time) + "\n");
+        resourceMap.forEach((key, value) -> buffer.append(key + " " + value).append("\n"));
+        Activator.logInfo(buffer.toString());
+
+        return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
       }
     };
     job.schedule();

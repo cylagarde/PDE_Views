@@ -678,7 +678,7 @@ public class Util
    */
   public static IResource getResource(Object pdeObject)
   {
-    Object key = PDEPlugin.getDefault().getLabelProvider().getText(pdeObject);
+    Object key = getPDEKey(pdeObject);
     Object resource = RESOURCE_CACHEMAP.get(key);
     if (resource == null || !USE_CACHE)
     {
@@ -933,7 +933,7 @@ public class Util
    */
   public static Boolean getSingletonState(Object pdeObject)
   {
-    Object key = PDEPlugin.getDefault().getLabelProvider().getText(pdeObject);
+    Object key = getPDEKey(pdeObject);
     Object singletonState = SINGLETONSTATE_CACHEMAP.get(key);
     if (singletonState == null || !USE_CACHE)
     {
@@ -947,6 +947,15 @@ public class Util
     //      System.out.println("++++++++++++ " + key);
 
     return singletonState == NULL? null : (Boolean) singletonState;
+  }
+
+  /**
+   * @param pdeObject
+   */
+  private static Object getPDEKey(Object pdeObject)
+  {
+    //    return PDEPlugin.getDefault().getLabelProvider().getText(pdeObject);
+    return pdeObject;
   }
 
   /**
