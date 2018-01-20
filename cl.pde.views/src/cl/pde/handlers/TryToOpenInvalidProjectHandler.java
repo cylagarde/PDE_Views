@@ -18,6 +18,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -101,6 +102,8 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
         return true;
       };
 
+      NullProgressMonitor nullMonitor = new NullProgressMonitor();
+
       // search
       MultiStatus errorStatus = null;
       IProject[] projects = root.getProjects();
@@ -120,7 +123,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
 
         try
         {
-          Util.traverseContainer(workspaceProject, filePredicate);
+          Util.traverseContainer(workspaceProject, filePredicate, nullMonitor);
         }
         catch(CoreException e)
         {

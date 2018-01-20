@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -92,6 +93,8 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       return true;
     };
 
+    NullProgressMonitor nullMonitor = new NullProgressMonitor();
+
     // search
     MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
     IProject[] projects = root.getProjects();
@@ -106,7 +109,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
 
       try
       {
-        Util.traverseContainer(workspaceProject, filePredicate);
+        Util.traverseContainer(workspaceProject, filePredicate, nullMonitor);
       }
       catch(CoreException e)
       {

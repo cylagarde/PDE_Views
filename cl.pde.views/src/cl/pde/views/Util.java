@@ -178,15 +178,16 @@ public class Util
    * @param fileConsumer
    * @throws CoreException
    */
-  public static void traverseContainer(IContainer container, Predicate<IResource> filePredicate) throws CoreException
+  public static void traverseContainer(IContainer container, Predicate<IResource> filePredicate, IProgressMonitor monitor) throws CoreException
   {
     if (filePredicate.test(container))
     {
       IResource[] members = container.members();
+      SubMonitor subMonitor = SubMonitor.convert(monitor, members.length);
       for(IResource member : members)
       {
         if (member instanceof IContainer)
-          traverseContainer((IContainer) member, filePredicate);
+          traverseContainer((IContainer) member, filePredicate, subMonitor.split(1));
         else if (member instanceof IFile)
         {
           if (!filePredicate.test(member))
