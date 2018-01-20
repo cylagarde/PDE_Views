@@ -118,30 +118,40 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
       @Override
       protected IStatus run(IProgressMonitor monitor)
       {
-        // search all resources
-        Predicate<Object> predicate = o -> {
-          if (o instanceof TreeObject)
-          {
-            TreeObject treeObject = (TreeObject) o;
-            if (treeObject.data != null)
-            {
-              IResource resource = Util.getResource(treeObject.data);
-              if (resource != null)
-                resourceMap.put(resource, treeObject);
-            }
-          }
-          return true;
-        };
-        Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate, monitor);
-
-        if (!resourceMap.isEmpty())
+        Util.setUseCache(true);
+        try
         {
-          StringBuilder buffer = new StringBuilder(1024);
-          resourceMap.forEach((key, value) -> buffer.append(key + " " + value).append("\n"));
-          Activator.logInfo(buffer.toString());
-        }
+          // search all resources
+          Predicate<Object> predicate = o -> {
+            if (o instanceof TreeObject)
+            {
+              TreeObject treeObject = (TreeObject) o;
+              if (treeObject.data != null)
+              {
+                IResource resource = Util.getResource(treeObject.data);
+                if (resource != null)
+                  resourceMap.put(resource, treeObject);
+              }
+            }
+            return true;
+          };
 
-        return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
+          Util.traverseRoot((ITreeContentProvider) treeViewer.getContentProvider(), treeViewer.getInput(), predicate, monitor);
+
+          if (!resourceMap.isEmpty())
+          {
+            StringBuilder buffer = new StringBuilder(1024);
+            buffer.append(resourceMap.size() + " resources found\n");
+            resourceMap.forEach((key, value) -> buffer.append(key + " " + value).append("\n"));
+            Activator.logInfo(buffer.toString());
+          }
+
+          return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
+        }
+        finally
+        {
+          Util.setUseCache(false);
+        }
       }
     };
     job.schedule();
