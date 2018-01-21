@@ -125,8 +125,12 @@
       <definition id="is.feature">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile">
-               <test property="org.eclipse.core.resources.name" 
-                     value="feature.xml"/>
+               <and>
+                  <test property="org.eclipse.core.resources.name" 
+                        value="feature.xml"/>
+                  <test property="org.eclipse.core.resources.contentTypeId"
+                        value="org.eclipse.pde.featureManifest"/>
+               </and>
             </adapt>
          </iterate>
       </definition>
@@ -134,8 +138,16 @@
       <definition id="is.product">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile">
-               <test property="org.eclipse.core.resources.name" 
-                     value="*.product"/>
+               <and>
+                  <test
+                        property="org.eclipse.core.resources.name"
+                        value="*.product">
+                  </test>
+                  <test
+                        property="org.eclipse.core.resources.contentTypeId"
+                        value="org.eclipse.pde.productFile">
+                  </test>
+               </and>
             </adapt>
          </iterate>
       </definition>
