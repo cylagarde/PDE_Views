@@ -15,7 +15,7 @@ import org.osgi.framework.FrameworkUtil;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin
+public class PDEViewActivator extends AbstractUIPlugin
 {
   // The plug-in ID
   public static final String PLUGIN_ID = "cl.pde.views"; //$NON-NLS-1$
@@ -25,12 +25,12 @@ public class Activator extends AbstractUIPlugin
   //  public static final String LAUNCH_CONFIGURATION_VIEW_ID = "cl.pde.launchConfigurationView";
 
   // The shared instance
-  private static Activator plugin;
+  private static PDEViewActivator plugin;
 
   /**
    * The constructor
    */
-  public Activator()
+  public PDEViewActivator()
   {
   }
 
@@ -61,7 +61,7 @@ public class Activator extends AbstractUIPlugin
    *
    * @return the shared instance
    */
-  public static Activator getDefault()
+  public static PDEViewActivator getDefault()
   {
     return plugin;
   }
@@ -115,7 +115,7 @@ public class Activator extends AbstractUIPlugin
    */
   public static void log(int severity, String message, Throwable e)
   {
-    ILog log = plugin != null? plugin.getLog() : Platform.getLog(FrameworkUtil.getBundle(Activator.class));
+    ILog log = plugin != null? plugin.getLog() : Platform.getLog(FrameworkUtil.getBundle(PDEViewActivator.class));
     log = log != null? log : IDEWorkbenchPlugin.getDefault().getLog();
 
     log.log(new Status(severity, PLUGIN_ID, message, e));

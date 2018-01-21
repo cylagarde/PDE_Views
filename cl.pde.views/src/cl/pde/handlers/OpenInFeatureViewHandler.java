@@ -20,7 +20,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.Constants;
 import cl.pde.views.feature.FeatureView;
 
@@ -53,7 +53,7 @@ public class OpenInFeatureViewHandler extends AbstractHandler implements Constan
           }
           catch(CoreException e)
           {
-            Activator.logError("Cannot getContentType " + file, e);
+            PDEViewActivator.logError("Cannot getContentType " + file, e);
             continue;
           }
 
@@ -64,7 +64,7 @@ public class OpenInFeatureViewHandler extends AbstractHandler implements Constan
           // check if feature loaded
           if (!workspaceFeatureModel.isLoaded())
           {
-            Activator.logError("Cannot load feature " + file);
+            PDEViewActivator.logError("Cannot load feature " + file);
             continue;
           }
 
@@ -112,7 +112,7 @@ public class OpenInFeatureViewHandler extends AbstractHandler implements Constan
     catch(PartInitException e)
     {
       String message = "Cannot open feature view : " + e;
-      Activator.logError(message, e);
+      PDEViewActivator.logError(message, e);
       Shell shell = HandlerUtil.getActiveShell(event);
       MessageDialog.openError(shell, "Error", message);
     }

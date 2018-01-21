@@ -20,7 +20,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.Constants;
 import cl.pde.views.product.ProductView;
 
@@ -58,7 +58,7 @@ public class OpenInProductViewHandler extends AbstractHandler implements Constan
             // check if product loaded
             if (!workspaceProductModel.isLoaded())
             {
-              Activator.logError("Cannot load product " + file);
+              PDEViewActivator.logError("Cannot load product " + file);
               continue;
             }
 
@@ -66,7 +66,7 @@ public class OpenInProductViewHandler extends AbstractHandler implements Constan
           }
           catch(CoreException e)
           {
-            Activator.logError("Cannot getContentType " + file, e);
+            PDEViewActivator.logError("Cannot getContentType " + file, e);
             continue;
           }
         }
@@ -112,7 +112,7 @@ public class OpenInProductViewHandler extends AbstractHandler implements Constan
     catch(PartInitException e)
     {
       String message = "Cannot open product view : " + e;
-      Activator.logError(message, e);
+      PDEViewActivator.logError(message, e);
       Shell shell = HandlerUtil.getActiveShell(event);
       MessageDialog.openError(shell, "Error", message);
     }

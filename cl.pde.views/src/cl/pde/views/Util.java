@@ -77,7 +77,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 
 /**
@@ -219,7 +219,7 @@ public class Util
     }
     catch(Exception e)
     {
-      Activator.logError("Error: " + e, e);
+      PDEViewActivator.logError("Error: " + e, e);
     }
     return false;
   }
@@ -294,7 +294,7 @@ public class Util
       openLaunchConfiguration((ILaunchConfiguration) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported open for " + pdeObject.getClass().getName());
+      PDEViewActivator.logWarning("Unsupported open for " + pdeObject.getClass().getName());
   }
 
   /**
@@ -313,7 +313,7 @@ public class Util
       }
       catch(PartInitException e)
       {
-        Activator.logError("Cannot open product " + launchConfigurationResource, e);
+        PDEViewActivator.logError("Cannot open product " + launchConfigurationResource, e);
       }
     }
   }
@@ -334,7 +334,7 @@ public class Util
       }
       catch(PartInitException e)
       {
-        Activator.logError("Cannot open product " + productModelResource, e);
+        PDEViewActivator.logError("Cannot open product " + productModelResource, e);
       }
     }
   }
@@ -369,7 +369,7 @@ public class Util
     else
     {
       String message = "Cannot found plugin with id=" + pluginId + " and version=" + pluginVersion;
-      Activator.logError(message);
+      PDEViewActivator.logError(message);
       Shell shell = Display.getDefault().getActiveShell();
       MessageDialog.openError(shell, "Error", message);
     }
@@ -387,7 +387,7 @@ public class Util
     if (featureModel != null)
       openFeatureModel(featureModel);
     else
-      Activator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion);
+      PDEViewActivator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion);
   }
 
   /**
@@ -463,7 +463,7 @@ public class Util
       }
       catch(PartInitException e)
       {
-        Activator.logError("Cannot open product", e);
+        PDEViewActivator.logError("Cannot open product", e);
       }
     }
   }
@@ -543,7 +543,7 @@ public class Util
       return getLaunchConfigurationLocation((ILaunchConfiguration) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported location for " + pdeObject.getClass().getName());
+      PDEViewActivator.logWarning("Unsupported location for " + pdeObject.getClass().getName());
 
     return null;
   }
@@ -781,7 +781,7 @@ public class Util
       return getProductModelResource((IProductModel) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported resource for " + pdeObject.getClass().getName());
+      PDEViewActivator.logWarning("Unsupported resource for " + pdeObject.getClass().getName());
 
     return null;
   }
@@ -1029,7 +1029,7 @@ public class Util
       return getSingletonState((IFragment) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported sigleton for " + pdeObject.getClass().getName());
+      PDEViewActivator.logWarning("Unsupported sigleton for " + pdeObject.getClass().getName());
 
     return null;
   }
@@ -1213,7 +1213,7 @@ public class Util
     IProduct product = productModel.getProduct();
     if (!VersionUtil.isEmptyVersion(product.getVersion()))
       productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
-    productTreeParent.image = Activator.getImage(Images.PRODUCT);
+    productTreeParent.image = PDEViewActivator.getImage(Images.PRODUCT);
 
     productTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromProduct(product);
@@ -1509,7 +1509,7 @@ public class Util
   public static TreeParent getLaunchConfigurationTreeParent(ILaunchConfiguration launchConfiguration)
   {
     TreeParent launchConfigurationTreeParent = new TreeParent(null, launchConfiguration);
-    launchConfigurationTreeParent.image = Activator.getImage(Images.LAUNCH_CONFIGURATION);
+    launchConfigurationTreeParent.image = PDEViewActivator.getImage(Images.LAUNCH_CONFIGURATION);
     launchConfigurationTreeParent.foreground = Constants.LAUNCH_CONFIGURATION_FOREGROUND;
 
     launchConfigurationTreeParent.loadChildRunnable = () -> {
@@ -1544,7 +1544,7 @@ public class Util
     catch(CoreException e)
     {
       e.printStackTrace();
-      Activator.logError(e.toString(), e);
+      PDEViewActivator.logError(e.toString(), e);
     }
 
     return elements;
@@ -1636,7 +1636,7 @@ public class Util
     catch(CoreException e)
     {
       e.printStackTrace();
-      Activator.logError(e.toString(), e);
+      PDEViewActivator.logError(e.toString(), e);
     }
 
     return pluginBases;
@@ -1741,7 +1741,7 @@ public class Util
     catch(CoreException e)
     {
       e.printStackTrace();
-      Activator.logError(e.toString(), e);
+      PDEViewActivator.logError(e.toString(), e);
     }
   }
 
@@ -1784,7 +1784,7 @@ public class Util
       return ((IFeatureModel) pdeObject).getFeature().getId();
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported id for " + pdeObject.getClass().getName());
+      PDEViewActivator.logWarning("Unsupported id for " + pdeObject.getClass().getName());
 
     return null;
   }

@@ -39,7 +39,7 @@ import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 import cl.pde.dialog.CheckedFilteredTreeSelectionDialog;
 import cl.pde.views.Util;
@@ -86,7 +86,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         }
         catch(CoreException e)
         {
-          Activator.logError("Error loading project description " + file, e);
+          PDEViewActivator.logError("Error loading project description " + file, e);
         }
       }
 
@@ -96,7 +96,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     NullProgressMonitor nullMonitor = new NullProgressMonitor();
 
     // search
-    MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
+    MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
     IProject[] projects = root.getProjects();
     for(IProject workspaceProject : projects)
     {
@@ -168,7 +168,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
   {
     return monitor -> {
       monitor.beginTask("", invalidProjects.length); //$NON-NLS-1$
-      MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Cannot open projects", null);
+      MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Cannot open projects", null);
       for(int i = 0; i < invalidProjects.length; i++)
       {
         if (invalidProjects[i] instanceof IProject)
@@ -236,7 +236,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     public Image getImage(Object element)
     {
       if (element instanceof IProject)
-        return Activator.getImage(Images.INVALID_PROJECT);
+        return PDEViewActivator.getImage(Images.INVALID_PROJECT);
       else if (element instanceof IProjectDescription)
         return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
       return super.getImage(element);

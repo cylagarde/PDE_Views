@@ -5,7 +5,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 import cl.pde.views.feature.FeatureView;
 
@@ -25,7 +25,7 @@ public class GetAllFeaturesAction extends Action
     this.featureView = featureView;
     setText("Get all features");
     setToolTipText("Get all features");
-    setImageDescriptor(Activator.getImageDescriptor(Images.GET_ALL_FEATURES));
+    setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_FEATURES));
   }
 
   @Override

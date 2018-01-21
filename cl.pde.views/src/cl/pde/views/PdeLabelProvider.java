@@ -19,7 +19,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.TextStyle;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 
 /**
@@ -126,14 +126,14 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         if (singletonState != null && singletonState)
         {
           //
-          ImageDescriptor singletonImageDescriptor = Activator.getImageDescriptor(Images.SINGLETON);
+          ImageDescriptor singletonImageDescriptor = PDEViewActivator.getImageDescriptor(Images.SINGLETON);
           String key = String.valueOf(img) + " " + String.valueOf(singletonImageDescriptor);
-          Image overlayImage = Activator.getDefault().getImageRegistry().get(key);
+          Image overlayImage = PDEViewActivator.getDefault().getImageRegistry().get(key);
           if (overlayImage == null)
           {
             DecorationOverlayIcon overlayIcon = new DecorationOverlayIcon(img, singletonImageDescriptor, IDecoration.TOP_RIGHT);
             overlayImage = overlayIcon.createImage();
-            Activator.getDefault().getImageRegistry().put(key, overlayImage);
+            PDEViewActivator.getDefault().getImageRegistry().put(key, overlayImage);
           }
           img = overlayImage;
         }

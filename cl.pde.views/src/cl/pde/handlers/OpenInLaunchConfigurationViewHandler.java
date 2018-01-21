@@ -21,7 +21,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.launchconfiguration.LaunchConfigurationView;
 
 /**
@@ -94,7 +94,7 @@ public class OpenInLaunchConfigurationViewHandler extends AbstractHandler
     catch(PartInitException e)
     {
       String message = "Cannot open Launch configuration view : " + e;
-      Activator.logError(message, e);
+      PDEViewActivator.logError(message, e);
       Shell shell = HandlerUtil.getActiveShell(event);
       MessageDialog.openError(shell, "Error", message);
     }
