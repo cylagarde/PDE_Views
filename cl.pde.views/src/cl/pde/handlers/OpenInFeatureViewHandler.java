@@ -1,11 +1,14 @@
 package cl.pde.handlers;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -14,15 +17,17 @@ import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
+import cl.pde.views.Constants;
 import cl.pde.views.feature.FeatureView;
 
 /**
  * The class <b>OpenInFeatureViewHandler</b> allows to.<br>
  */
-public class OpenInFeatureViewHandler extends AbstractHandler
+public class OpenInFeatureViewHandler extends AbstractHandler implements Constants
 {
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException
@@ -30,16 +35,45 @@ public class OpenInFeatureViewHandler extends AbstractHandler
     ISelection selection = HandlerUtil.getCurrentSelection(event);
     if (selection instanceof IStructuredSelection)
     {
+      Collection<WorkspaceFeatureModel> workspaceFeatureModels = new ArrayList<>();
+
       for(Iterator<?> it = ((IStructuredSelection) selection).iterator(); it.hasNext();)
       {
         Object element = it.next();
         if (element instanceof IFile)
         {
           IFile file = (IFile) element;
-          if ("feature.xml".equals(file.getName()))
-            openInFeatureView(event, file);
+          if (!"feature.xml".equals(file.getName()))
+            continue;
+
+          try
+          {
+            if (!FEATURE_CONTENT_TYPE.equals(file.getContentDescription().getContentType().getId()))
+              continue;
+          }
+          catch(CoreException e)
+          {
+            Activator.logError("Cannot getContentType " + file, e);
+            continue;
+          }
+
+          // load feature
+          WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
+          workspaceFeatureModel.load();
+
+          // check if feature loaded
+          if (!workspaceFeatureModel.isLoaded())
+          {
+            Activator.logError("Cannot load feature " + file);
+            continue;
+          }
+
+          workspaceFeatureModels.add(workspaceFeatureModel);
         }
       }
+
+      if (!workspaceFeatureModels.isEmpty())
+        openInFeatureView(event, workspaceFeatureModels);
     }
 
     return null;
@@ -48,22 +82,14 @@ public class OpenInFeatureViewHandler extends AbstractHandler
   /**
    * Open in FeatureView
    * @param event
-   * @param featureFile
+   * @param workspaceFeatureModels
    */
-  private void openInFeatureView(ExecutionEvent event, IFile featureFile)
+  private void openInFeatureView(ExecutionEvent event, Collection<WorkspaceFeatureModel> workspaceFeatureModels)
   {
     IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
 
     try
     {
-      // load feature
-      WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(featureFile);
-      workspaceFeatureModel.load();
-
-      // check if feature loaded
-      if (!workspaceFeatureModel.isLoaded())
-        throw new Exception("Cannot load " + featureFile);
-
       // get FeatureView
       IViewPart showView = workbenchPage.showView(FeatureView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       FeatureView featureView = (FeatureView) showView;
@@ -72,23 +98,23 @@ public class OpenInFeatureViewHandler extends AbstractHandler
       featureViewer.getControl().setRedraw(false);
       try
       {
-        featureView.setInput(workspaceFeatureModel);
+        featureView.setInput(workspaceFeatureModels);
 
         //
-        featureViewer.expandToLevel(4);
+        if (workspaceFeatureModels.size() == 1)
+          featureViewer.expandToLevel(4);
       }
       finally
       {
         featureViewer.getControl().setRedraw(true);
       }
     }
-    catch(Exception e)
+    catch(PartInitException e)
     {
-      String message = "Cannot open feature file : " + featureFile;
+      String message = "Cannot open feature view : " + e;
       Activator.logError(message, e);
       Shell shell = HandlerUtil.getActiveShell(event);
       MessageDialog.openError(shell, "Error", message);
     }
-
   }
 }

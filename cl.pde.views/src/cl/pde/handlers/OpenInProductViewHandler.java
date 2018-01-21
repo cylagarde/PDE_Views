@@ -1,11 +1,14 @@
 package cl.pde.handlers;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -14,15 +17,17 @@ import org.eclipse.pde.internal.core.product.WorkspaceProductModel;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import cl.pde.Activator;
+import cl.pde.views.Constants;
 import cl.pde.views.product.ProductView;
 
 /**
  * The class <b>OpenInProductViewHandler</b> allows to.<br>
  */
-public class OpenInProductViewHandler extends AbstractHandler
+public class OpenInProductViewHandler extends AbstractHandler implements Constants
 {
   @Override
   public Object execute(ExecutionEvent event) throws ExecutionException
@@ -30,16 +35,45 @@ public class OpenInProductViewHandler extends AbstractHandler
     ISelection selection = HandlerUtil.getCurrentSelection(event);
     if (selection instanceof IStructuredSelection)
     {
+      Collection<WorkspaceProductModel> workspaceProductModels = new ArrayList<>();
+
       for(Iterator<?> it = ((IStructuredSelection) selection).iterator(); it.hasNext();)
       {
         Object element = it.next();
         if (element instanceof IFile)
         {
           IFile file = (IFile) element;
-          if (file.getName().endsWith(".product"))
-            openInProductView(event, file);
+          if (!file.getName().endsWith(".product"))
+            continue;
+
+          try
+          {
+            if (!PRODUCT_CONTENT_TYPE.equals(file.getContentDescription().getContentType().getId()))
+              continue;
+
+            // load product
+            WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(file, false);
+            workspaceProductModel.load();
+
+            // check if product loaded
+            if (!workspaceProductModel.isLoaded())
+            {
+              Activator.logError("Cannot load product " + file);
+              continue;
+            }
+
+            workspaceProductModels.add(workspaceProductModel);
+          }
+          catch(CoreException e)
+          {
+            Activator.logError("Cannot getContentType " + file, e);
+            continue;
+          }
         }
       }
+
+      if (!workspaceProductModels.isEmpty())
+        openInProductView(event, workspaceProductModels);
     }
 
     return null;
@@ -48,22 +82,15 @@ public class OpenInProductViewHandler extends AbstractHandler
   /**
    * Open in ProductView
    * @param event
-   * @param productFile
+   * @param workspaceProductModels
    */
-  private void openInProductView(ExecutionEvent event, IFile productFile)
+  private void openInProductView(ExecutionEvent event, Collection<WorkspaceProductModel> workspaceProductModels)
   {
+    IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+
     try
     {
-      // load product
-      WorkspaceProductModel workspaceProductModel = new WorkspaceProductModel(productFile, false);
-      workspaceProductModel.load();
-
-      // check if product loaded
-      if (!workspaceProductModel.isLoaded())
-        throw new Exception("Cannot load " + productFile);
-
       // get ProductView
-      IWorkbenchPage workbenchPage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
       IViewPart showView = workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       ProductView productView = (ProductView) showView;
       TreeViewer productViewer = productView.getProductViewer();
@@ -71,19 +98,20 @@ public class OpenInProductViewHandler extends AbstractHandler
       productViewer.getControl().setRedraw(false);
       try
       {
-        productView.setInput(workspaceProductModel);
+        productView.setInput(workspaceProductModels);
 
         //
-        productViewer.expandToLevel(5);
+        if (workspaceProductModels.size() == 1)
+          productViewer.expandToLevel(5);
       }
       finally
       {
         productViewer.getControl().setRedraw(true);
       }
     }
-    catch(Exception e)
+    catch(PartInitException e)
     {
-      String message = "Cannot open product file : " + productFile;
+      String message = "Cannot open product view : " + e;
       Activator.logError(message, e);
       Shell shell = HandlerUtil.getActiveShell(event);
       MessageDialog.openError(shell, "Error", message);
