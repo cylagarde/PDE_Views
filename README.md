@@ -1,5 +1,5 @@
 # PDE_Views
-PDE RCP Views V1.3<br>
+PDE RCP Views V1.4<br>
 
 Le plugin propose 3 vues disponibles avec le menu "Window/Show view"<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/show_views.png"/><br>
@@ -9,7 +9,7 @@ Cette vue permet de visualiser le contenu d'une feature en affichant les plugins
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu de la feature.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/feature_view.png"/>
 Pour ouvrir la vue, sélectionner un fichier 'features.xml' dans la vue "Project Explorer" ou "Package Explorer" et faire un clic droit pour afficher le menu contextuel : clic sur le menu "Open in feature view" <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/open_in_feature_view.png"/>
-Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllFeatures.png"/> permet d'afficher toutes les features contenu dans la target platform.<br>
+Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllFeatures.png"/> permet d'afficher toutes les features contenus dans le workspace et la target platform.<br>
 Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
 
 <br>
@@ -19,6 +19,8 @@ Cette vue permet de visualiser le contenu d'une launch configuration en affichan
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu de la launch configuration.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/launch_configuration_view.png"/>
 Pour ouvrir la vue, sélectionner un fichier '.launch' dans la vue "Project Explorer" ou "Package Explorer" et faire un clic droit pour afficher le menu contextuel : clic sur le menu "Open in launch configuration view" <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/open_in_launch_configuration_view.png"/>
+Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllLaunchConfigurations.png"/> permet d'afficher toutes les launch configurations contenus dans le workspace.<br>
+Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
 
 <br>
 <H1>Product view</H1><br>
@@ -26,3 +28,5 @@ Cette vue permet de visualiser le contenu d'une product en affichant les plugins
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu du product.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/product_view.png"/>
 Pour ouvrir la vue, sélectionner un fichier '.product' dans la vue "Project Explorer" ou "Package Explorer" et faire un clic droit pour afficher le menu contextuel : clic sur le menu "Open in product view" <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/open_in_product_view.png"/>
+Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllProducts.png"/> permet d'afficher toutes les products contenu dans le workspace.<br>
+Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
