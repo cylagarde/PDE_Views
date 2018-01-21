@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -77,8 +78,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 
-import cl.pde.Activator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 
 /**
  * The class <b>Util</b> allows to.<br>
@@ -86,6 +87,7 @@ import cl.pde.Images;
 public class Util
 {
   public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
+  private static final Set<String> MESSAGE_ALREADY_PRINTED_SET = new HashSet<>();
 
   /**
    * Traverse tree
@@ -219,7 +221,7 @@ public class Util
     }
     catch(Exception e)
     {
-      Activator.logError("Error: " + e, e);
+      PDEViewActivator.logError("Error: " + e, e);
     }
     return false;
   }
@@ -294,7 +296,11 @@ public class Util
       openLaunchConfiguration((ILaunchConfiguration) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported open for " + pdeObject.getClass().getName());
+    {
+      String msg = "Unsupported open for " + pdeObject.getClass().getName();
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logWarning(msg);
+    }
   }
 
   /**
@@ -313,7 +319,7 @@ public class Util
       }
       catch(PartInitException e)
       {
-        Activator.logError("Cannot open product " + launchConfigurationResource, e);
+        PDEViewActivator.logError("Cannot open product " + launchConfigurationResource, e);
       }
     }
   }
@@ -334,7 +340,7 @@ public class Util
       }
       catch(PartInitException e)
       {
-        Activator.logError("Cannot open product " + productModelResource, e);
+        PDEViewActivator.logError("Cannot open product " + productModelResource, e);
       }
     }
   }
@@ -353,9 +359,8 @@ public class Util
    * @param pluginId
    * @param pluginVersion
    */
-  private static void openPlugin(String pluginId, String pluginVersion)
+  private static void openPlugin(IPluginModelBase pluginModelBase)
   {
-    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
     if (pluginModelBase instanceof IFragmentModel)
     {
       IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
@@ -366,13 +371,24 @@ public class Util
       IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
       ManifestEditor.open(plugin, false);
     }
-    else
+    else if (pluginModelBase != null)
     {
-      String message = "Cannot found plugin with id=" + pluginId + " and version=" + pluginVersion;
-      Activator.logError(message);
+      String message = "Cannot open plugin for " +pluginModelBase.getClass().getName();
+      PDEViewActivator.logError(message);
       Shell shell = Display.getDefault().getActiveShell();
       MessageDialog.openError(shell, "Error", message);
     }
+  }
+
+  /**
+   * Open plugin
+   * @param pluginId
+   * @param pluginVersion
+   */
+  private static void openPlugin(String pluginId, String pluginVersion)
+  {
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    openPlugin(pluginModelBase);
   }
 
   /**
@@ -387,7 +403,7 @@ public class Util
     if (featureModel != null)
       openFeatureModel(featureModel);
     else
-      Activator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion);
+      PDEViewActivator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion);
   }
 
   /**
@@ -427,7 +443,6 @@ public class Util
    */
   private static void openFeatureImport(IFeatureImport featureImport)
   {
-    getSingletonState(featureImport);
     if (featureImport.getType() == IFeatureImport.PLUGIN)
       openPlugin(featureImport.getId(), featureImport.getVersion());
     else if (featureImport.getType() == IFeatureImport.FEATURE && featureImport.getFeature() != null)
@@ -463,7 +478,7 @@ public class Util
       }
       catch(PartInitException e)
       {
-        Activator.logError("Cannot open product", e);
+        PDEViewActivator.logError("Cannot open product", e);
       }
     }
   }
@@ -509,43 +524,49 @@ public class Util
    */
   public static String getLocation(Object pdeObject)
   {
+    String location = null;
+
     if (pdeObject instanceof IPlugin)
-      return getPluginLocation((IPlugin) pdeObject);
+      location = getPluginLocation((IPlugin) pdeObject);
 
-    if (pdeObject instanceof IFeaturePlugin)
-      return getFeaturePluginLocation((IFeaturePlugin) pdeObject);
+    else if (pdeObject instanceof IFeaturePlugin)
+      location = getFeaturePluginLocation((IFeaturePlugin) pdeObject);
 
-    if (pdeObject instanceof IFeatureChild)
-      return getFeatureChildLocation((IFeatureChild) pdeObject);
+    else if (pdeObject instanceof IFeatureChild)
+      location = getFeatureChildLocation((IFeatureChild) pdeObject);
 
-    if (pdeObject instanceof IFeatureImport)
-      return getFeatureImportLocation((IFeatureImport) pdeObject);
+    else if (pdeObject instanceof IFeatureImport)
+      location = getFeatureImportLocation((IFeatureImport) pdeObject);
 
-    if (pdeObject instanceof IFeature)
-      return getFeatureLocation((IFeature) pdeObject);
+    else if (pdeObject instanceof IFeature)
+      location = getFeatureLocation((IFeature) pdeObject);
 
-    if (pdeObject instanceof IProductFeature)
-      return getProductFeatureLocation((IProductFeature) pdeObject);
+    else if (pdeObject instanceof IProductFeature)
+      location = getProductFeatureLocation((IProductFeature) pdeObject);
 
-    if (pdeObject instanceof IProductPlugin)
-      return getProductPluginLocation((IProductPlugin) pdeObject);
+    else if (pdeObject instanceof IProductPlugin)
+      location = getProductPluginLocation((IProductPlugin) pdeObject);
 
-    if (pdeObject instanceof IFragment)
-      return getFragmentLocation((IFragment) pdeObject);
+    else if (pdeObject instanceof IFragment)
+      location = getFragmentLocation((IFragment) pdeObject);
 
-    if (pdeObject instanceof IFeatureModel)
-      return getFeatureModelLocation((IFeatureModel) pdeObject);
+    else if (pdeObject instanceof IFeatureModel)
+      location = getFeatureModelLocation((IFeatureModel) pdeObject);
 
-    if (pdeObject instanceof IProductModel)
-      return getProductModelLocation((IProductModel) pdeObject);
+    else if (pdeObject instanceof IProductModel)
+      location = getProductModelLocation((IProductModel) pdeObject);
 
-    if (pdeObject instanceof ILaunchConfiguration)
-      return getLaunchConfigurationLocation((ILaunchConfiguration) pdeObject);
+    else if (pdeObject instanceof ILaunchConfiguration)
+      location = getLaunchConfigurationLocation((ILaunchConfiguration) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported location for " + pdeObject.getClass().getName());
+    {
+      String msg = "Unsupported location for " + pdeObject.getClass().getName();
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logWarning(msg);
+    }
 
-    return null;
+    return location;
   }
 
   /**
@@ -563,7 +584,7 @@ public class Util
    */
   private static String getProductModelLocation(IProductModel productModel)
   {
-    return productModel.getInstallLocation();
+    return productModel == null? null : productModel.getInstallLocation();
   }
 
   /**
@@ -573,6 +594,15 @@ public class Util
   private static String getFeatureModelLocation(IFeatureModel featureModel)
   {
     return featureModel == null? null : featureModel.getInstallLocation();
+  }
+
+  /**
+   * Get pluginModelBase location
+   * @param pluginModelBase
+   */
+  private static String getPluginModelLocation(IPluginModelBase pluginModelBase)
+  {
+    return pluginModelBase == null? null : pluginModelBase.getBundleDescription().getLocation();
   }
 
   /**
@@ -629,10 +659,7 @@ public class Util
    */
   private static String getPluginLocation(IPlugin plugin)
   {
-    //    String pluginId = plugin.getId();
-    //    String pluginVersion = plugin.getVersion();
-    //    return getPluginLocation(pluginId, pluginVersion);
-    return plugin.getPluginModel().getBundleDescription().getLocation();
+    return getPluginModelLocation(plugin.getPluginModel());
   }
 
   /**
@@ -663,11 +690,12 @@ public class Util
    */
   private static String getFeatureImportLocation(IFeatureImport featureImport)
   {
+    String oldLocation = null;
     if (featureImport.getType() == IFeatureImport.PLUGIN)
-      return getPluginLocation(featureImport.getId(), featureImport.getVersion());
+      oldLocation = getPluginLocation(featureImport.getId(), featureImport.getVersion());
     else if (featureImport.getType() == IFeatureImport.FEATURE && featureImport.getFeature() != null)
-      return getFeatureLocation(featureImport.getFeature());
-    return null;
+      oldLocation = getFeatureLocation(featureImport.getFeature());
+    return oldLocation;
   }
 
   /**
@@ -676,9 +704,7 @@ public class Util
    */
   private static String getFeatureLocation(IFeature feature)
   {
-    String featureId = feature.getId();
-    String featureVersion = feature.getVersion();
-    return getFeatureLocation(featureId, featureVersion);
+    return getFeatureModelLocation(feature.getModel());
   }
 
   /**
@@ -709,9 +735,7 @@ public class Util
    */
   private static String getFragmentLocation(IFragment fragment)
   {
-    String fragmentId = fragment.getId();
-    String fragmentVersion = fragment.getVersion();
-    return getPluginLocation(fragmentId, fragmentVersion);
+    return getPluginModelLocation(fragment.getPluginModel());
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -746,44 +770,70 @@ public class Util
    */
   private static IResource getResourceImpl(Object pdeObject)
   {
+    IResource resource = null;
     //    System.out.println(" " + pdeObject);
     if (pdeObject instanceof IModel)
-      return getModelResource((IModel) pdeObject);
+      resource = getModelResource((IModel) pdeObject);
 
-    if (pdeObject instanceof IPlugin)
-      return getPluginResource((IPlugin) pdeObject);
+    else if (pdeObject instanceof IPlugin)
+      resource = getPluginResource((IPlugin) pdeObject);
 
-    if (pdeObject instanceof IFeaturePlugin)
-      return getFeaturePluginResource((IFeaturePlugin) pdeObject);
+    else if (pdeObject instanceof IFeaturePlugin)
+      resource = getFeaturePluginResource((IFeaturePlugin) pdeObject);
 
-    if (pdeObject instanceof IFeatureChild)
-      return getFeatureChildResource((IFeatureChild) pdeObject);
+    else if (pdeObject instanceof IFeatureChild)
+      resource = getFeatureChildResource((IFeatureChild) pdeObject);
 
-    if (pdeObject instanceof IFeatureImport)
-      return getFeatureImportResource((IFeatureImport) pdeObject);
+    else if (pdeObject instanceof IFeatureImport)
+      resource = getFeatureImportResource((IFeatureImport) pdeObject);
 
-    if (pdeObject instanceof IFeature)
-      return getFeatureResource((IFeature) pdeObject);
+    else if (pdeObject instanceof IFeature)
+      resource = getFeatureResource((IFeature) pdeObject);
 
-    if (pdeObject instanceof IProduct)
-      return getProductResource((IProduct) pdeObject);
+    else if (pdeObject instanceof IProduct)
+      resource = getProductResource((IProduct) pdeObject);
 
-    if (pdeObject instanceof IProductFeature)
-      return getProductFeatureResource((IProductFeature) pdeObject);
+    else if (pdeObject instanceof IProductFeature)
+      resource = getProductFeatureResource((IProductFeature) pdeObject);
 
-    if (pdeObject instanceof IProductPlugin)
-      return getProductPluginResource((IProductPlugin) pdeObject);
+    else if (pdeObject instanceof IProductPlugin)
+      resource = getProductPluginResource((IProductPlugin) pdeObject);
 
-    if (pdeObject instanceof ILaunchConfiguration)
-      return getLaunchConfigurationResource((ILaunchConfiguration) pdeObject);
+    else if (pdeObject instanceof ILaunchConfiguration)
+      resource = getLaunchConfigurationResource((ILaunchConfiguration) pdeObject);
 
-    if (pdeObject instanceof IProductModel)
-      return getProductModelResource((IProductModel) pdeObject);
+    else if (pdeObject instanceof IProductModel)
+      resource = getProductModelResource((IProductModel) pdeObject);
+
+    else if (pdeObject instanceof IFragment)
+      resource = getFragmentResource((IFragment) pdeObject);
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported resource for " + pdeObject.getClass().getName());
+    {
+      String msg = "Unsupported resource for " + pdeObject.getClass().getName();
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logWarning(msg);
+    }
 
-    return null;
+    return resource;
+  }
+
+  /**
+   * Get model resource
+   * @param model
+   */
+  private static IResource getModelResource(IModel model)
+  {
+    return model == null? null : model.getUnderlyingResource();
+  }
+
+  /**
+   * Get fragment resource
+   * @param fragment
+   */
+  private static IResource getFragmentResource(IFragment fragment)
+  {
+    return getModelResource(fragment.getPluginModel());
   }
 
   /**
@@ -792,7 +842,7 @@ public class Util
    */
   private static IResource getProductModelResource(IProductModel productModel)
   {
-    return productModel.getUnderlyingResource();
+    return getModelResource(productModel);
   }
 
   /**
@@ -859,9 +909,7 @@ public class Util
    */
   private static IResource getPluginResource(IPlugin plugin)
   {
-    String pluginId = plugin.getId();
-    String pluginVersion = plugin.getVersion();
-    return getPluginResource(pluginId, pluginVersion);
+    return getModelResource(plugin.getPluginModel());
   }
 
   /**
@@ -884,15 +932,6 @@ public class Util
     String featureId = featureChild.getId();
     String featureVersion = featureChild.getVersion();
     return getFeatureResource(featureId, featureVersion);
-  }
-
-  /**
-   * Get IModel resource
-   * @param model
-   */
-  private static IResource getModelResource(IModel model)
-  {
-    return model == null? null : model.getUnderlyingResource();
   }
 
   /**
@@ -1028,8 +1067,21 @@ public class Util
     else if (pdeObject instanceof IFragment)
       return getSingletonState((IFragment) pdeObject);
 
+    else if (pdeObject instanceof IFeatureModel)
+      return null;
+
+    else if (pdeObject instanceof IFeatureChild)
+      return null;
+
+    else if (pdeObject instanceof IProductFeature)
+      return null;
+
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported sigleton for " + pdeObject.getClass().getName());
+    {
+      String msg = "Unsupported singleton for " + pdeObject.getClass().getName();
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logWarning(msg);
+    }
 
     return null;
   }
@@ -1213,7 +1265,7 @@ public class Util
     IProduct product = productModel.getProduct();
     if (!VersionUtil.isEmptyVersion(product.getVersion()))
       productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
-    productTreeParent.image = Activator.getImage(Images.PRODUCT);
+    productTreeParent.image = PDEViewActivator.getImage(Images.PRODUCT);
 
     productTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromProduct(product);
@@ -1255,7 +1307,7 @@ public class Util
 
     featuresTreeParent.loadChildRunnable = () -> {
       // sort
-      Arrays.sort(productFeatures, Util.PDE_LABEL_COMPARATOR);
+      Arrays.sort(productFeatures, PDE_LABEL_COMPARATOR);
 
       for(IProductFeature productFeature : productFeatures)
       {
@@ -1271,7 +1323,7 @@ public class Util
             IFeature feature = featureModel.getFeature();
             if (feature != null)
             {
-              List<TreeParent> childElements = Util.getElementsFromFeature(feature);
+              List<TreeParent> childElements = getElementsFromFeature(feature);
               childElements.forEach(featureTreeParent::addChild);
             }
           }
@@ -1299,7 +1351,7 @@ public class Util
     pluginsTreeParent.loadChildRunnable = () -> {
 
       // sort
-      Arrays.sort(productPlugins, Util.PDE_LABEL_COMPARATOR);
+      Arrays.sort(productPlugins, PDE_LABEL_COMPARATOR);
 
       for(IProductPlugin productPlugin : productPlugins)
       {
@@ -1412,7 +1464,7 @@ public class Util
 
       includedPluginsTreeParent.loadChildRunnable = () -> {
         // sort
-        Arrays.sort(includedPlugins, Util.PDE_LABEL_COMPARATOR);
+        Arrays.sort(includedPlugins, PDE_LABEL_COMPARATOR);
         for(IFeaturePlugin featurePlugin : includedPlugins)
         {
           TreeObject childTreeObject = new TreeObject(null, featurePlugin);
@@ -1440,7 +1492,7 @@ public class Util
 
       includedFeaturesTreeParent.loadChildRunnable = () -> {
         // sort
-        Arrays.sort(includedFeatures, Util.PDE_LABEL_COMPARATOR);
+        Arrays.sort(includedFeatures, PDE_LABEL_COMPARATOR);
         for(IFeatureChild includedFeature : includedFeatures)
         {
           TreeParent featureChildTreeParent = getTreeParent(includedFeature);
@@ -1468,7 +1520,7 @@ public class Util
 
       requiredFeaturesTreeParent.loadChildRunnable = () -> {
         // sort
-        Arrays.sort(featureImports, Util.PDE_LABEL_COMPARATOR);
+        Arrays.sort(featureImports, PDE_LABEL_COMPARATOR);
         for(IFeatureImport featureImport : featureImports)
         {
           if (featureImport.getType() == IFeatureImport.FEATURE)
@@ -1509,7 +1561,7 @@ public class Util
   public static TreeParent getLaunchConfigurationTreeParent(ILaunchConfiguration launchConfiguration)
   {
     TreeParent launchConfigurationTreeParent = new TreeParent(null, launchConfiguration);
-    launchConfigurationTreeParent.image = Activator.getImage(Images.LAUNCH_CONFIGURATION);
+    launchConfigurationTreeParent.image = PDEViewActivator.getImage(Images.LAUNCH_CONFIGURATION);
     launchConfigurationTreeParent.foreground = Constants.LAUNCH_CONFIGURATION_FOREGROUND;
 
     launchConfigurationTreeParent.loadChildRunnable = () -> {
@@ -1544,7 +1596,7 @@ public class Util
     catch(CoreException e)
     {
       e.printStackTrace();
-      Activator.logError(e.toString(), e);
+      PDEViewActivator.logError(e.toString(), e);
     }
 
     return elements;
@@ -1580,7 +1632,7 @@ public class Util
       List<IPluginBase> pluginBases = loadPlugins(launchConfiguration, attributeKey);
 
       // sort
-      Collections.sort(pluginBases, Util.PDE_LABEL_COMPARATOR);
+      Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
 
       //
       pluginBases.stream().map(Util::getTreeObject).forEach(treeParent::addChild);
@@ -1636,7 +1688,7 @@ public class Util
     catch(CoreException e)
     {
       e.printStackTrace();
-      Activator.logError(e.toString(), e);
+      PDEViewActivator.logError(e.toString(), e);
     }
 
     return pluginBases;
@@ -1678,7 +1730,7 @@ public class Util
       }
 
       // sort
-      Collections.sort(featureModels, Util.PDE_LABEL_COMPARATOR);
+      Collections.sort(featureModels, PDE_LABEL_COMPARATOR);
       featureModels.stream().map(Util::getTreeParent).forEach(elements::add);
 
       // Additional plugins
@@ -1731,7 +1783,7 @@ public class Util
           elements.add(additionalPluginsTreeParent);
 
           // sort
-          Collections.sort(pluginBases, Util.PDE_LABEL_COMPARATOR);
+          Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
 
           //
           pluginBases.stream().map(Util::getTreeObject).forEach(additionalPluginsTreeParent::addChild);
@@ -1741,7 +1793,7 @@ public class Util
     catch(CoreException e)
     {
       e.printStackTrace();
-      Activator.logError(e.toString(), e);
+      PDEViewActivator.logError(e.toString(), e);
     }
   }
 
@@ -1784,7 +1836,11 @@ public class Util
       return ((IFeatureModel) pdeObject).getFeature().getId();
 
     else if (pdeObject != null)
-      Activator.logWarning("Unsupported id for " + pdeObject.getClass().getName());
+    {
+      String msg = "Unsupported id for " + pdeObject.getClass().getName();
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logWarning(msg);
+    }
 
     return null;
   }

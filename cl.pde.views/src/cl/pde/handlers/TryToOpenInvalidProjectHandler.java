@@ -30,7 +30,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.handlers.SearchInvalidProjectHandler.InvalidProjectLabelProvider;
 import cl.pde.views.Util;
 
@@ -95,7 +95,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
           }
           catch(Exception e)
           {
-            Activator.logError("Error loading project description "+file, e);
+            PDEViewActivator.logError("Error loading project description "+file, e);
           }
         }
 
@@ -128,7 +128,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
         catch(CoreException e)
         {
           if (errorStatus == null)
-            errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Cannot process project " + workspaceProject, e);
+            errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Cannot process project " + workspaceProject, e);
           errorStatus.add(e.getStatus());
         }
       }
@@ -175,7 +175,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
   {
     return monitor -> {
       monitor.beginTask("", 1); //$NON-NLS-1$
-      MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Cannot open projects", null);
+      MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Cannot open projects", null);
       if (invalidProject instanceof IProject)
       {
         IProject project = (IProject) invalidProject;

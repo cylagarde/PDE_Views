@@ -2,7 +2,7 @@ package cl.pde.views.actions;
 
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 import cl.pde.views.Util;
 
@@ -24,7 +24,7 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     this.expand = expand;
     setText(expand? "Expand all" : "Collapse all");
     setToolTipText(expand? "Expand all nodes" : "Collapse all nodes");
-    setImageDescriptor(Activator.getImageDescriptor(expand? Images.EXPAND_ALL : Images.COLLAPSE_ALL));
+    setImageDescriptor(PDEViewActivator.getImageDescriptor(expand? Images.EXPAND_ALL : Images.COLLAPSE_ALL));
   }
 
   /*

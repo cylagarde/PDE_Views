@@ -20,7 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TreeViewer;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 import cl.pde.views.Util;
 import cl.pde.views.launchconfiguration.LaunchConfigurationView;
@@ -41,7 +41,7 @@ public class GetAllLaunchConfigurationsAction extends Action
     this.launchConfigurationView = launchConfigurationView;
     setText("Get all launch configurations in workspace");
     setToolTipText("Get all launch configurations in workspace");
-    setImageDescriptor(Activator.getImageDescriptor(Images.GET_ALL_LAUNCH_CONFIGURATIONS));
+    setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_LAUNCH_CONFIGURATIONS));
   }
 
   @Override
@@ -69,7 +69,7 @@ public class GetAllLaunchConfigurationsAction extends Action
     };
 
     // search
-    MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
+    MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
 
     NullProgressMonitor nullMonitor = new NullProgressMonitor();
 

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.core.IModel;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 
 /**
  * The class <b>TreeParent</b> allows to.<br>
@@ -76,7 +76,7 @@ public class TreeParent extends TreeObject
         }
         catch(CoreException e)
         {
-          Activator.logError("Cannot load model " + data, e);
+          PDEViewActivator.logError("Cannot load model " + data, e);
         }
       }
     }

@@ -19,7 +19,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.core.product.WorkspaceProductModel;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.Images;
 import cl.pde.views.Util;
 import cl.pde.views.product.ProductView;
@@ -40,7 +40,7 @@ public class GetAllProductsAction extends Action
     this.productView = productView;
     setText("Get all products in workspace");
     setToolTipText("Get all products in workspace");
-    setImageDescriptor(Activator.getImageDescriptor(Images.GET_ALL_PRODUCTS));
+    setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_PRODUCTS));
   }
 
   @Override
@@ -70,7 +70,7 @@ public class GetAllProductsAction extends Action
         }
         catch(CoreException e)
         {
-          Activator.logError("Cannot load product " + productFile, e);
+          PDEViewActivator.logError("Cannot load product " + productFile, e);
         }
       }
 
@@ -78,7 +78,7 @@ public class GetAllProductsAction extends Action
     };
 
     // search
-    MultiStatus errorStatus = new MultiStatus(Activator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
+    MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
 
     NullProgressMonitor nullMonitor = new NullProgressMonitor();
 

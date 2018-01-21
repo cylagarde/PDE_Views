@@ -22,7 +22,7 @@ import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.AbstractCheckboxFilteredTree;
 import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
@@ -101,7 +101,7 @@ public class ProductView extends ViewPart
     productViewer.addTreeListener(new ExpandTreeViewerListener());
 
     // Create the help context id for the viewer's control
-    PlatformUI.getWorkbench().getHelpSystem().setHelp(productViewer.getControl(), Activator.PLUGIN_ID + ".productView");
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(productViewer.getControl(), PDEViewActivator.PLUGIN_ID + ".productView");
 
     getSite().setSelectionProvider(productViewer);
 

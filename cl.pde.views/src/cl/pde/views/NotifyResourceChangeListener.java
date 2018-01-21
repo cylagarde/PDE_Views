@@ -20,7 +20,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 
-import cl.pde.Activator;
+import cl.pde.PDEViewActivator;
 
 /**
  * The class <b>NotifyResourceChangeListener</b> allows to.<br>
@@ -46,7 +46,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         }
         catch(CoreException e)
         {
-          Activator.logError("Error: " + e, e);
+          PDEViewActivator.logError("Error: " + e, e);
         }
         break;
     }
@@ -85,7 +85,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
                 Object[] expandedElements = treeViewer.getExpandedElements();
 
                 // refresh node
-                Activator.logInfo("refresh " + treeObject);
+                PDEViewActivator.logInfo("refresh " + treeObject);
                 treeViewer.refresh(treeObject);
 
                 treeViewer.setExpandedElements(expandedElements);
@@ -146,7 +146,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         StringBuilder buffer = new StringBuilder(1024);
         buffer.append(resourceMap.size() + " resources found TIME=" + (System.currentTimeMillis() - time) + "\n");
         resourceMap.forEach((key, value) -> buffer.append(key + " " + value + "\n"));
-        Activator.logInfo(buffer.toString());
+        PDEViewActivator.logInfo(buffer.toString());
 
         return monitor.isCanceled()? Status.CANCEL_STATUS : Status.OK_STATUS;
       }
