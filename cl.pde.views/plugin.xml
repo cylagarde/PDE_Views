@@ -140,8 +140,8 @@
             <adapt type="org.eclipse.core.resources.IFile">
                <and>
                   <test
-                        property="org.eclipse.core.resources.name"
-                        value="*.product">
+                        property="org.eclipse.core.resources.extension"
+                        value="product">
                   </test>
                   <test
                         property="org.eclipse.core.resources.contentTypeId"
@@ -155,8 +155,8 @@
       <definition id="is.launch">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile">
-               <test property="org.eclipse.core.resources.name" 
-                     value="*.launch"/>
+               <test property="org.eclipse.core.resources.extension" 
+                     value="launch"/>
             </adapt>
          </iterate>
       </definition>
