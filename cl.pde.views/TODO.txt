@@ -1,12 +1,12 @@
 launch configuration : revoir le parsing
-ds la launch view, si la lunch est basé sur des features et que l'on rajoute des plugins : ils ne sont pas pris en compte ds la vue
-ds la feature view, avec les all features, lorsque l'on rajoute un plugin ds un feature, la vue n'est pas mis à jour
-A SUPPRIMER faire la vue Search all features
-rajouter un filteredtree ds le Open invalid project
+ds la feature view, avec les all features, lorsque l'on rajoute un plugin ds un feature, la vue n'est pas toujours mis à jour
 
 CANCEL avoir une popup pour afficher une feature d'un product ds la vue feature view
 CANCEL avoir une popup ds l'onglet dépendencies pour faire une recherche des features le contenant
  
+OK rajouter un filteredtree ds le Open invalid project
+OK ds la launch view, si la launch est basé sur des features et que l'on rajoute des plugins : ils ne sont pas pris en compte ds la vue
+OK A SUPPRIMER faire la vue Search all features
 OK avoir une checkbox pour faire des recherches ds les includes plugins uniquement
 OK afficher toutes les features dans la vue feature view (ceux du workspace et de la targetplatform)
 OK afficher une icone differente si le plugin est un singleton ou pas

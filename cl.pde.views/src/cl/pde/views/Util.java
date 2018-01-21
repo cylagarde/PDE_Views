@@ -290,8 +290,32 @@ public class Util
     else if (pdeObject instanceof IProductModel)
       openProductModel((IProductModel) pdeObject);
 
+    else if (pdeObject instanceof ILaunchConfiguration)
+      openLaunchConfiguration((ILaunchConfiguration) pdeObject);
+
     else if (pdeObject != null)
-      Activator.logError("Cannot open data " + pdeObject.getClass().getName(), new Exception());
+      Activator.logWarning("Unsupported open for " + pdeObject.getClass().getName());
+  }
+
+  /**
+   * Open launchConfiguration
+   * @param launchConfiguration
+   */
+  private static void openLaunchConfiguration(ILaunchConfiguration launchConfiguration)
+  {
+    IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    IResource launchConfigurationResource = getLaunchConfigurationResource(launchConfiguration);
+    if (workbenchPage != null && launchConfigurationResource instanceof IFile)
+    {
+      try
+      {
+        IDE.openEditor(workbenchPage, (IFile) launchConfigurationResource);
+      }
+      catch(PartInitException e)
+      {
+        Activator.logError("Cannot open product " + launchConfigurationResource, e);
+      }
+    }
   }
 
   /**
@@ -363,7 +387,7 @@ public class Util
     if (featureModel != null)
       openFeatureModel(featureModel);
     else
-      Activator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion, new Exception());
+      Activator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion);
   }
 
   /**
@@ -515,7 +539,22 @@ public class Util
     if (pdeObject instanceof IProductModel)
       return getProductModelLocation((IProductModel) pdeObject);
 
+    if (pdeObject instanceof ILaunchConfiguration)
+      return getLaunchConfigurationLocation((ILaunchConfiguration) pdeObject);
+
+    else if (pdeObject != null)
+      Activator.logWarning("Unsupported location for " + pdeObject.getClass().getName());
+
     return null;
+  }
+
+  /**
+   * Get ILaunchConfiguration location
+   * @param launchConfiguration
+   */
+  private static String getLaunchConfigurationLocation(ILaunchConfiguration launchConfiguration)
+  {
+    return launchConfiguration.getFile().getLocation().toString();
   }
 
   /**
@@ -740,6 +779,9 @@ public class Util
 
     if (pdeObject instanceof IProductModel)
       return getProductModelResource((IProductModel) pdeObject);
+
+    else if (pdeObject != null)
+      Activator.logWarning("Unsupported resource for " + pdeObject.getClass().getName());
 
     return null;
   }
@@ -985,6 +1027,9 @@ public class Util
 
     else if (pdeObject instanceof IFragment)
       return getSingletonState((IFragment) pdeObject);
+
+    else if (pdeObject != null)
+      Activator.logWarning("Unsupported sigleton for " + pdeObject.getClass().getName());
 
     return null;
   }
@@ -1739,7 +1784,8 @@ public class Util
       return ((IFeatureModel) pdeObject).getFeature().getId();
 
     else if (pdeObject != null)
-      Activator.logError("Cannot get id " + pdeObject.getClass().getName(), new Exception());
+      Activator.logWarning("Unsupported id for " + pdeObject.getClass().getName());
+
     return null;
   }
 
