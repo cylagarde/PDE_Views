@@ -1609,36 +1609,36 @@ public class Util
    */
   private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
   {
-    TreeParent workspacePlugins = createTreeParent(launchConfiguration, Constants.WORKSPACE_FEATURE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS);
-    elements.add(workspacePlugins);
+    loadElements(launchConfiguration, Constants.WORKSPACE_FEATURE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS, elements);
 
-    TreeParent externalPlugins = createTreeParent(launchConfiguration, Constants.TARGET_FEATURE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS);
-    elements.add(externalPlugins);
+    loadElements(launchConfiguration, Constants.TARGET_FEATURE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS, elements);
   }
 
   /**
-   * Create TreeParent from launchConfiguration
+   * Load elements from launchConfiguration
    * @param launchConfiguration
    * @param name
    * @param attributeKey
+   * @param elements
    */
-  private static TreeParent createTreeParent(ILaunchConfiguration launchConfiguration, String name, String attributeKey)
+  private static void loadElements(ILaunchConfiguration launchConfiguration, String name, String attributeKey, List<TreeParent> elements)
   {
-    TreeParent treeParent = new TreeParent(name, null);
-    treeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
-
-    //
-    treeParent.loadChildRunnable = () -> {
-      List<IPluginBase> pluginBases = loadPlugins(launchConfiguration, attributeKey);
-
-      // sort
-      Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
+    List<IPluginBase> pluginBases = loadPlugins(launchConfiguration, attributeKey);
+    if (!pluginBases.isEmpty())
+    {
+      TreeParent treeParent = new TreeParent(name, null);
+      treeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
+      elements.add(treeParent);
 
       //
-      pluginBases.stream().map(Util::getTreeObject).forEach(treeParent::addChild);
-    };
+      treeParent.loadChildRunnable = () -> {
+        // sort
+        Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
 
-    return treeParent;
+        //
+        pluginBases.stream().map(Util::getTreeObject).forEach(treeParent::addChild);
+      };
+    }
   }
 
   /**
