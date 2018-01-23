@@ -76,4 +76,9 @@ public class CheckedFilteredTreeSelectionDialog extends CheckedTreeSelectionDial
   protected void computeResult() {
     setSelectionResult(getTreeViewer().getCheckedElements());
   }
+
+  @Override
+  public CheckboxTreeViewer getTreeViewer() {
+    return super.getTreeViewer();
+  }
 }

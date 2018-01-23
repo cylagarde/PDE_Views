@@ -51,6 +51,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   public AbstractCheckboxFilteredTree(Composite parent, NotTreeParentPatternFilter filter)
   {
     super(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    setQuickSelectionMode(true);
     filter.visiblePredicate = visiblePredicate;
     setInitialText("Plugin name filter");
   }
