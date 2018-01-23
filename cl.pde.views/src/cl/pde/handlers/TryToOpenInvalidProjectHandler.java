@@ -80,7 +80,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
             IProjectDescription desc = ResourcesPlugin.getWorkspace().loadProjectDescription(folder.getLocation().append(IProjectDescription.DESCRIPTION_FILE_NAME));
             desc.setLocation(folder.getLocation());
 
-            if (pluginId.equals(labelProvider.getId(desc)))
+            if (pluginId.equals(desc.getName()))
             {
               String projectName = desc.getName();
               IProject project = root.getProject(projectName);
@@ -113,7 +113,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
           break;
         if (!workspaceProject.isOpen())
         {
-          if (pluginId.equals(labelProvider.getId(workspaceProject)))
+          if (pluginId.equals(Util.getPluginId(workspaceProject)))
           {
             invalidProject[0] = workspaceProject;
             break;

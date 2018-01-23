@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -22,25 +23,32 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
-import cl.pde.PDEViewActivator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 import cl.pde.dialog.CheckedFilteredTreeSelectionDialog;
 import cl.pde.views.Util;
 
@@ -58,20 +66,56 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     Comparator<Object> invalidProjectComparator = Comparator.comparing(labelProvider::getText, String.CASE_INSENSITIVE_ORDER);
 
     //
-    Set<Object> invalidProjectSet = new TreeSet<>(invalidProjectComparator);
+    Set<InvalidProject> invalidProjectSet = new TreeSet<>(invalidProjectComparator);
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     Set<Object> alreadyTreatedCacheSet = new HashSet<>();
+
+    IProject[] projects = root.getProjects();
+    Set<IPath> locationSet = new HashSet<>();
+    for(IProject workspaceProject : projects)
+    {
+      //      System.out.println(workspaceProject + " " + workspaceProject.getRawLocation());
+      //      System.out.println(workspaceProject + " " + workspaceProject.getLocation().toOSString());
+      if (workspaceProject.isOpen())
+        locationSet.add(workspaceProject.getLocation());
+    }
 
     //
     Predicate<IResource> filePredicate = resource -> {
       if (!alreadyTreatedCacheSet.add(resource.getLocation()))
         return false;
 
-      if (resource instanceof IFile && resource.getName().equals(IProjectDescription.DESCRIPTION_FILE_NAME))
+      if (resource instanceof IProject)
+      {
+        IProject project = (IProject) resource;
+        if (!project.isOpen())
+        {
+          InvalidProject invalidProject = new InvalidProject();
+          invalidProject.projectInfo = project;
+          invalidProject.name = project.getName();
+          invalidProject.image = PDEViewActivator.getImage(Images.INVALID_PROJECT);
+
+          String pluginId = Util.getPluginId(project);
+          if (pluginId != null && !invalidProject.name.equals(pluginId))
+            invalidProject.name += " ("+pluginId+")";
+
+          String location = project.getLocation().toOSString();
+          locationSet.stream()
+              .filter(loc -> location.startsWith(loc.toOSString()))
+              .max(Comparator.comparing(IPath::toOSString, Comparator.comparing(String::length)))
+              .map(loc -> loc.lastSegment() + '/' + location.substring(loc.toOSString().length() + 1).replace('\\', '/'))
+              .ifPresent(relative -> invalidProject.relative = relative);
+
+          invalidProject.location = project.getLocation().toOSString();
+
+          invalidProjectSet.add(invalidProject);
+
+          return false;
+        }
+      }
+      else if (resource instanceof IFile && resource.getName().equals(IProjectDescription.DESCRIPTION_FILE_NAME))
       {
         IFile file = (IFile) resource;
-        //        System.out.println(resource);
-
         IContainer folder = file.getParent();
         try
         {
@@ -82,7 +126,23 @@ public class SearchInvalidProjectHandler extends AbstractHandler
           String projectName = projectDescription.getName();
           IProject project = root.getProject(projectName);
           if (!project.exists())
-            invalidProjectSet.add(projectDescription);
+          {
+            InvalidProject invalidProject = new InvalidProject();
+            invalidProject.projectInfo = projectDescription;
+            invalidProject.name = folder.getName();
+            invalidProject.image = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+
+            if (!projectDescription.getName().equals(invalidProject.name))
+              invalidProject.name += " ("+projectDescription.getName()+")";
+
+            String location = folder.toString().substring(2);
+            if (! location.equals(folder.getName()))
+              invalidProject.relative = location;
+
+            invalidProject.location = folder.getLocation().toOSString();
+
+            invalidProjectSet.add(invalidProject);
+          }
         }
         catch(CoreException e)
         {
@@ -97,16 +157,8 @@ public class SearchInvalidProjectHandler extends AbstractHandler
 
     // search
     MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Some errors were found when processing", null);
-    IProject[] projects = root.getProjects();
     for(IProject workspaceProject : projects)
     {
-      if (!workspaceProject.isOpen())
-      {
-        invalidProjectSet.add(workspaceProject);
-        alreadyTreatedCacheSet.add(workspaceProject.getLocation());
-        continue;
-      }
-
       try
       {
         Util.traverseContainer(workspaceProject, filePredicate, nullMonitor);
@@ -128,15 +180,82 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       patternFilter.setIncludeLeadingWildcard(true);
 
       //
-      CheckedFilteredTreeSelectionDialog searchElementTreeSelectionDialog = new CheckedFilteredTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, patternFilter);
+      CheckedFilteredTreeSelectionDialog searchElementTreeSelectionDialog = new CheckedFilteredTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, SWT.FULL_SELECTION, patternFilter);
       searchElementTreeSelectionDialog.setInput(invalidProjectSet);
       searchElementTreeSelectionDialog.setMessage("Select the projects to be opened/imported:");
       searchElementTreeSelectionDialog.setTitle("Open Project");
+      searchElementTreeSelectionDialog.create();
+
+      CheckboxTreeViewer treeViewer = searchElementTreeSelectionDialog.getTreeViewer();
+      treeViewer.getTree().setHeaderVisible(true);
+      treeViewer.getTree().setLinesVisible(true);
+
+      //
+      TreeViewerColumn nameViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+      nameViewerColumn.getColumn().setText("Name");
+      nameViewerColumn.setLabelProvider(new ColumnLabelProvider()
+      {
+        @Override
+        public String getText(Object element)
+        {
+          return labelProvider.getText(element);
+        }
+
+        @Override
+        public Image getImage(Object element)
+        {
+          return labelProvider.getImage(element);
+        }
+      });
+
+      //
+      TreeViewerColumn relativePathViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+      relativePathViewerColumn.getColumn().setText("Path");
+      relativePathViewerColumn.setLabelProvider(new ColumnLabelProvider()
+      {
+        @Override
+        public String getText(Object element)
+        {
+          if (element instanceof InvalidProject)
+          {
+            InvalidProject invalidProject = (InvalidProject) element;
+            return invalidProject.relative;
+          }
+          return null;
+        }
+      });
+
+      //
+      TreeViewerColumn locationViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+      locationViewerColumn.getColumn().setText("Location");
+      locationViewerColumn.setLabelProvider(new ColumnLabelProvider()
+      {
+        @Override
+        public String getText(Object element)
+        {
+          if (element instanceof InvalidProject)
+          {
+            InvalidProject invalidProject = (InvalidProject) element;
+            return invalidProject.location;
+          }
+          return null;
+        }
+      });
+
+      // pack columns
+      treeViewer.refresh();
+      for(TreeColumn treeColumn : treeViewer.getTree().getColumns())
+        treeColumn.pack();
+
+      searchElementTreeSelectionDialog.getShell().setSize(640, 480);
+
+      // open
       if (searchElementTreeSelectionDialog.open() == IDialogConstants.OK_ID)
       {
         Object[] result = searchElementTreeSelectionDialog.getResult();
+        InvalidProject[] invalidProjects = Stream.of(result).filter(InvalidProject.class::isInstance).map(InvalidProject.class::cast).toArray(InvalidProject[]::new);
 
-        IWorkspaceRunnable openProjectRunnable = createRunnable(result);
+        IWorkspaceRunnable openProjectRunnable = createRunnable(invalidProjects);
         try
         {
           PlatformUI.getWorkbench().getProgressService().run(true, true, monitor -> {
@@ -164,40 +283,13 @@ public class SearchInvalidProjectHandler extends AbstractHandler
    *
    * @param invalidProjects
    */
-  private static IWorkspaceRunnable createRunnable(final Object[] invalidProjects)
+  private static IWorkspaceRunnable createRunnable(final InvalidProject[] invalidProjects)
   {
     return monitor -> {
       monitor.beginTask("", invalidProjects.length); //$NON-NLS-1$
       MultiStatus errorStatus = new MultiStatus(PDEViewActivator.PLUGIN_ID, IStatus.ERROR, "Cannot open projects", null);
       for(int i = 0; i < invalidProjects.length; i++)
-      {
-        if (invalidProjects[i] instanceof IProject)
-        {
-          IProject project = (IProject) invalidProjects[i];
-          try
-          {
-            project.open(SubMonitor.convert(monitor, 1));
-          }
-          catch(CoreException e)
-          {
-            errorStatus.add(e.getStatus());
-          }
-        }
-        else if (invalidProjects[i] instanceof IProjectDescription)
-        {
-          IProjectDescription projectDescription = (IProjectDescription) invalidProjects[i];
-          CreateProjectOperation operation = new CreateProjectOperation(projectDescription, projectDescription.getName());
-          try
-          {
-            IStatus status = OperationHistoryFactory.getOperationHistory().execute(operation, SubMonitor.convert(monitor, 1), null);
-            if (!status.isOK())
-              errorStatus.add(status);
-          }
-          catch(ExecutionException e)
-          {
-          }
-        }
-      }
+        invalidProjects[i].tryToOpen(monitor);
       monitor.done();
       if (errorStatus.getChildren().length != 0)
         throw new CoreException(errorStatus);
@@ -208,37 +300,25 @@ public class SearchInvalidProjectHandler extends AbstractHandler
    */
   static class InvalidProjectLabelProvider extends LabelProvider
   {
-    public String getId(Object element)
-    {
-      if (element instanceof IProject)
-      {
-        IProject project = (IProject) element;
-        return project.getName();
-      }
-      else if (element instanceof IProjectDescription)
-      {
-        IProjectDescription projectDescription = (IProjectDescription) element;
-        return projectDescription.getName();
-      }
-      return null;
-    }
-
     @Override
     public String getText(Object element)
     {
-      String id = getId(element);
-      if (id != null)
-        return id;
+      if (element instanceof InvalidProject)
+      {
+        InvalidProject invalidProject = (InvalidProject) element;
+        return invalidProject.name;
+      }
       return super.getText(element);
     }
 
     @Override
     public Image getImage(Object element)
     {
-      if (element instanceof IProject)
-        return PDEViewActivator.getImage(Images.INVALID_PROJECT);
-      else if (element instanceof IProjectDescription)
-        return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+      if (element instanceof InvalidProject)
+      {
+        InvalidProject invalidProject = (InvalidProject) element;
+        return invalidProject.image;
+      }
       return super.getImage(element);
     }
   }
@@ -282,6 +362,52 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     public boolean hasChildren(Object element)
     {
       return false;
+    }
+  }
+
+  /**
+   *
+   */
+  class InvalidProject
+  {
+    Object projectInfo;
+    String name;
+    Image image;
+    String relative;
+    String location;
+
+    /**
+     *
+     * @param monitor
+     */
+    public IStatus tryToOpen(IProgressMonitor monitor)
+    {
+      if (projectInfo instanceof IProject)
+      {
+        IProject project = (IProject) projectInfo;
+        try
+        {
+          project.open(SubMonitor.convert(monitor, 1));
+        }
+        catch(CoreException e)
+        {
+          return e.getStatus();
+        }
+      }
+      else if (projectInfo instanceof IProjectDescription)
+      {
+        IProjectDescription projectDescription = (IProjectDescription) projectInfo;
+        CreateProjectOperation operation = new CreateProjectOperation(projectDescription, projectDescription.getName());
+        try
+        {
+          return OperationHistoryFactory.getOperationHistory().execute(operation, SubMonitor.convert(monitor, 1), null);
+        }
+        catch(ExecutionException e)
+        {
+        }
+      }
+
+      return Status.OK_STATUS;
     }
   }
 }

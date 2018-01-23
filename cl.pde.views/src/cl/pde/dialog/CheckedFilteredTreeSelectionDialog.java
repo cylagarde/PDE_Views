@@ -36,6 +36,20 @@ public class CheckedFilteredTreeSelectionDialog extends CheckedTreeSelectionDial
     this.patternFilter = patternFilter;
   }
 
+  /**
+   * Constructor
+   * @param parent
+   * @param labelProvider
+   * @param contentProvider
+   * @param style
+   * @param patternFilter
+   */
+  public CheckedFilteredTreeSelectionDialog(Shell parent, ILabelProvider labelProvider, ITreeContentProvider contentProvider, int style, PatternFilter patternFilter)
+  {
+    super(parent, labelProvider, contentProvider, style);
+    this.patternFilter = patternFilter;
+  }
+
   @Override
   protected CheckboxTreeViewer createTreeViewer(Composite parent)
   {
@@ -66,19 +80,22 @@ public class CheckedFilteredTreeSelectionDialog extends CheckedTreeSelectionDial
   }
 
   @Override
-  protected void updateButtonsEnableState(IStatus status) {
+  protected void updateButtonsEnableState(IStatus status)
+  {
     if (status.isOK() && getTreeViewer().getCheckedElements().length == 0)
       status = new Status(IStatus.ERROR, PlatformUI.PLUGIN_ID, IStatus.ERROR, null, null);
     super.updateButtonsEnableState(status);
   }
 
   @Override
-  protected void computeResult() {
+  protected void computeResult()
+  {
     setSelectionResult(getTreeViewer().getCheckedElements());
   }
 
   @Override
-  public CheckboxTreeViewer getTreeViewer() {
+  public CheckboxTreeViewer getTreeViewer()
+  {
     return super.getTreeViewer();
   }
 }

@@ -245,9 +245,29 @@ public class Util
    */
   public static WorkspaceBundlePluginModel getWorkspaceBundlePluginModel(IProject project)
   {
-    IFile pluginXml = null;// PDEProject.getPluginXml(project);
+    IFile pluginXml = PDEProject.getPluginXml(project);
     IFile manifest = PDEProject.getManifest(project);
     WorkspaceBundlePluginModel pluginModel = new WorkspaceBundlePluginModel(manifest, pluginXml);
+    if (!manifest.exists())
+    {
+      File manifestFile = manifest.getRawLocation().toFile();
+      if (manifestFile.exists())
+      {
+        try
+        {
+          try (FileInputStream fis = new FileInputStream(manifestFile))
+          {
+            pluginModel.load(fis, false);
+          }
+        }
+        catch(Exception e)
+        {
+          PDEViewActivator.logError("Cannot load " + manifestFile);
+          e.printStackTrace();
+        }
+      }
+    }
+    //    pluginModel.load();
     return pluginModel;
   }
 
@@ -373,7 +393,7 @@ public class Util
     }
     else if (pluginModelBase != null)
     {
-      String message = "Cannot open plugin for " +pluginModelBase.getClass().getName();
+      String message = "Cannot open plugin for " + pluginModelBase.getClass().getName();
       PDEViewActivator.logError(message);
       Shell shell = Display.getDefault().getActiveShell();
       MessageDialog.openError(shell, "Error", message);

@@ -1,3 +1,9 @@
+invalid project : faire un styledlabelprovider
+cochez/decochez les filtres prennent du temps
+faire un expand all sur un noeud et enlever le expand all global sur le context menu
+launch configuration view : le launch ne contient aucun plugins mais les noeuds Workspace et Target sont visibles alors qu'elles ne le devraient pas
+
+
 launch configuration : revoir le parsing
 ds la feature view, avec les all features, lorsque l'on rajoute un plugin ds un feature, la vue n'est pas toujours mis à jour
 
