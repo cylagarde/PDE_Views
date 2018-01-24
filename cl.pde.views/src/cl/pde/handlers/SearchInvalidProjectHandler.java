@@ -74,8 +74,6 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     Set<IPath> locationSet = new HashSet<>();
     for(IProject workspaceProject : projects)
     {
-      //      System.out.println(workspaceProject + " " + workspaceProject.getRawLocation());
-      //      System.out.println(workspaceProject + " " + workspaceProject.getLocation().toOSString());
       if (workspaceProject.isOpen())
         locationSet.add(workspaceProject.getLocation());
     }
@@ -90,24 +88,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         IProject project = (IProject) resource;
         if (!project.isOpen())
         {
-          InvalidProject invalidProject = new InvalidProject();
-          invalidProject.projectInfo = project;
-          invalidProject.name = project.getName();
-          invalidProject.image = PDEViewActivator.getImage(Images.INVALID_PROJECT);
-
-          String pluginId = Util.getPluginId(project);
-          if (pluginId != null && !invalidProject.name.equals(pluginId))
-            invalidProject.name += " ("+pluginId+")";
-
-          String location = project.getLocation().toOSString();
-          locationSet.stream()
-              .filter(loc -> location.startsWith(loc.toOSString()))
-              .max(Comparator.comparing(IPath::toOSString, Comparator.comparing(String::length)))
-              .map(loc -> loc.lastSegment() + '/' + location.substring(loc.toOSString().length() + 1).replace('\\', '/'))
-              .ifPresent(relative -> invalidProject.relative = relative);
-
-          invalidProject.location = project.getLocation().toOSString();
-
+          InvalidProject invalidProject = createInvalidProject(project, locationSet);
           invalidProjectSet.add(invalidProject);
 
           return false;
@@ -133,15 +114,22 @@ public class SearchInvalidProjectHandler extends AbstractHandler
             invalidProject.image = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
 
             if (!projectDescription.getName().equals(invalidProject.name))
-              invalidProject.name += " ("+projectDescription.getName()+")";
+              invalidProject.name += " (" + projectDescription.getName() + ")";
 
             String location = folder.toString().substring(2);
-            if (! location.equals(folder.getName()))
+            if (!location.equals(folder.getName()))
               invalidProject.relative = location;
 
             invalidProject.location = folder.getLocation().toOSString();
 
             invalidProjectSet.add(invalidProject);
+          }
+          else if (!project.isOpen())
+          {
+            InvalidProject invalidProject = createInvalidProject(project, locationSet);
+            invalidProjectSet.add(invalidProject);
+
+            return false;
           }
         }
         catch(CoreException e)
@@ -280,6 +268,29 @@ public class SearchInvalidProjectHandler extends AbstractHandler
   }
 
   /**
+   * Create InvalidProject
+   * @param locationSet
+   * @param project
+   */
+  private InvalidProject createInvalidProject(IProject project, Set<IPath> locationSet)
+  {
+    InvalidProject invalidProject = new InvalidProject();
+    invalidProject.projectInfo = project;
+    invalidProject.name = project.getName();
+    invalidProject.image = PDEViewActivator.getImage(Images.INVALID_PROJECT);
+
+    String pluginId = Util.getPluginId(project);
+    if (pluginId != null && !invalidProject.name.equals(pluginId))
+      invalidProject.name += " (" + pluginId + ")";
+
+    String location = project.getLocation().toOSString();
+    locationSet.stream().filter(loc -> location.startsWith(loc.toOSString())).max(Comparator.comparing(IPath::toOSString, Comparator.comparing(String::length))).map(loc -> loc.lastSegment() + '/' + location.substring(loc.toOSString().length() + 1).replace('\\', '/')).ifPresent(relative -> invalidProject.relative = relative);
+
+    invalidProject.location = project.getLocation().toOSString();
+    return invalidProject;
+  }
+
+  /**
    *
    * @param invalidProjects
    */
@@ -408,6 +419,12 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       }
 
       return Status.OK_STATUS;
+    }
+
+    @Override
+    public String toString()
+    {
+      return "InvalidProject[name=" + name + "  " + projectInfo + "]";
     }
   }
 }
