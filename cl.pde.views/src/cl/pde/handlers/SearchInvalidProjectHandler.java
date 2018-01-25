@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -71,11 +72,11 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     Set<Object> alreadyTreatedCacheSet = new HashSet<>();
 
     IProject[] projects = root.getProjects();
-    Set<IPath> locationSet = new HashSet<>();
+    Set<IPath> openProjectLocationSet = new HashSet<>();
     for(IProject workspaceProject : projects)
     {
       if (workspaceProject.isOpen())
-        locationSet.add(workspaceProject.getLocation());
+        openProjectLocationSet.add(workspaceProject.getLocation());
     }
 
     //
@@ -88,7 +89,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         IProject project = (IProject) resource;
         if (!project.isOpen())
         {
-          InvalidProject invalidProject = createInvalidProject(project, locationSet);
+          InvalidProject invalidProject = createInvalidProject(project, openProjectLocationSet);
           invalidProjectSet.add(invalidProject);
 
           return false;
@@ -126,7 +127,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
           }
           else if (!project.isOpen())
           {
-            InvalidProject invalidProject = createInvalidProject(project, locationSet);
+            InvalidProject invalidProject = createInvalidProject(project, openProjectLocationSet);
             invalidProjectSet.add(invalidProject);
 
             return false;
@@ -197,21 +198,24 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       });
 
       //
-      TreeViewerColumn relativePathViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
-      relativePathViewerColumn.getColumn().setText("Path");
-      relativePathViewerColumn.setLabelProvider(new ColumnLabelProvider()
+      if (invalidProjectSet.stream().anyMatch(p -> p.relative != null))
       {
-        @Override
-        public String getText(Object element)
+        TreeViewerColumn relativePathViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
+        relativePathViewerColumn.getColumn().setText("Path");
+        relativePathViewerColumn.setLabelProvider(new ColumnLabelProvider()
         {
-          if (element instanceof InvalidProject)
+          @Override
+          public String getText(Object element)
           {
-            InvalidProject invalidProject = (InvalidProject) element;
-            return invalidProject.relative;
+            if (element instanceof InvalidProject)
+            {
+              InvalidProject invalidProject = (InvalidProject) element;
+              return invalidProject.relative;
+            }
+            return null;
           }
-          return null;
-        }
-      });
+        });
+      }
 
       //
       TreeViewerColumn locationViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
@@ -269,10 +273,10 @@ public class SearchInvalidProjectHandler extends AbstractHandler
 
   /**
    * Create InvalidProject
-   * @param locationSet
    * @param project
+   * @param openProjectLocationSet
    */
-  private InvalidProject createInvalidProject(IProject project, Set<IPath> locationSet)
+  private InvalidProject createInvalidProject(IProject project, Set<IPath> openProjectLocationSet)
   {
     InvalidProject invalidProject = new InvalidProject();
     invalidProject.projectInfo = project;
@@ -283,10 +287,17 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     if (pluginId != null && !invalidProject.name.equals(pluginId))
       invalidProject.name += " (" + pluginId + ")";
 
+    //
     String location = project.getLocation().toOSString();
-    locationSet.stream().filter(loc -> location.startsWith(loc.toOSString())).max(Comparator.comparing(IPath::toOSString, Comparator.comparing(String::length))).map(loc -> loc.lastSegment() + '/' + location.substring(loc.toOSString().length() + 1).replace('\\', '/')).ifPresent(relative -> invalidProject.relative = relative);
+    Comparator<IPath> comparing = Comparator.comparing(IPath::toOSString, Comparator.comparing(String::length));
+    Function<? super IPath, ? extends String> relativeMapper = loc -> loc.lastSegment() + '/' + location.substring(loc.toOSString().length() + 1).replace('\\', '/');
+    openProjectLocationSet.stream()
+        .filter(loc -> loc.isPrefixOf(project.getLocation()))
+        .max(comparing)
+        .map(relativeMapper)
+        .ifPresent(relative -> invalidProject.relative = relative);
 
-    invalidProject.location = project.getLocation().toOSString();
+    invalidProject.location = location;
     return invalidProject;
   }
 
