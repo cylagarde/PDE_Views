@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -72,12 +73,16 @@ public class SearchInvalidProjectHandler extends AbstractHandler
     Set<Object> alreadyTreatedCacheSet = new HashSet<>();
 
     IProject[] projects = root.getProjects();
-    Set<IPath> openProjectLocationSet = new HashSet<>();
-    for(IProject workspaceProject : projects)
-    {
-      if (workspaceProject.isOpen())
-        openProjectLocationSet.add(workspaceProject.getLocation());
-    }
+    //    Set<IPath> openProjectLocationSet = new HashSet<>();
+    //    for(IProject workspaceProject : projects)
+    //    {
+    //      if (workspaceProject.isOpen())
+    //        openProjectLocationSet.add(workspaceProject.getLocation());
+    //    }
+    Set<IPath> openProjectLocationSet = Stream.of(projects)
+        .filter(IProject::isOpen)
+        .map(IProject::getLocation)
+        .collect(Collectors.toSet());
 
     //
     Predicate<IResource> filePredicate = resource -> {

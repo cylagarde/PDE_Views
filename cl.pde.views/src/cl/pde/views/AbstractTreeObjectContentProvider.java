@@ -11,7 +11,6 @@ public abstract class AbstractTreeObjectContentProvider implements ITreeContentP
   @Override
   public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
   {
-    // Util.SINGLETONSTATE_CACHEMAP.clear();
   }
 
   @Override
@@ -38,4 +37,11 @@ public abstract class AbstractTreeObjectContentProvider implements ITreeContentP
     return false;
   }
 
+  /*
+   * @see org.eclipse.jface.viewers.IContentProvider#dispose()
+   */
+  @Override
+  public void dispose()
+  {
+  }
 }

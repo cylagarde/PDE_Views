@@ -25,7 +25,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -89,6 +89,11 @@ public class Util
   public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
   private static final Set<String> MESSAGE_ALREADY_PRINTED_SET = new HashSet<>();
 
+  private static IProgressMonitor split(IProgressMonitor monitor, int totalWork)
+  {
+    return new SubProgressMonitor(monitor, totalWork);
+  }
+
   /**
    * Traverse tree
    * @param tree
@@ -99,12 +104,13 @@ public class Util
   {
     int count = 1;
     TreeItem[] items = tree.getItems();
-    //    monitor.beginTask("", elements.length);
-    SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
+    monitor.beginTask("", items.length);
+    //SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
     for(TreeItem item : items)
     {
-      count += traverseItem(item, predicate, subMonitor.split(1));
-      if (subMonitor.isCanceled())
+      //      count += traverseItem(item, predicate, subMonitor.split(1));
+      count += traverseItem(item, predicate, new SubProgressMonitor(monitor, 1));
+      if (monitor.isCanceled())
         break;
     }
     return count;
@@ -122,11 +128,13 @@ public class Util
     if (predicate.test(item.getData()))
     {
       TreeItem[] items = item.getItems();
-      SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
+      monitor.beginTask("", items.length);
+//      SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
       for(TreeItem child : items)
       {
-        count += traverseItem(child, predicate, subMonitor.split(1));
-        if (subMonitor.isCanceled())
+        count += traverseItem(child, predicate, new SubProgressMonitor(monitor, 1));
+//        count += traverseItem(child, predicate, subMonitor.split(1));
+        if (monitor.isCanceled())
           break;
       }
     }
@@ -144,12 +152,13 @@ public class Util
   {
     int count = 1;
     Object[] elements = treeContentProvider.getElements(root);
-    //    monitor.beginTask("", elements.length);
-    SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
+    monitor.beginTask("", elements.length);
+//    SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
     for(Object element : elements)
     {
-      count += traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
-      if (subMonitor.isCanceled())
+      count += traverseElement(treeContentProvider, element, predicate, new SubProgressMonitor(monitor, 1));
+//      count += traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
+      if (monitor.isCanceled())
         break;
     }
     return count;
@@ -169,11 +178,13 @@ public class Util
     {
       Object[] children = treeContentProvider.getChildren(element);
       //      count += children.length;
-      SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
+      monitor.beginTask("", children.length);
+//      SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
       for(Object child : children)
       {
-        count += traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
-        if (subMonitor.isCanceled())
+        count += traverseElement(treeContentProvider, child, predicate, new SubProgressMonitor(monitor, 1));
+//        count += traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
+        if (monitor.isCanceled())
           break;
       }
     }
@@ -191,11 +202,15 @@ public class Util
     if (filePredicate.test(container))
     {
       IResource[] members = container.members();
-      SubMonitor subMonitor = SubMonitor.convert(monitor, members.length);
+      monitor.beginTask("", members.length);
+//      SubMonitor subMonitor = SubMonitor.convert(monitor, members.length);
       for(IResource member : members)
       {
         if (member instanceof IContainer)
-          traverseContainer((IContainer) member, filePredicate, subMonitor.split(1));
+        {
+          traverseContainer((IContainer) member, filePredicate, new SubProgressMonitor(monitor, 1));
+//          traverseContainer((IContainer) member, filePredicate, subMonitor.split(1));
+        }
         else if (member instanceof IFile)
         {
           if (!filePredicate.test(member))

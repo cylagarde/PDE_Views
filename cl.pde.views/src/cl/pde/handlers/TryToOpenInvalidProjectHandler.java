@@ -31,7 +31,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.undo.CreateProjectOperation;
 
 import cl.pde.PDEViewActivator;
-import cl.pde.handlers.SearchInvalidProjectHandler.InvalidProjectLabelProvider;
 import cl.pde.views.Util;
 
 /**
@@ -43,7 +42,6 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
   public Object execute(ExecutionEvent event) throws ExecutionException
   {
     Shell shell = HandlerUtil.getActiveShell(event);
-    InvalidProjectLabelProvider labelProvider = new InvalidProjectLabelProvider();
     IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
     Object[] invalidProject = new Object[1];
     Object[] validProject = new Object[1];
@@ -51,7 +49,7 @@ public class TryToOpenInvalidProjectHandler extends AbstractHandler
     String activePartId = HandlerUtil.getActivePartId(event);
     if (IPDEUIConstants.MANIFEST_EDITOR_ID.equals(activePartId))
     {
-      IStructuredSelection currentSelection = HandlerUtil.getCurrentStructuredSelection(event);
+      IStructuredSelection currentSelection = (IStructuredSelection) HandlerUtil.getCurrentSelection(event);
       if (currentSelection.isEmpty())
         return null;
       Object firstElement = currentSelection.getFirstElement();

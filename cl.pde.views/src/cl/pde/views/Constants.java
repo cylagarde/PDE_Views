@@ -21,7 +21,7 @@ public interface Constants
   // Target Platform
   final String TARGET_FEATURE = PDEUIMessages.PluginsTab_target;
 
-  final String ADDITIONAL_PLUGIN = PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins;
+  final String ADDITIONAL_PLUGIN = "Additional Plug-ins"; //PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins;
 
   final String FEATURE_CONTENT_TYPE = "org.eclipse.pde.featureManifest";
   final String PRODUCT_CONTENT_TYPE = "org.eclipse.pde.productFile";
