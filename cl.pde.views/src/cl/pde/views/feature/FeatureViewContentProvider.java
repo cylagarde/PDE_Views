@@ -41,7 +41,6 @@ public class FeatureViewContentProvider extends AbstractTreeObjectContentProvide
           .filter(IFeatureModel.class::isInstance)
           .map(IFeatureModel.class::cast)
           //          .peek(feature -> System.out.println(feature+" "+feature.getModel().getClass()))
-          .sorted(Util.PDE_LABEL_COMPARATOR)
           .collect(Collectors.partitioningBy(featureModel -> featureModel instanceof WorkspaceFeatureModel));
 
       List<TreeParent> treeParentList = new ArrayList<>(2);

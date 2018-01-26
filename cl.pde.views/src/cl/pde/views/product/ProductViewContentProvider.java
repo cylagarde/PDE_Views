@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.eclipse.pde.internal.core.iproduct.IProductModel;
 
 import cl.pde.views.AbstractTreeObjectContentProvider;
+import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.Util;
 
@@ -39,7 +40,7 @@ public class ProductViewContentProvider extends AbstractTreeObjectContentProvide
           .filter(IProductModel.class::isInstance)
           .map(IProductModel.class::cast)
           .map(Util::getProductModelTreeParent)
-          .sorted(Util.PDE_LABEL_COMPARATOR)
+          .sorted(TreeObject.TREEOBJECT_COMPARATOR)
           .collect(Collectors.toList());
 
       return treeParentList.toArray();

@@ -6,9 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +84,6 @@ import cl.pde.PDEViewActivator;
  */
 public class Util
 {
-  public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
   private static final Set<String> MESSAGE_ALREADY_PRINTED_SET = new HashSet<>();
 
   private static IProgressMonitor split(IProgressMonitor monitor, int totalWork)
@@ -278,7 +275,6 @@ public class Util
         catch(Exception e)
         {
           PDEViewActivator.logError("Cannot load " + manifestFile);
-          e.printStackTrace();
         }
       }
     }
@@ -1158,6 +1154,13 @@ public class Util
         IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
         return getSingletonState(plugin);
       }
+      if (pluginModelBase instanceof IFragmentModel)
+      {
+        IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
+        return getSingletonState(fragment);
+      }
+      if (pluginModelBase != null)
+        PDEViewActivator.logError("Cannot getSingletonState for " + pluginModelBase.getClass().getName(), new Exception());
     }
     return null;
   }
@@ -1175,6 +1178,13 @@ public class Util
       IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
       return getSingletonState(plugin);
     }
+    if (pluginModelBase instanceof IFragmentModel)
+    {
+      IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
+      return getSingletonState(fragment);
+    }
+    if (pluginModelBase != null)
+      PDEViewActivator.logError("Cannot getSingletonState for " + pluginModelBase.getClass().getName(), new Exception());
     return null;
   }
 
@@ -1191,6 +1201,13 @@ public class Util
       IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
       return getSingletonState(plugin);
     }
+    if (pluginModelBase instanceof IFragmentModel)
+    {
+      IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
+      return getSingletonState(fragment);
+    }
+    if (pluginModelBase != null)
+      PDEViewActivator.logError("Cannot getSingletonState for " + pluginModelBase.getClass().getName(), new Exception());
     return null;
   }
 
@@ -1199,12 +1216,17 @@ public class Util
    */
   public static Boolean getSingletonState(IFragment fragment)
   {
-    String fragmentId = fragment.getId();
-    String fragmentVersion = fragment.getVersion();
-    IPluginModelBase pluginModelBase = getPluginModelBase(fragmentId, fragmentVersion);
+    IPluginModelBase pluginModelBase = fragment.getPluginModel();
     if (pluginModelBase instanceof ExternalPluginModelBase)
       return getSingletonState((ExternalPluginModelBase) pluginModelBase);
-
+    if (pluginModelBase instanceof IBundlePluginModelBase)
+    {
+      IBundlePluginModelBase bundlePluginModel = (IBundlePluginModelBase) pluginModelBase;
+      IBundle bundle = bundlePluginModel.getBundleModel().getBundle();
+      IManifestHeader header = bundle.getManifestHeader(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME);
+      if (header instanceof BundleSymbolicNameHeader)
+        return ((BundleSymbolicNameHeader) header).isSingleton();
+    }
     return null;
   }
 
@@ -1213,49 +1235,62 @@ public class Util
    */
   private static Boolean getSingletonState(ExternalPluginModelBase externalPluginModelBase)
   {
+    Object singletonState = null;
+
     String installLocation = externalPluginModelBase.getInstallLocation();
     if (installLocation != null)
     {
-      File installLocationFile = new File(installLocation);
-      if (installLocationFile.exists())
+      singletonState = USE_CACHE? SINGLETONSTATE_CACHEMAP.get(installLocation) : null;
+      if (singletonState == null)
       {
-        if (installLocationFile.isFile())
+        File installLocationFile = new File(installLocation);
+        if (installLocationFile.exists())
         {
-          try
-          {
-            JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
-            Manifest manifest = jarInputStream.getManifest();
-            jarInputStream.close();
-            if (manifest != null)
-            {
-              Attributes attributes = manifest.getMainAttributes();
-              String value = attributes.getValue("Bundle-SymbolicName");
-              if (value != null)
-                return value.contains("singleton:=true");
-            }
-          }
-          catch(Exception e)
-          {
-          }
-        }
-        else if (installLocationFile.isDirectory())
-        {
-          Path manifestPath = Paths.get(installLocationFile.getPath(), "META-INF", "MANIFEST.MF");
-          if (Files.exists(manifestPath))
+          if (installLocationFile.isFile())
           {
             try
             {
-              return Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
+              JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
+              Manifest manifest = jarInputStream.getManifest();
+              jarInputStream.close();
+              if (manifest != null)
+              {
+                Attributes attributes = manifest.getMainAttributes();
+                String value = attributes.getValue("Bundle-SymbolicName");
+                if (value != null)
+                  singletonState = value.contains("singleton:=true");
+              }
             }
             catch(Exception e)
             {
+              PDEViewActivator.logError("Cannot treat " + installLocationFile, e);
+            }
+          }
+          else if (installLocationFile.isDirectory())
+          {
+            Path manifestPath = Paths.get(installLocationFile.getPath(), "META-INF", "MANIFEST.MF");
+            if (Files.exists(manifestPath))
+            {
+              try
+              {
+                singletonState = Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
+              }
+              catch(Exception e)
+              {
+                PDEViewActivator.logError("Cannot treat " + manifestPath, e);
+              }
             }
           }
         }
+
+        if (singletonState == null)
+          singletonState = NULL;
+        if (USE_CACHE)
+          SINGLETONSTATE_CACHEMAP.put(installLocation, singletonState);
       }
     }
 
-    return null;
+    return singletonState == NULL? null : (Boolean) singletonState;
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1270,6 +1305,9 @@ public class Util
 
     workspaceFeatureTreeParent.loadChildRunnable = () -> {
       workspaceFeatureList.stream().map(Util::getTreeParent).forEach(workspaceFeatureTreeParent::addChild);
+
+      // sort
+      workspaceFeatureTreeParent.sortChildren();
     };
     return workspaceFeatureTreeParent;
   }
@@ -1284,6 +1322,9 @@ public class Util
 
     externalFeatureTreeParent.loadChildRunnable = () -> {
       externalFeatureList.stream().map(Util::getTreeParent).forEach(externalFeatureTreeParent::addChild);
+
+      // sort
+      externalFeatureTreeParent.sortChildren();
     };
     return externalFeatureTreeParent;
   }
@@ -1305,6 +1346,8 @@ public class Util
     productTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromProduct(product);
       elements.forEach(productTreeParent::addChild);
+
+      productTreeParent.sortChildren();
     };
     return productTreeParent;
   }
@@ -1341,9 +1384,6 @@ public class Util
     elements.add(featuresTreeParent);
 
     featuresTreeParent.loadChildRunnable = () -> {
-      // sort
-      Arrays.sort(productFeatures, PDE_LABEL_COMPARATOR);
-
       for(IProductFeature productFeature : productFeatures)
       {
         TreeParent featureTreeParent = new TreeParent(null, productFeature);
@@ -1364,6 +1404,9 @@ public class Util
           }
         };
       }
+
+      // sort
+      featuresTreeParent.sortChildren();
     };
   }
 
@@ -1384,16 +1427,15 @@ public class Util
     elements.add(pluginsTreeParent);
 
     pluginsTreeParent.loadChildRunnable = () -> {
-
-      // sort
-      Arrays.sort(productPlugins, PDE_LABEL_COMPARATOR);
-
       for(IProductPlugin productPlugin : productPlugins)
       {
         TreeObject productPluginTreeObject = new TreeObject(null, productPlugin);
         productPluginTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
         pluginsTreeParent.addChild(productPluginTreeObject);
       }
+
+      // sort
+      pluginsTreeParent.sortChildren();
     };
   }
 
@@ -1498,14 +1540,15 @@ public class Util
       elements.add(includedPluginsTreeParent);
 
       includedPluginsTreeParent.loadChildRunnable = () -> {
-        // sort
-        Arrays.sort(includedPlugins, PDE_LABEL_COMPARATOR);
         for(IFeaturePlugin featurePlugin : includedPlugins)
         {
           TreeObject childTreeObject = new TreeObject(null, featurePlugin);
           childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
           includedPluginsTreeParent.addChild(childTreeObject);
         }
+
+        // sort
+        includedPluginsTreeParent.sortChildren();
       };
     }
   }
@@ -1526,13 +1569,14 @@ public class Util
       elements.add(includedFeaturesTreeParent);
 
       includedFeaturesTreeParent.loadChildRunnable = () -> {
-        // sort
-        Arrays.sort(includedFeatures, PDE_LABEL_COMPARATOR);
         for(IFeatureChild includedFeature : includedFeatures)
         {
           TreeParent featureChildTreeParent = getTreeParent(includedFeature);
           includedFeaturesTreeParent.addChild(featureChildTreeParent);
         }
+
+        // sort
+        includedFeaturesTreeParent.sortChildren();
       };
     }
   }
@@ -1554,8 +1598,6 @@ public class Util
       elements.add(requiredFeaturesTreeParent);
 
       requiredFeaturesTreeParent.loadChildRunnable = () -> {
-        // sort
-        Arrays.sort(featureImports, PDE_LABEL_COMPARATOR);
         for(IFeatureImport featureImport : featureImports)
         {
           if (featureImport.getType() == IFeatureImport.FEATURE)
@@ -1570,6 +1612,9 @@ public class Util
             requiredFeaturesTreeParent.addChild(childTreeObject);
           }
         }
+
+        // sort
+        requiredFeaturesTreeParent.sortChildren();
       };
     }
   }
@@ -1602,6 +1647,9 @@ public class Util
     launchConfigurationTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromLaunchConfiguration(launchConfiguration);
       elements.forEach(launchConfigurationTreeParent::addChild);
+
+      // sort
+      launchConfigurationTreeParent.sortChildren();
     };
     return launchConfigurationTreeParent;
   }
@@ -1630,7 +1678,6 @@ public class Util
     }
     catch(CoreException e)
     {
-      e.printStackTrace();
       PDEViewActivator.logError(e.toString(), e);
     }
 
@@ -1667,11 +1714,10 @@ public class Util
 
       //
       treeParent.loadChildRunnable = () -> {
-        // sort
-        Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
-
-        //
         pluginBases.stream().map(Util::getTreeObject).forEach(treeParent::addChild);
+
+        // sort
+        treeParent.sortChildren();
       };
     }
   }
@@ -1722,7 +1768,6 @@ public class Util
     }
     catch(CoreException e)
     {
-      e.printStackTrace();
       PDEViewActivator.logError(e.toString(), e);
     }
 
@@ -1764,8 +1809,6 @@ public class Util
           featureModels.add(featureModel);
       }
 
-      // sort
-      Collections.sort(featureModels, PDE_LABEL_COMPARATOR);
       featureModels.stream().map(Util::getTreeParent).forEach(elements::add);
 
       // Additional plugins
@@ -1817,9 +1860,6 @@ public class Util
           additionalPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
           elements.add(additionalPluginsTreeParent);
 
-          // sort
-          Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
-
           //
           pluginBases.stream().map(Util::getTreeObject).forEach(additionalPluginsTreeParent::addChild);
         }
@@ -1827,7 +1867,6 @@ public class Util
     }
     catch(CoreException e)
     {
-      e.printStackTrace();
       PDEViewActivator.logError(e.toString(), e);
     }
   }
