@@ -278,7 +278,6 @@ public class Util
         catch(Exception e)
         {
           PDEViewActivator.logError("Cannot load " + manifestFile);
-          e.printStackTrace();
         }
       }
     }
@@ -1158,6 +1157,13 @@ public class Util
         IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
         return getSingletonState(plugin);
       }
+      if (pluginModelBase instanceof IFragmentModel)
+      {
+        IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
+        return getSingletonState(fragment);
+      }
+      if (pluginModelBase != null)
+        PDEViewActivator.logError("Cannot getSingletonState for " + pluginModelBase.getClass().getName(), new Exception());
     }
     return null;
   }
@@ -1175,6 +1181,13 @@ public class Util
       IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
       return getSingletonState(plugin);
     }
+    if (pluginModelBase instanceof IFragmentModel)
+    {
+      IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
+      return getSingletonState(fragment);
+    }
+    if (pluginModelBase != null)
+      PDEViewActivator.logError("Cannot getSingletonState for " + pluginModelBase.getClass().getName(), new Exception());
     return null;
   }
 
@@ -1191,6 +1204,13 @@ public class Util
       IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
       return getSingletonState(plugin);
     }
+    if (pluginModelBase instanceof IFragmentModel)
+    {
+      IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
+      return getSingletonState(fragment);
+    }
+    if (pluginModelBase != null)
+      PDEViewActivator.logError("Cannot getSingletonState for " + pluginModelBase.getClass().getName(), new Exception());
     return null;
   }
 
@@ -1630,7 +1650,6 @@ public class Util
     }
     catch(CoreException e)
     {
-      e.printStackTrace();
       PDEViewActivator.logError(e.toString(), e);
     }
 
@@ -1722,7 +1741,6 @@ public class Util
     }
     catch(CoreException e)
     {
-      e.printStackTrace();
       PDEViewActivator.logError(e.toString(), e);
     }
 
@@ -1827,7 +1845,6 @@ public class Util
     }
     catch(CoreException e)
     {
-      e.printStackTrace();
       PDEViewActivator.logError(e.toString(), e);
     }
   }
