@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import org.eclipse.debug.core.ILaunchConfiguration;
 
 import cl.pde.views.AbstractTreeObjectContentProvider;
+import cl.pde.views.TreeObject;
 import cl.pde.views.TreeParent;
 import cl.pde.views.Util;
 
@@ -39,7 +40,7 @@ public class LaunchConfigurationViewContentProvider extends AbstractTreeObjectCo
           .filter(ILaunchConfiguration.class::isInstance)
           .map(ILaunchConfiguration.class::cast)
           .map(Util::getLaunchConfigurationTreeParent)
-          .sorted(Util.PDE_LABEL_COMPARATOR)
+          .sorted(TreeObject.TREEOBJECT_COMPARATOR)
           .collect(Collectors.toList());
 
       return treeParentList.toArray();

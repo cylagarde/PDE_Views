@@ -6,9 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +17,7 @@ import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -65,7 +64,6 @@ import org.eclipse.pde.internal.ui.IPDEUIConstants;
 import org.eclipse.pde.internal.ui.PDELabelProvider;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.pde.internal.ui.PDEPluginImages;
-import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
 import org.eclipse.pde.launching.IPDELauncherConstants;
@@ -87,7 +85,6 @@ import cl.pde.PDEViewActivator;
  */
 public class Util
 {
-  public static final Comparator<Object> PDE_LABEL_COMPARATOR = Comparator.comparing(PDEPlugin.getDefault().getLabelProvider()::getText, String.CASE_INSENSITIVE_ORDER);
   private static final Set<String> MESSAGE_ALREADY_PRINTED_SET = new HashSet<>();
 
   private static IProgressMonitor split(IProgressMonitor monitor, int totalWork)
@@ -155,11 +152,11 @@ public class Util
     int count = 1;
     Object[] elements = treeContentProvider.getElements(root);
     monitor.beginTask("", elements.length);
-//    SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
+    //    SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
     for(Object element : elements)
     {
       count += traverseElement(treeContentProvider, element, predicate, split(monitor, 1));
-//      count += traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
+      //      count += traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
       if (monitor.isCanceled())
         break;
     }
@@ -181,11 +178,11 @@ public class Util
       Object[] children = treeContentProvider.getChildren(element);
       //      count += children.length;
       monitor.beginTask("", children.length);
-//      SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
+      //      SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
       for(Object child : children)
       {
         count += traverseElement(treeContentProvider, child, predicate, split(monitor, 1));
-//        count += traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
+        //        count += traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
         if (monitor.isCanceled())
           break;
       }
@@ -205,13 +202,13 @@ public class Util
     {
       IResource[] members = container.members();
       monitor.beginTask("", members.length);
-//      SubMonitor subMonitor = SubMonitor.convert(monitor, members.length);
+      //      SubMonitor subMonitor = SubMonitor.convert(monitor, members.length);
       for(IResource member : members)
       {
         if (member instanceof IContainer)
         {
           traverseContainer((IContainer) member, filePredicate, split(monitor, 1));
-//          traverseContainer((IContainer) member, filePredicate, subMonitor.split(1));
+          //          traverseContainer((IContainer) member, filePredicate, subMonitor.split(1));
         }
         else if (member instanceof IFile)
         {
@@ -1285,6 +1282,9 @@ public class Util
 
     workspaceFeatureTreeParent.loadChildRunnable = () -> {
       workspaceFeatureList.stream().map(Util::getTreeParent).forEach(workspaceFeatureTreeParent::addChild);
+
+      // sort
+      workspaceFeatureTreeParent.sortChildren();
     };
     return workspaceFeatureTreeParent;
   }
@@ -1299,6 +1299,9 @@ public class Util
 
     externalFeatureTreeParent.loadChildRunnable = () -> {
       externalFeatureList.stream().map(Util::getTreeParent).forEach(externalFeatureTreeParent::addChild);
+
+      // sort
+      externalFeatureTreeParent.sortChildren();
     };
     return externalFeatureTreeParent;
   }
@@ -1306,7 +1309,7 @@ public class Util
   /**
    * @param productModel
    */
-  public static TreeParent getProductModelTreeParent(IProductModel productModel)
+  public static TreeParent getTreeParent(IProductModel productModel)
   {
     TreeParent productTreeParent = new TreeParent(null, productModel);
     productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
@@ -1320,6 +1323,8 @@ public class Util
     productTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromProduct(product);
       elements.forEach(productTreeParent::addChild);
+
+      productTreeParent.sortChildren();
     };
     return productTreeParent;
   }
@@ -1351,34 +1356,40 @@ public class Util
       return;
 
     //
-    TreeParent featuresTreeParent = new TreeParent("Features");
+    TreeParent featuresTreeParent = new TreeParent(Constants.FEATURES);
     featuresTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_MF_OBJ);
     elements.add(featuresTreeParent);
 
     featuresTreeParent.loadChildRunnable = () -> {
+      Stream.of(productFeatures).map(Util::getTreeParent).forEach(featuresTreeParent::addChild);
+
       // sort
-      Arrays.sort(productFeatures, PDE_LABEL_COMPARATOR);
+      featuresTreeParent.sortChildren();
+    };
+  }
 
-      for(IProductFeature productFeature : productFeatures)
+  /**
+   * @param productFeature
+   * @return
+   */
+  private static TreeParent getTreeParent(IProductFeature productFeature)
+  {
+    TreeParent featureTreeParent = new TreeParent(null, productFeature);
+    featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
+
+    featureTreeParent.loadChildRunnable = () -> {
+      IFeatureModel featureModel = getFeatureModel(productFeature.getId(), productFeature.getVersion());
+      if (featureModel != null)
       {
-        TreeParent featureTreeParent = new TreeParent(null, productFeature);
-        featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
-        featuresTreeParent.addChild(featureTreeParent);
-
-        featureTreeParent.loadChildRunnable = () -> {
-          IFeatureModel featureModel = getFeatureModel(productFeature.getId(), productFeature.getVersion());
-          if (featureModel != null)
-          {
-            IFeature feature = featureModel.getFeature();
-            if (feature != null)
-            {
-              List<TreeParent> childElements = getElementsFromFeature(feature);
-              childElements.forEach(featureTreeParent::addChild);
-            }
-          }
-        };
+        IFeature feature = featureModel.getFeature();
+        if (feature != null)
+        {
+          List<TreeParent> childElements = getElementsFromFeature(feature);
+          childElements.forEach(featureTreeParent::addChild);
+        }
       }
     };
+    return featureTreeParent;
   }
 
   /**
@@ -1393,22 +1404,26 @@ public class Util
       return;
 
     //
-    TreeParent pluginsTreeParent = new TreeParent("Plugins");
+    TreeParent pluginsTreeParent = new TreeParent(Constants.PLUGINS);
     pluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGIN_OBJ);
     elements.add(pluginsTreeParent);
 
     pluginsTreeParent.loadChildRunnable = () -> {
+      Stream.of(productPlugins).map(Util::getTreeObject).forEach(pluginsTreeParent::addChild);
 
       // sort
-      Arrays.sort(productPlugins, PDE_LABEL_COMPARATOR);
-
-      for(IProductPlugin productPlugin : productPlugins)
-      {
-        TreeObject productPluginTreeObject = new TreeObject(null, productPlugin);
-        productPluginTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
-        pluginsTreeParent.addChild(productPluginTreeObject);
-      }
+      pluginsTreeParent.sortChildren();
     };
+  }
+
+  /**
+   * @param productPlugin
+   */
+  private static TreeObject getTreeObject(IProductPlugin productPlugin)
+  {
+    TreeObject productPluginTreeObject = new TreeObject(null, productPlugin);
+    productPluginTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+    return productPluginTreeObject;
   }
 
   /**
@@ -1506,23 +1521,28 @@ public class Util
     IFeaturePlugin[] includedPlugins = feature.getPlugins();
     if (includedPlugins != null && includedPlugins.length != 0)
     {
-      TreeParent includedPluginsTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_ReferencePage_title);
+      TreeParent includedPluginsTreeParent = new TreeParent(Constants.INCLUDED_PLUGINS);
       includedPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGINS_FRAGMENTS);
       elements.add(includedPluginsTreeParent);
 
       includedPluginsTreeParent.loadChildRunnable = () -> {
         IFeaturePlugin[] reloadedIncludedPlugins = feature.getPlugins();
+        Stream.of(reloadedIncludedPlugins).map(Util::getTreeObject).forEach(includedPluginsTreeParent::addChild);
 
         // sort
-        Arrays.sort(reloadedIncludedPlugins, PDE_LABEL_COMPARATOR);
-        for(IFeaturePlugin featurePlugin : reloadedIncludedPlugins)
-        {
-          TreeObject childTreeObject = new TreeObject(null, featurePlugin);
-          childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
-          includedPluginsTreeParent.addChild(childTreeObject);
-        }
+        includedPluginsTreeParent.sortChildren();
       };
     }
+  }
+
+  /**
+   * @param featurePlugin
+   */
+  private static TreeObject getTreeObject(IFeaturePlugin featurePlugin)
+  {
+    TreeObject childTreeObject = new TreeObject(null, featurePlugin);
+    childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
+    return childTreeObject;
   }
 
   /**
@@ -1536,20 +1556,16 @@ public class Util
     if (includedFeatures != null && includedFeatures.length != 0)
     {
       //
-      TreeParent includedFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_IncludesPage_title);
+      TreeParent includedFeaturesTreeParent = new TreeParent(Constants.INCLUDED_FEATURES);
       includedFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_OBJ);
       elements.add(includedFeaturesTreeParent);
 
       includedFeaturesTreeParent.loadChildRunnable = () -> {
         IFeatureChild[] reloadedIncludedFeatures = feature.getIncludedFeatures();
+        Stream.of(reloadedIncludedFeatures).map(Util::getTreeParent).forEach(includedFeaturesTreeParent::addChild);
 
         // sort
-        Arrays.sort(reloadedIncludedFeatures, PDE_LABEL_COMPARATOR);
-        for(IFeatureChild includedFeature : reloadedIncludedFeatures)
-        {
-          TreeParent featureChildTreeParent = getTreeParent(includedFeature);
-          includedFeaturesTreeParent.addChild(featureChildTreeParent);
-        }
+        includedFeaturesTreeParent.sortChildren();
       };
     }
   }
@@ -1565,15 +1581,13 @@ public class Util
     if (featureImports != null && featureImports.length != 0)
     {
       //
-      TreeParent requiredFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_DependenciesPage_title);
+      TreeParent requiredFeaturesTreeParent = new TreeParent(Constants.REQUIRED_PLUGINS);
       requiredFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_REQ_PLUGINS_OBJ);
       elements.add(requiredFeaturesTreeParent);
 
       requiredFeaturesTreeParent.loadChildRunnable = () -> {
         IFeatureImport[] reloadedFeatureImports = feature.getImports();
 
-        // sort
-        Arrays.sort(reloadedFeatureImports, PDE_LABEL_COMPARATOR);
         for(IFeatureImport featureImport : reloadedFeatureImports)
         {
           if (featureImport.getType() == IFeatureImport.FEATURE)
@@ -1588,6 +1602,9 @@ public class Util
             requiredFeaturesTreeParent.addChild(childTreeObject);
           }
         }
+
+        // sort
+        requiredFeaturesTreeParent.sortChildren();
       };
     }
   }
@@ -1620,6 +1637,9 @@ public class Util
     launchConfigurationTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromLaunchConfiguration(launchConfiguration);
       elements.forEach(launchConfigurationTreeParent::addChild);
+
+      // sort
+      launchConfigurationTreeParent.sortChildren();
     };
     return launchConfigurationTreeParent;
   }
@@ -1684,11 +1704,10 @@ public class Util
 
       //
       treeParent.loadChildRunnable = () -> {
-        // sort
-        Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
-
-        //
         pluginBases.stream().map(Util::getTreeObject).forEach(treeParent::addChild);
+
+        // sort
+        treeParent.sortChildren();
       };
     }
   }
@@ -1780,8 +1799,6 @@ public class Util
           featureModels.add(featureModel);
       }
 
-      // sort
-      Collections.sort(featureModels, PDE_LABEL_COMPARATOR);
       featureModels.stream().map(Util::getTreeParent).forEach(elements::add);
 
       // Additional plugins
@@ -1833,11 +1850,11 @@ public class Util
           additionalPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
           elements.add(additionalPluginsTreeParent);
 
-          // sort
-          Collections.sort(pluginBases, PDE_LABEL_COMPARATOR);
-
           //
           pluginBases.stream().map(Util::getTreeObject).forEach(additionalPluginsTreeParent::addChild);
+
+          // sort
+          additionalPluginsTreeParent.sortChildren();
         }
       }
     }
