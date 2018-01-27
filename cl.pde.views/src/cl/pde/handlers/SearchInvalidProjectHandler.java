@@ -174,7 +174,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       patternFilter.setIncludeLeadingWildcard(true);
 
       //
-      CheckedFilteredTreeSelectionDialog searchElementTreeSelectionDialog = new CheckedFilteredTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, SWT.FULL_SELECTION, patternFilter);
+      CheckedFilteredTreeSelectionDialog searchElementTreeSelectionDialog = new CheckedFilteredTreeSelectionDialog(shell, labelProvider, invalidProjectTreeContentProvider, SWT.BORDER | SWT.FULL_SELECTION, patternFilter);
       searchElementTreeSelectionDialog.setInput(invalidProjectSet);
       searchElementTreeSelectionDialog.setMessage("Select the projects to be opened/imported:");
       searchElementTreeSelectionDialog.setTitle("Open Project");
