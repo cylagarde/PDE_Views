@@ -670,10 +670,10 @@ public class Util
   private static IPluginModelBase getPluginModelBase(String pluginId, String pluginVersion)
   {
     IPluginModelBase pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.PERFECT, null);
-    if (pluginModelBase == null)
-      pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.EQUIVALENT, null);
-    if (pluginModelBase == null)
-      pluginModelBase = PluginRegistry.findModel(pluginId);
+    //    if (pluginModelBase == null)
+    //      pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.EQUIVALENT, null);
+    //    if (pluginModelBase == null)
+    //      pluginModelBase = PluginRegistry.findModel(pluginId);
     return pluginModelBase;
   }
 
@@ -1005,7 +1005,7 @@ public class Util
    * Get IFeature
    * @param productFeature
    */
-  public static IFeature getFeature(IProductFeature productFeature)
+  private static IFeature getFeature(IProductFeature productFeature)
   {
     String featureId = productFeature.getId();
     String featureVersion = productFeature.getVersion();
@@ -1016,7 +1016,7 @@ public class Util
    * Get IFeature
    * @param featureChild
    */
-  public static IFeature getFeature(IFeatureChild featureChild)
+  private static IFeature getFeature(IFeatureChild featureChild)
   {
     String featureId = featureChild.getId();
     String featureVersion = featureChild.getVersion();
@@ -1028,7 +1028,7 @@ public class Util
    * @param featureId
    * @param featureVersion
    */
-  public static IFeature getFeature(String featureId, String featureVersion)
+  private static IFeature getFeature(String featureId, String featureVersion)
   {
     FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
     IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
@@ -1126,7 +1126,7 @@ public class Util
    *
    * @param plugin
    */
-  public static Boolean getSingletonState(IPlugin plugin)
+  private static Boolean getSingletonState(IPlugin plugin)
   {
     ISharedPluginModel model = plugin.getModel();
     if (model instanceof IBundlePluginModelBase)
@@ -1147,7 +1147,7 @@ public class Util
    *
    * @param featureImport
    */
-  public static Boolean getSingletonState(IFeatureImport featureImport)
+  private static Boolean getSingletonState(IFeatureImport featureImport)
   {
     String featureId = featureImport.getId();
     String featureVersion = featureImport.getVersion();
@@ -1173,7 +1173,7 @@ public class Util
   /**
    * @param featurePlugin
    */
-  public static Boolean getSingletonState(IFeaturePlugin featurePlugin)
+  private static Boolean getSingletonState(IFeaturePlugin featurePlugin)
   {
     String pluginId = featurePlugin.getId();
     String pluginVersion = featurePlugin.getVersion();
@@ -1196,7 +1196,7 @@ public class Util
   /**
    * @param productPlugin
    */
-  public static Boolean getSingletonState(IProductPlugin productPlugin)
+  private static Boolean getSingletonState(IProductPlugin productPlugin)
   {
     String pluginId = productPlugin.getId();
     String pluginVersion = productPlugin.getVersion();
@@ -1219,7 +1219,7 @@ public class Util
   /**
    * @param fragment
    */
-  public static Boolean getSingletonState(IFragment fragment)
+  private static Boolean getSingletonState(IFragment fragment)
   {
     IPluginModelBase pluginModelBase = fragment.getPluginModel();
     if (pluginModelBase instanceof ExternalPluginModelBase)
@@ -1352,7 +1352,7 @@ public class Util
   /**
    * @param product
    */
-  static List<TreeParent> getElementsFromProduct(IProduct product)
+  private static List<TreeParent> getElementsFromProduct(IProduct product)
   {
     List<TreeParent> elements = new ArrayList<>();
 
@@ -1369,7 +1369,7 @@ public class Util
    * @param productFeatures
    * @param elements
    */
-  static void loadFeatures(IProduct product, List<TreeParent> elements)
+  private static void loadFeatures(IProduct product, List<TreeParent> elements)
   {
     IProductFeature[] productFeatures = product.getFeatures();
     if (productFeatures.length == 0)
@@ -1412,7 +1412,7 @@ public class Util
    * @param productPlugins
    * @param elements
    */
-  static void loadPlugins(IProduct product, List<TreeParent> elements)
+  private static void loadPlugins(IProduct product, List<TreeParent> elements)
   {
     IProductPlugin[] productPlugins = product.getPlugins();
     if (productPlugins.length == 0)
@@ -1440,7 +1440,7 @@ public class Util
   /**
    * @param feature
    */
-  static TreeParent getTreeParent(IFeature feature)
+  private static TreeParent getTreeParent(IFeature feature)
   {
     TreeParent featureTreeParent = new TreeParent(null, feature);
     featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
@@ -1455,7 +1455,7 @@ public class Util
   /**
    * @param includedFeature
    */
-  static TreeParent getTreeParent(IFeatureChild includedFeature)
+  private static TreeParent getTreeParent(IFeatureChild includedFeature)
   {
     TreeParent featureChildTreeParent = new TreeParent(null, includedFeature);
     featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
@@ -1476,7 +1476,7 @@ public class Util
   /**
    * @param featureImport
    */
-  static TreeParent getTreeParent(IFeatureImport featureImport)
+  private static TreeParent getTreeParent(IFeatureImport featureImport)
   {
     TreeParent featureChildTreeParent = new TreeParent(null, featureImport);
     featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
@@ -1495,7 +1495,7 @@ public class Util
   /**
    * @param pluginBase
    */
-  static TreeObject getTreeObject(IPluginBase pluginBase)
+  private static TreeObject getTreeObject(IPluginBase pluginBase)
   {
     TreeObject treeObject = new TreeObject(null, pluginBase);
     treeObject.foreground = Constants.PLUGIN_FOREGROUND;
@@ -1506,7 +1506,7 @@ public class Util
   /**
    * @param feature
    */
-  static List<TreeParent> getElementsFromFeature(IFeature feature)
+  private static List<TreeParent> getElementsFromFeature(IFeature feature)
   {
     List<TreeParent> elements = new ArrayList<>();
 
@@ -1621,7 +1621,7 @@ public class Util
   /**
    * @param featureModel
    */
-  public static TreeParent getTreeParent(IFeatureModel featureModel)
+  private static TreeParent getTreeParent(IFeatureModel featureModel)
   {
     TreeParent treeParent = new TreeParent(null, featureModel);
     treeParent.foreground = Constants.FEATURE_FOREGROUND;
