@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -100,7 +101,7 @@ public class Util
    * @param predicate
    * @param monitor
    */
-  public static int traverseTree(Tree tree, Predicate<Object> predicate, IProgressMonitor monitor)
+  public static int traverseTree(Tree tree, Predicate<TreeItem> predicate, IProgressMonitor monitor)
   {
     int count = 1;
     TreeItem[] items = tree.getItems();
@@ -109,7 +110,7 @@ public class Util
     for(TreeItem item : items)
     {
       //      count += traverseItem(item, predicate, subMonitor.split(1));
-      count += traverseItem(item, predicate, new SubProgressMonitor(monitor, 1));
+      count += traverseItem(item, predicate, split(monitor, 1), "");
       if (monitor.isCanceled())
         break;
     }
@@ -122,18 +123,19 @@ public class Util
    * @param predicate
    * @param monitor
    */
-  public static int traverseItem(TreeItem item, Predicate<Object> predicate, IProgressMonitor monitor)
+  public static int traverseItem(TreeItem item, Predicate<TreeItem> predicate, IProgressMonitor monitor, String ident)
   {
+    System.out.println(ident + item);
     int count = 1;
-    if (predicate.test(item.getData()))
+    if (predicate.test(item))
     {
       TreeItem[] items = item.getItems();
       monitor.beginTask("", items.length);
-//      SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
+      //      SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
       for(TreeItem child : items)
       {
-        count += traverseItem(child, predicate, new SubProgressMonitor(monitor, 1));
-//        count += traverseItem(child, predicate, subMonitor.split(1));
+        count += traverseItem(child, predicate, split(monitor, 1), ident + "  ");
+        //        count += traverseItem(child, predicate, subMonitor.split(1));
         if (monitor.isCanceled())
           break;
       }
@@ -156,7 +158,7 @@ public class Util
 //    SubMonitor subMonitor = SubMonitor.convert(monitor, elements.length);
     for(Object element : elements)
     {
-      count += traverseElement(treeContentProvider, element, predicate, new SubProgressMonitor(monitor, 1));
+      count += traverseElement(treeContentProvider, element, predicate, split(monitor, 1));
 //      count += traverseElement(treeContentProvider, element, predicate, subMonitor.split(1));
       if (monitor.isCanceled())
         break;
@@ -182,7 +184,7 @@ public class Util
 //      SubMonitor subMonitor = SubMonitor.convert(monitor, children.length);
       for(Object child : children)
       {
-        count += traverseElement(treeContentProvider, child, predicate, new SubProgressMonitor(monitor, 1));
+        count += traverseElement(treeContentProvider, child, predicate, split(monitor, 1));
 //        count += traverseElement(treeContentProvider, child, predicate, subMonitor.split(1));
         if (monitor.isCanceled())
           break;
@@ -208,7 +210,7 @@ public class Util
       {
         if (member instanceof IContainer)
         {
-          traverseContainer((IContainer) member, filePredicate, new SubProgressMonitor(monitor, 1));
+          traverseContainer((IContainer) member, filePredicate, split(monitor, 1));
 //          traverseContainer((IContainer) member, filePredicate, subMonitor.split(1));
         }
         else if (member instanceof IFile)
@@ -333,7 +335,7 @@ public class Util
     {
       String msg = "Unsupported open for " + pdeObject.getClass().getName();
       if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
-        PDEViewActivator.logWarning(msg);
+        PDEViewActivator.logError(msg, new Exception());
     }
   }
 
@@ -597,7 +599,7 @@ public class Util
     {
       String msg = "Unsupported location for " + pdeObject.getClass().getName();
       if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
-        PDEViewActivator.logWarning(msg);
+        PDEViewActivator.logError(msg, new Exception());
     }
 
     return location;
@@ -846,7 +848,7 @@ public class Util
     {
       String msg = "Unsupported resource for " + pdeObject.getClass().getName();
       if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
-        PDEViewActivator.logWarning(msg);
+        PDEViewActivator.logError(msg, new Exception());
     }
 
     return resource;
@@ -1114,7 +1116,7 @@ public class Util
     {
       String msg = "Unsupported singleton for " + pdeObject.getClass().getName();
       if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
-        PDEViewActivator.logWarning(msg);
+        PDEViewActivator.logError(msg, new Exception());
     }
 
     return null;
@@ -1238,49 +1240,62 @@ public class Util
    */
   private static Boolean getSingletonState(ExternalPluginModelBase externalPluginModelBase)
   {
+    Object singletonState = null;
+
     String installLocation = externalPluginModelBase.getInstallLocation();
     if (installLocation != null)
     {
-      File installLocationFile = new File(installLocation);
-      if (installLocationFile.exists())
+      singletonState = USE_CACHE? SINGLETONSTATE_CACHEMAP.get(installLocation) : null;
+      if (singletonState == null)
       {
-        if (installLocationFile.isFile())
+        File installLocationFile = new File(installLocation);
+        if (installLocationFile.exists())
         {
-          try
-          {
-            JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
-            Manifest manifest = jarInputStream.getManifest();
-            jarInputStream.close();
-            if (manifest != null)
-            {
-              Attributes attributes = manifest.getMainAttributes();
-              String value = attributes.getValue("Bundle-SymbolicName");
-              if (value != null)
-                return value.contains("singleton:=true");
-            }
-          }
-          catch(Exception e)
-          {
-          }
-        }
-        else if (installLocationFile.isDirectory())
-        {
-          Path manifestPath = Paths.get(installLocationFile.getPath(), "META-INF", "MANIFEST.MF");
-          if (Files.exists(manifestPath))
+          if (installLocationFile.isFile())
           {
             try
             {
-              return Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
+              JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
+              Manifest manifest = jarInputStream.getManifest();
+              jarInputStream.close();
+              if (manifest != null)
+              {
+                Attributes attributes = manifest.getMainAttributes();
+                String value = attributes.getValue("Bundle-SymbolicName");
+                if (value != null)
+                  singletonState = value.contains("singleton:=true");
+              }
             }
             catch(Exception e)
             {
+              PDEViewActivator.logError("Cannot treat " + installLocationFile, e);
+            }
+          }
+          else if (installLocationFile.isDirectory())
+          {
+            Path manifestPath = Paths.get(installLocationFile.getPath(), "META-INF", "MANIFEST.MF");
+            if (Files.exists(manifestPath))
+            {
+              try
+              {
+                singletonState = Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
+              }
+              catch(Exception e)
+              {
+                PDEViewActivator.logError("Cannot treat " + manifestPath, e);
+              }
             }
           }
         }
+
+        if (singletonState == null)
+          singletonState = NULL;
+        if (USE_CACHE)
+          SINGLETONSTATE_CACHEMAP.put(installLocation, singletonState);
       }
     }
 
-    return null;
+    return singletonState == NULL? null : (Boolean) singletonState;
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1337,7 +1352,7 @@ public class Util
   /**
    * @param product
    */
-  private static List<TreeParent> getElementsFromProduct(IProduct product)
+  static List<TreeParent> getElementsFromProduct(IProduct product)
   {
     List<TreeParent> elements = new ArrayList<>();
 
@@ -1354,7 +1369,7 @@ public class Util
    * @param productFeatures
    * @param elements
    */
-  private static void loadFeatures(IProduct product, List<TreeParent> elements)
+  static void loadFeatures(IProduct product, List<TreeParent> elements)
   {
     IProductFeature[] productFeatures = product.getFeatures();
     if (productFeatures.length == 0)
@@ -1397,7 +1412,7 @@ public class Util
    * @param productPlugins
    * @param elements
    */
-  private static void loadPlugins(IProduct product, List<TreeParent> elements)
+  static void loadPlugins(IProduct product, List<TreeParent> elements)
   {
     IProductPlugin[] productPlugins = product.getPlugins();
     if (productPlugins.length == 0)
@@ -1425,7 +1440,7 @@ public class Util
   /**
    * @param feature
    */
-  public static TreeParent getTreeParent(IFeature feature)
+  static TreeParent getTreeParent(IFeature feature)
   {
     TreeParent featureTreeParent = new TreeParent(null, feature);
     featureTreeParent.foreground = Constants.FEATURE_FOREGROUND;
@@ -1440,7 +1455,7 @@ public class Util
   /**
    * @param includedFeature
    */
-  public static TreeParent getTreeParent(IFeatureChild includedFeature)
+  static TreeParent getTreeParent(IFeatureChild includedFeature)
   {
     TreeParent featureChildTreeParent = new TreeParent(null, includedFeature);
     featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
@@ -1461,7 +1476,7 @@ public class Util
   /**
    * @param featureImport
    */
-  public static TreeParent getTreeParent(IFeatureImport featureImport)
+  static TreeParent getTreeParent(IFeatureImport featureImport)
   {
     TreeParent featureChildTreeParent = new TreeParent(null, featureImport);
     featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
@@ -1480,7 +1495,7 @@ public class Util
   /**
    * @param pluginBase
    */
-  public static TreeObject getTreeObject(IPluginBase pluginBase)
+  static TreeObject getTreeObject(IPluginBase pluginBase)
   {
     TreeObject treeObject = new TreeObject(null, pluginBase);
     treeObject.foreground = Constants.PLUGIN_FOREGROUND;
@@ -1491,7 +1506,7 @@ public class Util
   /**
    * @param feature
    */
-  public static List<TreeParent> getElementsFromFeature(IFeature feature)
+  static List<TreeParent> getElementsFromFeature(IFeature feature)
   {
     List<TreeParent> elements = new ArrayList<>();
 
@@ -1517,15 +1532,16 @@ public class Util
     IFeaturePlugin[] includedPlugins = feature.getPlugins();
     if (includedPlugins != null && includedPlugins.length != 0)
     {
-      //
       TreeParent includedPluginsTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_ReferencePage_title);
       includedPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGINS_FRAGMENTS);
       elements.add(includedPluginsTreeParent);
 
       includedPluginsTreeParent.loadChildRunnable = () -> {
+        IFeaturePlugin[] reloadedIncludedPlugins = feature.getPlugins();
+
         // sort
-        Arrays.sort(includedPlugins, PDE_LABEL_COMPARATOR);
-        for(IFeaturePlugin featurePlugin : includedPlugins)
+        Arrays.sort(reloadedIncludedPlugins, PDE_LABEL_COMPARATOR);
+        for(IFeaturePlugin featurePlugin : reloadedIncludedPlugins)
         {
           TreeObject childTreeObject = new TreeObject(null, featurePlugin);
           childTreeObject.foreground = Constants.PLUGIN_FOREGROUND;
@@ -1551,9 +1567,11 @@ public class Util
       elements.add(includedFeaturesTreeParent);
 
       includedFeaturesTreeParent.loadChildRunnable = () -> {
+        IFeatureChild[] reloadedIncludedFeatures = feature.getIncludedFeatures();
+
         // sort
-        Arrays.sort(includedFeatures, PDE_LABEL_COMPARATOR);
-        for(IFeatureChild includedFeature : includedFeatures)
+        Arrays.sort(reloadedIncludedFeatures, PDE_LABEL_COMPARATOR);
+        for(IFeatureChild includedFeature : reloadedIncludedFeatures)
         {
           TreeParent featureChildTreeParent = getTreeParent(includedFeature);
           includedFeaturesTreeParent.addChild(featureChildTreeParent);
@@ -1572,16 +1590,17 @@ public class Util
     IFeatureImport[] featureImports = feature.getImports();
     if (featureImports != null && featureImports.length != 0)
     {
-
       //
       TreeParent requiredFeaturesTreeParent = new TreeParent(PDEUIMessages.FeatureEditor_DependenciesPage_title);
       requiredFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_REQ_PLUGINS_OBJ);
       elements.add(requiredFeaturesTreeParent);
 
       requiredFeaturesTreeParent.loadChildRunnable = () -> {
+        IFeatureImport[] reloadedFeatureImports = feature.getImports();
+
         // sort
-        Arrays.sort(featureImports, PDE_LABEL_COMPARATOR);
-        for(IFeatureImport featureImport : featureImports)
+        Arrays.sort(reloadedFeatureImports, PDE_LABEL_COMPARATOR);
+        for(IFeatureImport featureImport : reloadedFeatureImports)
         {
           if (featureImport.getType() == IFeatureImport.FEATURE)
           {
@@ -1896,10 +1915,83 @@ public class Util
     {
       String msg = "Unsupported id for " + pdeObject.getClass().getName();
       if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
-        PDEViewActivator.logWarning(msg);
+        PDEViewActivator.logError(msg, new Exception());
     }
 
     return null;
+  }
+
+  static enum TYPE
+  {
+    PLUGIN, FEATURE, PRODUCT
+  }
+
+  /**
+   * Open PDE object
+   * @param pdeObject
+   */
+  public static TYPE getType(Object pdeObject)
+  {
+    if (pdeObject instanceof IPlugin)
+      return TYPE.PLUGIN;
+
+    else if (pdeObject instanceof IFragment)
+      return TYPE.PLUGIN;
+
+    else if (pdeObject instanceof IFeaturePlugin)
+      return TYPE.PLUGIN;
+
+    else if (pdeObject instanceof IFeatureChild)
+      return TYPE.FEATURE;
+
+    else if (pdeObject instanceof IFeatureImport)
+      return ((IFeatureImport) pdeObject).getType() == IFeatureImport.PLUGIN? TYPE.PLUGIN : TYPE.FEATURE;
+
+    else if (pdeObject instanceof IFeature)
+      return TYPE.FEATURE;
+
+    else if (pdeObject instanceof IProduct)
+      return TYPE.PRODUCT;
+
+    else if (pdeObject instanceof IProductFeature)
+      return TYPE.FEATURE;
+
+    else if (pdeObject instanceof IProductPlugin)
+      return TYPE.PLUGIN;
+
+    else if (pdeObject instanceof IFeatureModel)
+      return TYPE.FEATURE;
+
+    else if (pdeObject != null)
+    {
+      String msg = "Unsupported type for " + pdeObject.getClass().getName();
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logError(msg, new Exception());
+    }
+
+    return null;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * @param pdeObject1
+   * @param pdeObject2
+   */
+  public static boolean equals(Object pdeObject1, Object pdeObject2)
+  {
+    String id1 = getId(pdeObject1);
+    String id2 = getId(pdeObject2);
+    if (!Objects.equals(id1, id2))
+      return false;
+
+    TYPE type1 = getType(pdeObject1);
+    TYPE type2 = getType(pdeObject2);
+    if (!Objects.equals(type1, type2))
+      return false;
+
+    //    System.err.println(pdeObject1.getClass() + " " + pdeObject2.getClass());
+    return true;
   }
 
 }

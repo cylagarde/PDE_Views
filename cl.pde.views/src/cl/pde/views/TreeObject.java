@@ -113,19 +113,14 @@ public class TreeObject implements IAdaptable
       return false;
 
     if (!data.equals(otherTreeObject.data))
-    {
-      //
-      if (data.getClass() != otherTreeObject.data.getClass())
-        return false;
-
-      //      // temporaire
-      //      Object key1 = PDEPlugin.getDefault().getLabelProvider().getText(data);
-      //      Object key2 = PDEPlugin.getDefault().getLabelProvider().getText(otherTreeObject.data);
-      //
-      //      return Objects.equals(key1, key2);
-      return Objects.equals(getLabelText(), otherTreeObject.getLabelText());
-    }
+      return Util.equals(data, otherTreeObject.data);
     return true;
   }
 
+  int getLevel()
+  {
+    if (parent == null)
+      return 0;
+    return 1 + parent.getLevel();
+  }
 }

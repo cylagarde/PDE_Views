@@ -61,7 +61,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
     public boolean visit(IResourceDelta delta)
     {
       IResource changedResource = delta.getResource();
-      //      System.out.println("POST_CHANGE " + res + " " + delta.getFlags() + "  " + delta.getKind());
+      //System.out.println("POST_CHANGE " + changedResource + " " + delta.getFlags() + "  " + delta.getKind() + "   !! " + (delta.getFlags() & IResourceDelta.CONTENT));
 
       if ((delta.getFlags() & IResourceDelta.CONTENT) != 0)
       {
@@ -70,26 +70,11 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
           TreeObject treeObject = resourceMap.get(changedResource);
           if (treeObject != null)
           {
-            //            System.out.println("refresh " + treeObject);
-
-            if (treeObject instanceof TreeParent)
-            {
-              TreeParent treeParent = (TreeParent) treeObject;
-              treeParent.reset();
-            }
-
             treeViewer.getControl().getDisplay().asyncExec(() -> {
               treeViewer.getControl().setRedraw(false);
               try
               {
-                Object[] expandedElements = treeViewer.getExpandedElements();
-
-                // refresh node
-                PDEViewActivator.logInfo("refresh " + treeObject);
-                treeViewer.refresh(treeObject);
-
-                treeViewer.setExpandedElements(expandedElements);
-                expandedElements = treeViewer.getExpandedElements();
+                treeViewer.refresh();
               }
               finally
               {
