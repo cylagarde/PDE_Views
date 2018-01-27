@@ -666,10 +666,10 @@ public class Util
   private static IPluginModelBase getPluginModelBase(String pluginId, String pluginVersion)
   {
     IPluginModelBase pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.PERFECT, null);
-    //    if (pluginModelBase == null)
+    //    if (pluginModelBase == null && VersionUtil.isEmptyVersion(pluginVersion))
     //      pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.EQUIVALENT, null);
-    //    if (pluginModelBase == null)
-    //      pluginModelBase = PluginRegistry.findModel(pluginId);
+    if (pluginModelBase == null && VersionUtil.isEmptyVersion(pluginVersion))
+      pluginModelBase = PluginRegistry.findModel(pluginId);
     return pluginModelBase;
   }
 
@@ -1668,7 +1668,9 @@ public class Util
     }
     catch(CoreException e)
     {
-      PDEViewActivator.logError(e.toString(), e);
+      String msg = "Cannot load launchConfiguration " + launchConfiguration;
+      if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
+        PDEViewActivator.logError(msg, e);
     }
 
     return elements;
@@ -1902,6 +1904,9 @@ public class Util
     else if (pdeObject instanceof IFeatureModel)
       return ((IFeatureModel) pdeObject).getFeature().getId();
 
+    else if (pdeObject instanceof ILaunchConfiguration)
+      return ((ILaunchConfiguration) pdeObject).getName();
+
     else if (pdeObject != null)
     {
       String msg = "Unsupported id for " + pdeObject.getClass().getName();
@@ -1914,7 +1919,7 @@ public class Util
 
   static enum TYPE
   {
-    PLUGIN, FEATURE, PRODUCT
+    PLUGIN, FEATURE, PRODUCT, LAUNCH_CONFIGURATION
   }
 
   /**
@@ -1952,6 +1957,9 @@ public class Util
 
     else if (pdeObject instanceof IFeatureModel)
       return TYPE.FEATURE;
+
+    else if (pdeObject instanceof ILaunchConfiguration)
+      return TYPE.LAUNCH_CONFIGURATION;
 
     else if (pdeObject != null)
     {
