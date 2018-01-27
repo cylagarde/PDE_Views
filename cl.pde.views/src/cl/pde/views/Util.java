@@ -434,8 +434,7 @@ public class Util
    */
   private static void openFeature(String featureId, String featureVersion)
   {
-    FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
-    IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
+    IFeatureModel featureModel = getFeatureModel(featureId, featureVersion);
     if (featureModel != null)
       openFeatureModel(featureModel);
     else
@@ -684,8 +683,7 @@ public class Util
    */
   private static String getFeatureLocation(String featureId, String featureVersion)
   {
-    FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
-    IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
+    IFeatureModel featureModel = getFeatureModel(featureId, featureVersion);
     return getFeatureModelLocation(featureModel);
   }
 
@@ -899,8 +897,7 @@ public class Util
    */
   private static IResource getFeatureResource(String featureId, String featureVersion)
   {
-    FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
-    IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
+    IFeatureModel featureModel = getFeatureModel(featureId, featureVersion);
     return getModelResource(featureModel);
   }
 
@@ -1002,37 +999,15 @@ public class Util
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Get IFeature
-   * @param productFeature
-   */
-  private static IFeature getFeature(IProductFeature productFeature)
-  {
-    String featureId = productFeature.getId();
-    String featureVersion = productFeature.getVersion();
-    return getFeature(featureId, featureVersion);
-  }
-
-  /**
-   * Get IFeature
-   * @param featureChild
-   */
-  private static IFeature getFeature(IFeatureChild featureChild)
-  {
-    String featureId = featureChild.getId();
-    String featureVersion = featureChild.getVersion();
-    return getFeature(featureId, featureVersion);
-  }
-
-  /**
-   * Get IFeature
+   * Get IFeatureModel
    * @param featureId
    * @param featureVersion
    */
-  private static IFeature getFeature(String featureId, String featureVersion)
+  private static IFeatureModel getFeatureModel(String featureId, String featureVersion)
   {
     FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
     IFeatureModel featureModel = manager.findFeatureModel(featureId, featureVersion);
-    return featureModel == null? null : featureModel.getFeature();
+    return featureModel;
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1391,8 +1366,7 @@ public class Util
         featuresTreeParent.addChild(featureTreeParent);
 
         featureTreeParent.loadChildRunnable = () -> {
-          FeatureModelManager manager = PDECore.getDefault().getFeatureModelManager();
-          IFeatureModel featureModel = manager.findFeatureModel(productFeature.getId(), productFeature.getVersion());
+          IFeatureModel featureModel = getFeatureModel(productFeature.getId(), productFeature.getVersion());
           if (featureModel != null)
           {
             IFeature feature = featureModel.getFeature();
