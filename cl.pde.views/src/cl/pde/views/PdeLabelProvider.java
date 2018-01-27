@@ -19,8 +19,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.TextStyle;
 
-import cl.pde.PDEViewActivator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 
 /**
  * The class <b>PdeLabelProvider</b> allows to.<br>
@@ -69,9 +69,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     if (element instanceof TreeObject)
     {
       TreeObject treeObject = (TreeObject) element;
-      String name = treeObject.name;
-      if (name == null)
-        name = PDEPlugin.getDefault().getLabelProvider().getText(treeObject.data);
+      String name = treeObject.getLabelText();
 
       styledString.append(name, null);
 

@@ -1219,12 +1219,17 @@ public class Util
    */
   public static Boolean getSingletonState(IFragment fragment)
   {
-    String fragmentId = fragment.getId();
-    String fragmentVersion = fragment.getVersion();
-    IPluginModelBase pluginModelBase = getPluginModelBase(fragmentId, fragmentVersion);
+    IPluginModelBase pluginModelBase = fragment.getPluginModel();
     if (pluginModelBase instanceof ExternalPluginModelBase)
       return getSingletonState((ExternalPluginModelBase) pluginModelBase);
-
+    if (pluginModelBase instanceof IBundlePluginModelBase)
+    {
+      IBundlePluginModelBase bundlePluginModel = (IBundlePluginModelBase) pluginModelBase;
+      IBundle bundle = bundlePluginModel.getBundleModel().getBundle();
+      IManifestHeader header = bundle.getManifestHeader(org.osgi.framework.Constants.BUNDLE_SYMBOLICNAME);
+      if (header instanceof BundleSymbolicNameHeader)
+        return ((BundleSymbolicNameHeader) header).isSingleton();
+    }
     return null;
   }
 

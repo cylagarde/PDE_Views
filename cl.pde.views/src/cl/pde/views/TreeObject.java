@@ -1,5 +1,6 @@
 package cl.pde.views;
 
+import java.util.Comparator;
 import java.util.Objects;
 
 import org.eclipse.core.runtime.IAdaptable;
@@ -12,10 +13,13 @@ import org.eclipse.swt.graphics.Image;
  */
 public class TreeObject implements IAdaptable
 {
+  public static final Comparator<TreeObject> TREEOBJECT_COMPARATOR = Comparator.comparing(TreeObject::getLabelText, String.CASE_INSENSITIVE_ORDER);
+
   public final Object data;
   public String name;
   public Image image;
   public Color foreground;
+  private String labelText = null;
   //  Map<Object, Object> map;
 
   private TreeParent parent;
@@ -31,21 +35,35 @@ public class TreeObject implements IAdaptable
     return name;
   }
 
-  public void setParent(TreeParent parent)
+  void setParent(TreeParent parent)
   {
     this.parent = parent;
   }
 
-  public TreeParent getParent()
+  public final TreeParent getParent()
   {
     return parent;
+  }
+
+  /**
+   * Return the label text
+   */
+  public String getLabelText()
+  {
+    if (labelText == null)
+    {
+      if (name != null)
+        labelText = name;
+      else
+        labelText = PDEPlugin.getDefault().getLabelProvider().getText(data);
+    }
+    return labelText;
   }
 
   @Override
   public String toString()
   {
-    String txt = name != null? name : PDEPlugin.getDefault().getLabelProvider().getText(data);
-    return getClass().getSimpleName() + "[" + txt + "]";
+    return getClass().getSimpleName() + "[" + getLabelText() + "]";
   }
 
   @Override
@@ -100,11 +118,12 @@ public class TreeObject implements IAdaptable
       if (data.getClass() != otherTreeObject.data.getClass())
         return false;
 
-      // temporaire
-      Object key1 = PDEPlugin.getDefault().getLabelProvider().getText(data);
-      Object key2 = PDEPlugin.getDefault().getLabelProvider().getText(otherTreeObject.data);
-
-      return Objects.equals(key1, key2);
+      //      // temporaire
+      //      Object key1 = PDEPlugin.getDefault().getLabelProvider().getText(data);
+      //      Object key2 = PDEPlugin.getDefault().getLabelProvider().getText(otherTreeObject.data);
+      //
+      //      return Objects.equals(key1, key2);
+      return Objects.equals(getLabelText(), otherTreeObject.getLabelText());
     }
     return true;
   }

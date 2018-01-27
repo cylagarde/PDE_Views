@@ -1,6 +1,7 @@
 package cl.pde.views;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.core.IModel;
@@ -80,5 +81,12 @@ public class TreeParent extends TreeObject
         }
       }
     }
+  }
+
+  /**
+   */
+  public void sortChildren()
+  {
+    Collections.sort(children, TREEOBJECT_COMPARATOR);
   }
 }
