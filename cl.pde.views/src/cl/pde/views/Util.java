@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -120,9 +119,9 @@ public class Util
    * @param predicate
    * @param monitor
    */
-  public static int traverseItem(TreeItem item, Predicate<TreeItem> predicate, IProgressMonitor monitor, String ident)
+  public static int traverseItem(TreeItem item, Predicate<TreeItem> predicate, IProgressMonitor monitor, String indent)
   {
-    System.out.println(ident + item);
+    //    System.out.println(indent + item);
     int count = 1;
     if (predicate.test(item))
     {
@@ -131,7 +130,7 @@ public class Util
       //      SubMonitor subMonitor = SubMonitor.convert(monitor, items.length);
       for(TreeItem child : items)
       {
-        count += traverseItem(child, predicate, split(monitor, 1), ident + "  ");
+        count += traverseItem(child, predicate, split(monitor, 1), indent + "  ");
         //        count += traverseItem(child, predicate, subMonitor.split(1));
         if (monitor.isCanceled())
           break;
@@ -1971,26 +1970,26 @@ public class Util
     return null;
   }
 
-  /////////////////////////////////////////////////////////////////////////////////////////////////
-
-  /**
-   * @param pdeObject1
-   * @param pdeObject2
-   */
-  public static boolean equals(Object pdeObject1, Object pdeObject2)
-  {
-    String id1 = getId(pdeObject1);
-    String id2 = getId(pdeObject2);
-    if (!Objects.equals(id1, id2))
-      return false;
-
-    TYPE type1 = getType(pdeObject1);
-    TYPE type2 = getType(pdeObject2);
-    if (!Objects.equals(type1, type2))
-      return false;
-
-    //    System.err.println(pdeObject1.getClass() + " " + pdeObject2.getClass());
-    return true;
-  }
+  //  /////////////////////////////////////////////////////////////////////////////////////////////////
+  //
+  //  /**
+  //   * @param pdeObject1
+  //   * @param pdeObject2
+  //   */
+  //  public static boolean equals(Object pdeObject1, Object pdeObject2)
+  //  {
+  //    String id1 = getId(pdeObject1);
+  //    String id2 = getId(pdeObject2);
+  //    if (!Objects.equals(id1, id2))
+  //      return false;
+  //
+  //    TYPE type1 = getType(pdeObject1);
+  //    TYPE type2 = getType(pdeObject2);
+  //    if (!Objects.equals(type1, type2))
+  //      return false;
+  //
+  //    //    System.err.println(pdeObject1.getClass() + " " + pdeObject2.getClass());
+  //    return true;
+  //  }
 
 }

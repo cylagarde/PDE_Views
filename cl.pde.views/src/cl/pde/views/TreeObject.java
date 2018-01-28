@@ -113,7 +113,7 @@ public class TreeObject implements IAdaptable
       return false;
 
     if (!data.equals(otherTreeObject.data))
-      return Util.equals(data, otherTreeObject.data);
+      return Objects.equals(getLabelText(), otherTreeObject.getLabelText());
     return true;
   }
 
