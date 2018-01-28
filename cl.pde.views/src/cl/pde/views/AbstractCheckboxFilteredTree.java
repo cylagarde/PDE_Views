@@ -77,6 +77,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     Composite buttonComposite = new Composite(content, SWT.NONE);
     RowLayout buttonLayout = new RowLayout();
     buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
+    buttonLayout.marginTop = buttonLayout.marginBottom = 0;
     buttonLayout.spacing = 10;
     buttonComposite.setLayout(buttonLayout);
     buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
