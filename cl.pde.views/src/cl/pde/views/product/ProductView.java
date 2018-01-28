@@ -10,7 +10,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
-import org.eclipse.pde.internal.ui.PDEUIMessages;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IActionBars;
@@ -24,6 +23,7 @@ import org.eclipse.ui.part.ViewPart;
 
 import cl.pde.PDEViewActivator;
 import cl.pde.views.AbstractCheckboxFilteredTree;
+import cl.pde.views.Constants;
 import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
@@ -72,7 +72,7 @@ public class ProductView extends ViewPart
   public void createPartControl(Composite parent)
   {
     NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter();
-    String[] checkboxLabels = {PDEUIMessages.FeatureEditor_ReferencePage_title, PDEUIMessages.FeatureEditor_IncludesPage_title, PDEUIMessages.FeatureEditor_DependenciesPage_title};
+    String[] checkboxLabels = {Constants.INCLUDED_PLUGINS_NODE, Constants.INCLUDED_FEATURES_NODE, Constants.REQUIRED_PLUGINS_NODE};
     productFilteredTree = new AbstractCheckboxFilteredTree(parent, filter)
     {
       @Override

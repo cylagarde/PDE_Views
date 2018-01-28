@@ -15,19 +15,17 @@ public interface Constants
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
 
-  // Workspace
-  final String WORKSPACE_FEATURE = PDEUIMessages.AdvancedLauncherTab_workspacePlugins;
+  // Nodes
+  final String WORKSPACE_NODE = PDEUIMessages.AdvancedLauncherTab_workspacePlugins;
+  final String TARGET_PLATFORM_NODE = PDEUIMessages.PluginsTab_target;
+  final String INCLUDED_PLUGINS_NODE = PDEUIMessages.FeatureEditor_ReferencePage_title;
+  final String INCLUDED_FEATURES_NODE = PDEUIMessages.FeatureEditor_IncludesPage_title;
+  final String REQUIRED_PLUGINS_NODE = PDEUIMessages.FeatureEditor_DependenciesPage_title;
+  final String ADDITIONAL_PLUGIN_NODE = "Additional Plug-ins"; //PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins;
+  final String FEATURES_NODE = "Features";
+  final String PLUGINS_NODE = "Plugins";
 
-  // Target Platform
-  final String TARGET_FEATURE = PDEUIMessages.PluginsTab_target;
-
-  final String ADDITIONAL_PLUGIN = "Additional Plug-ins"; //PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins;
-  final String FEATURES = "Features";
-  final String PLUGINS = "Plugins";
-  final String INCLUDED_FEATURES = PDEUIMessages.FeatureEditor_IncludesPage_title;
-  final String INCLUDED_PLUGINS = PDEUIMessages.FeatureEditor_ReferencePage_title;
-  final String REQUIRED_PLUGINS = PDEUIMessages.FeatureEditor_DependenciesPage_title;
-
+  // Content types
   final String FEATURE_CONTENT_TYPE = "org.eclipse.pde.featureManifest";
   final String PRODUCT_CONTENT_TYPE = "org.eclipse.pde.productFile";
 

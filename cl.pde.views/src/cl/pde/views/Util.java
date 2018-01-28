@@ -1276,7 +1276,7 @@ public class Util
    */
   public static TreeParent getWorkspaceFeatureTreeParent(List<IFeatureModel> workspaceFeatureList)
   {
-    TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_FEATURE);
+    TreeParent workspaceFeatureTreeParent = new TreeParent(Constants.WORKSPACE_NODE);
     workspaceFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
 
     workspaceFeatureTreeParent.loadChildRunnable = () -> {
@@ -1293,7 +1293,7 @@ public class Util
    */
   public static TreeParent getTargetFeatureTreeParent(List<IFeatureModel> externalFeatureList)
   {
-    TreeParent externalFeatureTreeParent = new TreeParent(Constants.TARGET_FEATURE);
+    TreeParent externalFeatureTreeParent = new TreeParent(Constants.TARGET_PLATFORM_NODE);
     externalFeatureTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
 
     externalFeatureTreeParent.loadChildRunnable = () -> {
@@ -1355,7 +1355,7 @@ public class Util
       return;
 
     //
-    TreeParent featuresTreeParent = new TreeParent(Constants.FEATURES);
+    TreeParent featuresTreeParent = new TreeParent(Constants.FEATURES_NODE);
     featuresTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_MF_OBJ);
     elements.add(featuresTreeParent);
 
@@ -1403,7 +1403,7 @@ public class Util
       return;
 
     //
-    TreeParent pluginsTreeParent = new TreeParent(Constants.PLUGINS);
+    TreeParent pluginsTreeParent = new TreeParent(Constants.PLUGINS_NODE);
     pluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGIN_OBJ);
     elements.add(pluginsTreeParent);
 
@@ -1520,7 +1520,7 @@ public class Util
     IFeaturePlugin[] includedPlugins = feature.getPlugins();
     if (includedPlugins != null && includedPlugins.length != 0)
     {
-      TreeParent includedPluginsTreeParent = new TreeParent(Constants.INCLUDED_PLUGINS);
+      TreeParent includedPluginsTreeParent = new TreeParent(Constants.INCLUDED_PLUGINS_NODE);
       includedPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_PLUGINS_FRAGMENTS);
       elements.add(includedPluginsTreeParent);
 
@@ -1555,7 +1555,7 @@ public class Util
     if (includedFeatures != null && includedFeatures.length != 0)
     {
       //
-      TreeParent includedFeaturesTreeParent = new TreeParent(Constants.INCLUDED_FEATURES);
+      TreeParent includedFeaturesTreeParent = new TreeParent(Constants.INCLUDED_FEATURES_NODE);
       includedFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_FEATURE_OBJ);
       elements.add(includedFeaturesTreeParent);
 
@@ -1580,7 +1580,7 @@ public class Util
     if (featureImports != null && featureImports.length != 0)
     {
       //
-      TreeParent requiredFeaturesTreeParent = new TreeParent(Constants.REQUIRED_PLUGINS);
+      TreeParent requiredFeaturesTreeParent = new TreeParent(Constants.REQUIRED_PLUGINS_NODE);
       requiredFeaturesTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_REQ_PLUGINS_OBJ);
       elements.add(requiredFeaturesTreeParent);
 
@@ -1682,9 +1682,9 @@ public class Util
    */
   private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
   {
-    loadElements(launchConfiguration, Constants.WORKSPACE_FEATURE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS, elements);
+    loadElements(launchConfiguration, Constants.WORKSPACE_NODE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS, elements);
 
-    loadElements(launchConfiguration, Constants.TARGET_FEATURE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS, elements);
+    loadElements(launchConfiguration, Constants.TARGET_PLATFORM_NODE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS, elements);
   }
 
   /**
@@ -1847,7 +1847,7 @@ public class Util
 
         if (!pluginBases.isEmpty())
         {
-          TreeParent additionalPluginsTreeParent = new TreeParent(Constants.ADDITIONAL_PLUGIN);
+          TreeParent additionalPluginsTreeParent = new TreeParent(Constants.ADDITIONAL_PLUGIN_NODE);
           additionalPluginsTreeParent.image = PDEPlugin.getDefault().getLabelProvider().get(PDEPluginImages.DESC_SITE_OBJ);
           elements.add(additionalPluginsTreeParent);
 
