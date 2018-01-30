@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/cl.pde.views.features_1.5.0.201801282250.jar" id="cl.pde.views.features" version="1.5.0.201801282250">
+   <feature url="features/cl.pde.views.features_1.5.0.201801301931.jar" id="cl.pde.views.features" version="1.5.0.201801301931">
       <category name="PDE Views category"/>
    </feature>
    <category-def name="PDE Views category" label="PDE Views category"/>
