@@ -10,8 +10,8 @@ https://raw.githubusercontent.com/cylagarde/PDE_Views/master/cl.pde.views.update
 
 Le plugin propose 3 vues disponibles avec le menu "Window/Show view"<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/show_views.png"/><br>
-<br>
-<H1>Feature view</H1><br>
+
+## Feature view
 Cette vue permet de visualiser le contenu d'une feature en affichant les plugins et autres features.<br>
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu de la feature.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/feature_view.png"/>
@@ -22,9 +22,7 @@ Pour ouvrir la vue, sélectionner un fichier 'features.xml' dans la vue "Project
 Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllFeatures.png"/> permet d'afficher toutes les features contenus dans le workspace et la target platform.<br>
 Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
 
-<br>
-
-<H1>Launch configuration view</H1><br>
+## Launch configuration view
 Cette vue permet de visualiser le contenu d'une launch configuration en affichant les plugins et autres features.<br>
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu de la launch configuration.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/launch_configuration_view.png"/>
@@ -35,8 +33,7 @@ Pour ouvrir la vue, sélectionner un fichier '.launch' dans la vue "Project Expl
 Le bouton <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/getAllLaunchConfigurations.png"/> permet d'afficher toutes les launch configurations contenus dans le workspace.<br>
 Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
 
-<br>
-<H1>Product view</H1><br>
+## Product view
 Cette vue permet de visualiser le contenu d'une product en affichant les plugins et autres features.<br>
 Un filtre permet de chercher un plugin. Des boites à cocher permettent de visualiser ou pas le contenu du product.<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/product_view.png"/>
