@@ -1,5 +1,12 @@
 # PDE_Views
-PDE RCP Views V1.4<br>
+PDE RCP Views V1.5
+
+## Install
+```
+https://raw.githubusercontent.com/cylagarde/PDE_Views/master/cl.pde.views.update_site
+```
+<br>
+
 
 Le plugin propose 3 vues disponibles avec le menu "Window/Show view"<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/show_views.png"/><br>
