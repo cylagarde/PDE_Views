@@ -1,9 +1,10 @@
 package cl.pde.views.actions;
 
 import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.IStructuredSelection;
 
-import cl.pde.PDEViewActivator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.Util;
 
 /**
@@ -12,17 +13,19 @@ import cl.pde.views.Util;
 public class ExpandAllNodesAction extends AbstractTreeViewerAction
 {
   final boolean expand;
+  final boolean actionOnAllNodes;
 
   /**
    * Constructor
    * @param treeViewer
    * @param expand true then expand otherwise collapse
    */
-  public ExpandAllNodesAction(AbstractTreeViewer treeViewer, boolean expand)
+  public ExpandAllNodesAction(AbstractTreeViewer treeViewer, boolean expand, boolean actionOnAllNodes)
   {
     super(treeViewer);
     this.expand = expand;
-    setText(expand? "Expand all" : "Collapse all");
+    this.actionOnAllNodes = actionOnAllNodes;
+    setText(expand? (actionOnAllNodes? "Expand all" : "Expand current node") : (actionOnAllNodes? "Collapse all" : "Collapse current node"));
     setToolTipText(expand? "Expand all nodes" : "Collapse all nodes");
     setImageDescriptor(PDEViewActivator.getImageDescriptor(expand? Images.EXPAND_ALL : Images.COLLAPSE_ALL));
   }
@@ -37,10 +40,21 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     Util.setUseCache(true);
     try
     {
-      if (expand)
-        treeViewer.expandAll();
+      if (actionOnAllNodes)
+      {
+        if (expand)
+          treeViewer.expandAll();
+        else
+          treeViewer.collapseAll();
+      }
       else
-        treeViewer.collapseAll();
+      {
+        Object currentSelection = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
+        if (expand)
+          treeViewer.expandToLevel(currentSelection, AbstractTreeViewer.ALL_LEVELS);
+        else
+          treeViewer.collapseToLevel(currentSelection, AbstractTreeViewer.ALL_LEVELS);
+      }
     }
     finally
     {

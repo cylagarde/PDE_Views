@@ -113,7 +113,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   @Override
   protected TreeViewer doCreateTreeViewer(Composite parent, int style)
   {
-    TreeViewer treeViewer = super.doCreateTreeViewer(parent, style);
+    TreeViewer treeViewer = super.doCreateTreeViewer(parent, style | SWT.NO_FOCUS);
 
     treeViewer.addTreeListener(new ITreeViewerListener()
     {

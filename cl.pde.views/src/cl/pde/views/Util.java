@@ -1636,9 +1636,6 @@ public class Util
     launchConfigurationTreeParent.loadChildRunnable = () -> {
       List<TreeParent> elements = getElementsFromLaunchConfiguration(launchConfiguration);
       elements.forEach(launchConfigurationTreeParent::addChild);
-
-      // sort
-      launchConfigurationTreeParent.sortChildren();
     };
     return launchConfigurationTreeParent;
   }
@@ -1742,7 +1739,7 @@ public class Util
           String pluginVersion = str.substring(index + 1);
           model = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.PERFECT, null);
         }
-        if (model == null)
+        else
           model = PluginRegistry.findModel(pluginId);
 
         if (model instanceof IFragmentModel)
@@ -1800,7 +1797,7 @@ public class Util
           featureModels.add(featureModel);
       }
 
-      featureModels.stream().map(Util::getTreeParent).forEach(elements::add);
+      featureModels.stream().map(Util::getTreeParent).sorted(TreeObject.TREEOBJECT_COMPARATOR).forEach(elements::add);
 
       // Additional plugins
       Set<String> additional_plugins = launchConfiguration.getAttribute(IPDELauncherConstants.ADDITIONAL_PLUGINS, Collections.emptySet());

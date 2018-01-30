@@ -8,6 +8,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
@@ -52,6 +53,7 @@ public class FeatureView extends ViewPart
   private Action getAllFeaturesAction;
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
+  private Action expandCurrentNodeAction;
   private Action doubleClickOpenNodeAction;
 
   private ISelectionListener selectionListener;
@@ -208,9 +210,16 @@ public class FeatureView extends ViewPart
     if (copyIdToClipboardAction.isEnabled())
       manager.add(copyIdToClipboardAction);
     manager.add(new Separator());
-    manager.add(expandAllNodesAction);
-    manager.add(collapseAllNodesAction);
-    manager.add(new Separator());
+
+    // check if node is not expanded
+    IStructuredSelection selection = (IStructuredSelection) featureViewer.getSelection();
+    Object element = selection.getFirstElement();
+    if (element != null && !featureViewer.getExpandedState(element))
+    {
+      manager.add(expandCurrentNodeAction);
+      manager.add(new Separator());
+    }
+
     drillDownAdapter.addNavigationActions(manager);
     // Other plug-ins can contribute there actions here
     manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -230,8 +239,9 @@ public class FeatureView extends ViewPart
   {
     copyIdToClipboardAction = new CopyIdToClipboardAction(featureViewer);
     getAllFeaturesAction = new GetAllFeaturesAction(this);
-    expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true);
-    collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false);
+    expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true, true);
+    expandCurrentNodeAction = new ExpandAllNodesAction(featureViewer, true, false);
+    collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false, true);
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);

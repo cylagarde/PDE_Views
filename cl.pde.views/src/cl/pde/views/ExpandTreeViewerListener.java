@@ -21,7 +21,7 @@ public class ExpandTreeViewerListener implements ITreeViewerListener
       if (allMatch)
       {
         AbstractTreeViewer treeViewer = event.getTreeViewer();
-        treeViewer.getControl().getDisplay().asyncExec(() -> treeViewer.expandToLevel(event.getElement(), 2));
+        treeViewer.getControl().getDisplay().asyncExec(() -> treeViewer.expandToLevel(treeParent, 2));
       }
     }
   }

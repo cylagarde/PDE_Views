@@ -8,6 +8,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
@@ -52,6 +53,7 @@ public class ProductView extends ViewPart
   private Action getAllProductsAction;
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
+  private Action expandCurrentNodeAction;
   private Action doubleClickOpenNodeAction;
 
   private ISelectionListener selectionListener;
@@ -186,9 +188,16 @@ public class ProductView extends ViewPart
     if (copyIdToClipboardAction.isEnabled())
       manager.add(copyIdToClipboardAction);
     manager.add(new Separator());
-    manager.add(expandAllNodesAction);
-    manager.add(collapseAllNodesAction);
-    manager.add(new Separator());
+
+    // check if node is not expanded
+    IStructuredSelection selection = (IStructuredSelection) productViewer.getSelection();
+    Object element = selection.getFirstElement();
+    if (element != null && !productViewer.getExpandedState(element))
+    {
+      manager.add(expandCurrentNodeAction);
+      manager.add(new Separator());
+    }
+
     drillDownAdapter.addNavigationActions(manager);
     // Other plug-ins can contribute there actions here
     manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -208,8 +217,9 @@ public class ProductView extends ViewPart
   {
     copyIdToClipboardAction = new CopyIdToClipboardAction(productViewer);
     getAllProductsAction = new GetAllProductsAction(this);
-    expandAllNodesAction = new ExpandAllNodesAction(productViewer, true);
-    collapseAllNodesAction = new ExpandAllNodesAction(productViewer, false);
+    expandAllNodesAction = new ExpandAllNodesAction(productViewer, true, true);
+    expandCurrentNodeAction = new ExpandAllNodesAction(productViewer, true, false);
+    collapseAllNodesAction = new ExpandAllNodesAction(productViewer, false, true);
 
     copyIdToClipboardAction = new CopyIdToClipboardAction(productViewer);
     getAllProductsAction = new GetAllProductsAction(this);

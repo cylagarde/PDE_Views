@@ -8,6 +8,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
@@ -52,6 +53,7 @@ public class LaunchConfigurationView extends ViewPart
   private Action getAllLaunchConfigurationsAction;
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
+  private Action expandCurrentNodeAction;
   private Action doubleClickOpenNodeAction;
 
   private ISelectionListener selectionListener;
@@ -175,9 +177,16 @@ public class LaunchConfigurationView extends ViewPart
     if (copyIdToClipboardAction.isEnabled())
       manager.add(copyIdToClipboardAction);
     manager.add(new Separator());
-    manager.add(expandAllNodesAction);
-    manager.add(collapseAllNodesAction);
-    manager.add(new Separator());
+
+    // check if node is not expanded
+    IStructuredSelection selection = (IStructuredSelection) launchConfigurationViewer.getSelection();
+    Object element = selection.getFirstElement();
+    if (element != null && !launchConfigurationViewer.getExpandedState(element))
+    {
+      manager.add(expandCurrentNodeAction);
+      manager.add(new Separator());
+    }
+
     drillDownAdapter.addNavigationActions(manager);
     // Other plug-ins can contribute there actions here
     manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
@@ -197,8 +206,9 @@ public class LaunchConfigurationView extends ViewPart
   {
     copyIdToClipboardAction = new CopyIdToClipboardAction(launchConfigurationViewer);
     getAllLaunchConfigurationsAction = new GetAllLaunchConfigurationsAction(this);
-    expandAllNodesAction = new ExpandAllNodesAction(launchConfigurationViewer, true);
-    collapseAllNodesAction = new ExpandAllNodesAction(launchConfigurationViewer, false);
+    expandAllNodesAction = new ExpandAllNodesAction(launchConfigurationViewer, true, true);
+    expandCurrentNodeAction = new ExpandAllNodesAction(launchConfigurationViewer, true, false);
+    collapseAllNodesAction = new ExpandAllNodesAction(launchConfigurationViewer, false, true);
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(launchConfigurationViewer);
