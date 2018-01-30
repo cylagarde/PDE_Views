@@ -1,5 +1,5 @@
 # PDE_Views
-PDE RCP Views V1.5
+PDE RCP Views v1.5
 
 ## Install
 ```
