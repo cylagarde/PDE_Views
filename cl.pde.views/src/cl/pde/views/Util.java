@@ -383,7 +383,8 @@ public class Util
    */
   private static void openFeatureModel(IFeatureModel featureModel)
   {
-    FeatureEditor.openFeatureEditor(featureModel);
+    if (featureModel != null)
+      FeatureEditor.openFeatureEditor(featureModel.getFeature());
   }
 
   /**
