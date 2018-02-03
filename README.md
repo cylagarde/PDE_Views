@@ -37,7 +37,7 @@ Un double clic sur une feature ou un bundle ouvre l'éditeur automatiquement.
 
 ## Search projects to be opened/imported
 Un menu contextuel a été rajouté dans la vue "Project Explorer" ou "Package Explorer" pour rechercher et afficher la liste 
-des projets qui sont fermés et des dossiers qui peuvent etre importés en tant que projet.
+des projets qui sont fermés et des dossiers qui peuvent être importés en tant que projet.<br>
 Faire un clic droit pour afficher le menu contextuel : clic sur le menu "Search projects to be opened/imported"<br>
 <img src="https://github.com/cylagarde/PDE_Views/blob/master/document/search_project_to_be_opened.png"/><br>
 La liste des projects fermés ou des dossiers s'affiche.<br>
