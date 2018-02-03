@@ -1,6 +1,6 @@
 # PDE Views v1.5
-Compatible avec Eclipse Luna, Mars, Neon, Oxygen
-Java 8
+Compatible avec <b>Eclipse Luna, Mars, Neon, Oxygen</b><br>
+<b>Java 8</b>
 
 ## Install
 ```
