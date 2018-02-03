@@ -1,5 +1,6 @@
-# PDE_Views
-PDE RCP Views v1.5
+# PDE Views v1.5
+Compatible avec Eclipse Luna, Mars, Neon, Oxygen
+Java 8
 
 ## Install
 ```
