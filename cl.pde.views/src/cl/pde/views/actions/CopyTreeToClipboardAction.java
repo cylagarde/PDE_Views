@@ -8,6 +8,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.dnd.Clipboard;
@@ -38,6 +40,14 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
     setText("Copy tree to clipboard");
     setToolTipText("Copy tree to clipboard");
     setImageDescriptor(Images.TREE.getImageDescriptor());
+  }
+
+  @Override
+  public boolean isEnabled()
+  {
+    ISelection selection = treeViewer.getSelection();
+    Object[] items = ((IStructuredSelection) selection).toArray();
+    return items.length != 0;
   }
 
   @Override

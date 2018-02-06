@@ -178,7 +178,8 @@ public class LaunchConfigurationView extends ViewPart
   {
     if (copyIdToClipboardAction.isEnabled())
       manager.add(copyIdToClipboardAction);
-    manager.add(copyTreeToClipboardAction);
+    if (copyTreeToClipboardAction.isEnabled())
+      manager.add(copyTreeToClipboardAction);
     manager.add(new Separator());
 
     // check if node is not expanded
