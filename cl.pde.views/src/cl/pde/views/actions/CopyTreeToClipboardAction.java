@@ -148,8 +148,7 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
     Clipboard clipboard = new Clipboard(treeViewer.getControl().getDisplay());
     TextTransfer textTransfer = TextTransfer.getInstance();
     RTFTransfer rtfTransfer = RTFTransfer.getInstance();
-    //    clipboard.setContents(new Object[]{buffer.toString(), rtfBuffer.toString()}, new Transfer[]{textTransfer, rtfTransfer});
-    clipboard.setContents(new Object[]{rtfBuffer.toString()}, new Transfer[]{rtfTransfer});
+    clipboard.setContents(new Object[]{buffer.toString(), rtfBuffer.toString()}, new Transfer[]{textTransfer, rtfTransfer});
     clipboard.dispose();
   }
 }
