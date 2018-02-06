@@ -15,6 +15,8 @@ public interface Constants
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
 
+  final Color[] PDE_COLORS = {PLUGIN_FOREGROUND, FEATURE_FOREGROUND, PROJECT_FOREGROUND, LAUNCH_CONFIGURATION_FOREGROUND, PRODUCT_FOREGROUND};
+
   // Nodes
   final String WORKSPACE_NODE = PDEUIMessages.AdvancedLauncherTab_workspacePlugins;
   final String TARGET_PLATFORM_NODE = PDEUIMessages.PluginsTab_target;

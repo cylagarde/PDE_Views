@@ -18,6 +18,7 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.stream.Stream;
 
+import org.eclipse.core.internal.utils.Policy;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -99,6 +100,8 @@ public class Util
    */
   public static int traverseTree(Tree tree, Predicate<TreeItem> predicate, IProgressMonitor monitor)
   {
+    monitor = Policy.monitorFor(monitor);
+
     int count = 1;
     TreeItem[] items = tree.getItems();
     monitor.beginTask("", items.length);
@@ -121,6 +124,8 @@ public class Util
    */
   public static int traverseItem(TreeItem item, Predicate<TreeItem> predicate, IProgressMonitor monitor, String indent)
   {
+    monitor = Policy.monitorFor(monitor);
+
     //    System.out.println(indent + item);
     int count = 1;
     if (predicate.test(item))
@@ -148,6 +153,8 @@ public class Util
    */
   public static int traverseRoot(ITreeContentProvider treeContentProvider, Object root, Predicate<Object> predicate, IProgressMonitor monitor)
   {
+    monitor = Policy.monitorFor(monitor);
+
     int count = 1;
     Object[] elements = treeContentProvider.getElements(root);
     monitor.beginTask("", elements.length);
@@ -171,6 +178,8 @@ public class Util
    */
   public static int traverseElement(ITreeContentProvider treeContentProvider, Object element, Predicate<Object> predicate, IProgressMonitor monitor)
   {
+    monitor = Policy.monitorFor(monitor);
+
     int count = 1;
     if (predicate.test(element))
     {
@@ -199,6 +208,7 @@ public class Util
   {
     if (filePredicate.test(container))
     {
+      monitor = Policy.monitorFor(monitor);
       IResource[] members = container.members();
       monitor.beginTask("", members.length);
       //      SubMonitor subMonitor = SubMonitor.convert(monitor, members.length);
@@ -1903,6 +1913,9 @@ public class Util
 
     else if (pdeObject instanceof ILaunchConfiguration)
       return ((ILaunchConfiguration) pdeObject).getName();
+
+    else if (pdeObject instanceof IModel)
+      return ((IModel) pdeObject).getUnderlyingResource().getName();
 
     else if (pdeObject != null)
     {

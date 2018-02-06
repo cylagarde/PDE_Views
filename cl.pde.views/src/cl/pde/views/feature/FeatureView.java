@@ -30,6 +30,7 @@ import cl.pde.views.NotTreeParentPatternFilter;
 import cl.pde.views.NotifyResourceChangeListener;
 import cl.pde.views.Util;
 import cl.pde.views.actions.CopyIdToClipboardAction;
+import cl.pde.views.actions.CopyTreeToClipboardAction;
 import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.GetAllFeaturesAction;
 import cl.pde.views.actions.OpenNodeAction;
@@ -55,6 +56,7 @@ public class FeatureView extends ViewPart
   private Action collapseAllNodesAction;
   private Action expandCurrentNodeAction;
   private Action doubleClickOpenNodeAction;
+  private Action copyTreeToClipboardAction;
 
   private ISelectionListener selectionListener;
   private NotifyResourceChangeListener notifyResourceChangeListener;
@@ -209,6 +211,7 @@ public class FeatureView extends ViewPart
   {
     if (copyIdToClipboardAction.isEnabled())
       manager.add(copyIdToClipboardAction);
+    manager.add(copyTreeToClipboardAction);
     manager.add(new Separator());
 
     // check if node is not expanded
@@ -242,6 +245,7 @@ public class FeatureView extends ViewPart
     expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true, true);
     expandCurrentNodeAction = new ExpandAllNodesAction(featureViewer, true, false);
     collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false, true);
+    copyTreeToClipboardAction = new CopyTreeToClipboardAction(featureViewer);
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);

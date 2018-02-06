@@ -117,10 +117,17 @@ public class TreeObject implements IAdaptable
     return true;
   }
 
-  int getLevel()
+  /**
+   * Return level from root
+   */
+  public int getLevel(TreeObject parent)
   {
-    if (parent == null)
+    if (this == parent)
       return 0;
-    return 1 + parent.getLevel();
+    if (this.parent == null)
+      return 0;
+    if (this.parent == parent)
+      return 1;
+    return 1 + this.parent.getLevel(parent);
   }
 }

@@ -1,5 +1,8 @@
 package cl.pde;
 
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.graphics.Image;
+
 /**
  * The enum <b>Images</b> allows to.<br>
  */
@@ -15,6 +18,7 @@ public enum Images
   GET_ALL_PRODUCTS("icons/getAllProducts.png"),
   GET_ALL_LAUNCH_CONFIGURATIONS("icons/getAllLaunchConfigurations.png"),
   INVALID_PROJECT("icons/invalid_project.png"),
+  TREE("icons/tree.gif"),
   ;
 
   private String path;
@@ -28,4 +32,15 @@ public enum Images
   {
     return path;
   }
+
+  public Image getImage()
+  {
+    return PDEViewActivator.getImage(this);
+  }
+
+  public ImageDescriptor getImageDescriptor()
+  {
+    return PDEViewActivator.getImageDescriptor(this);
+  }
+
 }

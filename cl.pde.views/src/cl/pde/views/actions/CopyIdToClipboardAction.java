@@ -32,7 +32,10 @@ public class CopyIdToClipboardAction extends AbstractTreeViewerAction
   @Override
   public boolean isEnabled() {
     ISelection selection = treeViewer.getSelection();
-    Object obj = ((IStructuredSelection) selection).getFirstElement();
+    Object[] items = ((IStructuredSelection) selection).toArray();
+    if (items.length != 1)
+      return false;
+    Object obj = items[0];
     if (obj instanceof TreeObject)
     {
       TreeObject treeObject = (TreeObject) obj;
@@ -41,6 +44,7 @@ public class CopyIdToClipboardAction extends AbstractTreeViewerAction
       String id = Util.getId(treeObject.data);
       if (id == null)
         return false;
+      setText("Copy \"" + id + "\" to clipboard");
       return true;
     }
 

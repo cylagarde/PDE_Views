@@ -1,15 +1,17 @@
-invalid project : faire un styledlabelprovider
+rajouter un menu pour copier l'arborescence ds le clipboard
+rajouter une option pour chercher les projets non ouverts sur la sélection
+
+
 cochez/decochez les filtres prennent du temps
-faire un expand all sur un noeud et enlever le expand all global sur le context menu
-launch configuration view : le launch ne contient aucun plugins mais les noeuds Workspace et Target sont visibles alors qu'elles ne le devraient pas
-
-
 launch configuration : revoir le parsing
 ds la feature view, avec les all features, lorsque l'on rajoute un plugin ds un feature, la vue n'est pas toujours mis à jour
 
+CANCEL invalid project : faire un styledlabelprovider
 CANCEL avoir une popup pour afficher une feature d'un product ds la vue feature view
 CANCEL avoir une popup ds l'onglet dépendencies pour faire une recherche des features le contenant
  
+OK launch configuration view : le launch ne contient aucun plugins mais les noeuds Workspace et Target sont visibles alors qu'elles ne le devraient pas
+OK faire un expand all sur un noeud et enlever le expand all global sur le context menu
 OK rajouter un filteredtree ds le Open invalid project
 OK ds la launch view, si la launch est basé sur des features et que l'on rajoute des plugins : ils ne sont pas pris en compte ds la vue
 OK A SUPPRIMER faire la vue Search all features
