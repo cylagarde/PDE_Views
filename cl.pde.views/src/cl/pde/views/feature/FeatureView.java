@@ -1,65 +1,28 @@
 package cl.pde.views.feature;
 
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.ISelectionService;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.part.DrillDownAdapter;
-import org.eclipse.ui.part.ViewPart;
 
 import cl.pde.PDEViewActivator;
 import cl.pde.views.AbstractCheckboxFilteredTree;
+import cl.pde.views.AbstractPDEView;
 import cl.pde.views.Constants;
-import cl.pde.views.ExpandTreeViewerListener;
 import cl.pde.views.NotTreeParentPatternFilter;
-import cl.pde.views.NotifyResourceChangeListener;
-import cl.pde.views.Util;
-import cl.pde.views.actions.CopyIdToClipboardAction;
-import cl.pde.views.actions.CopyTreeToClipboardAction;
-import cl.pde.views.actions.ExpandAllNodesAction;
 import cl.pde.views.actions.GetAllFeaturesAction;
-import cl.pde.views.actions.OpenNodeAction;
 
 /**
  * The class <b>FeatureView</b> allows to.<br>
  */
-public class FeatureView extends ViewPart
+public class FeatureView extends AbstractPDEView
 {
   /**
    * The ID of the view as specified by the extension.
    */
   public static final String ID = "cl.pde.featureView";
 
-  private FilteredTree featureFilteredTree;
-  private TreeViewer featureViewer;
-
-  private DrillDownAdapter drillDownAdapter;
-
-  private Action copyIdToClipboardAction;
-  private Action getAllFeaturesAction;
-  private Action expandAllNodesAction;
-  private Action collapseAllNodesAction;
-  private Action expandCurrentNodeAction;
-  private Action doubleClickOpenNodeAction;
-  private Action copyTreeToClipboardAction;
-
-  private ISelectionListener selectionListener;
-  private NotifyResourceChangeListener notifyResourceChangeListener;
+  AbstractCheckboxFilteredTree featureFilteredTree;
 
   /**
    * The constructor.
@@ -85,205 +48,29 @@ public class FeatureView extends ViewPart
         return checkboxLabels;
       }
     };
-    featureViewer = featureFilteredTree.getViewer();
-    featureViewer.setContentProvider(new FeatureViewContentProvider());
-
-    drillDownAdapter = new DrillDownAdapter(featureViewer);
-
-    //
-    PDEPlugin.getDefault().getLabelProvider().connect(this);
-    notifyResourceChangeListener = new NotifyResourceChangeListener();
-    IWorkspace workspace = ResourcesPlugin.getWorkspace();
-    workspace.addResourceChangeListener(notifyResourceChangeListener, IResourceChangeEvent.POST_CHANGE);
-
-    //
-    featureViewer.getTree().addDisposeListener(e -> {
-      workspace.removeResourceChangeListener(notifyResourceChangeListener);
-      PDEPlugin.getDefault().getLabelProvider().disconnect(FeatureView.this);
-      PDEPlugin.getDefault().getLabelProvider().dispose();
-    });
-    featureViewer.addTreeListener(new ExpandTreeViewerListener());
+    getTreeViewer().setContentProvider(new FeatureViewContentProvider());
 
     // Create the help context id for the viewer's control
-    PlatformUI.getWorkbench().getHelpSystem().setHelp(featureViewer.getControl(), PDEViewActivator.PLUGIN_ID + ".featureView");
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(getTreeViewer().getControl(), PDEViewActivator.PLUGIN_ID + ".featureView");
 
-    getSite().setSelectionProvider(featureViewer);
-
-    makeActions();
-    hookContextMenu();
-    hookDoubleClickAction();
-    contributeToActionBars();
-
-    //    //
-    //    ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
-    //
-    //    Predicate<Object> selectionPredicate = resource -> {
-    //      if (resource instanceof IFile)
-    //        return ICoreConstants.FEATURE_FILENAME_DESCRIPTOR.equals(((IFile) resource).getName().toLowerCase(Locale.ENGLISH));
-    //      //      if (resource instanceof TreeObject)
-    //      //      {
-    //      //        Object data = ((TreeObject) resource).data;
-    //      //        return (data instanceof IFeature) || (data instanceof IProductFeature) || (data instanceof IFeatureChild) || (data instanceof IFeatureModel);
-    //      //      }
-    //      //      System.err.println("selectionPredicate " + resource.getClass());
-    //      return false;
-    //    };
-    //    Function<Object, Object> inputFunction = resource -> {
-    //      if (resource instanceof IFile)
-    //      {
-    //        IFile file = (IFile) resource;
-    //        WorkspaceFeatureModel workspaceFeatureModel = new WorkspaceFeatureModel(file);
-    //        workspaceFeatureModel.load();
-    //        return workspaceFeatureModel;
-    //      }
-    //      //      if (resource instanceof TreeObject)
-    //      //        resource = ((TreeObject) resource).data;
-    //      //      if (resource instanceof IFeature)
-    //      //        return resource;
-    //      //      if (resource instanceof IProductFeature)
-    //      //      {
-    //      //        IProductFeature productFeature = (IProductFeature) resource;
-    //      //        return Util.getFeature(productFeature);
-    //      //      }
-    //      //      if (resource instanceof IFeatureChild)
-    //      //      {
-    //      //        IFeatureChild featureChild = (IFeatureChild) resource;
-    //      //        return Util.getFeature(featureChild);
-    //      //      }
-    //      //      if (resource instanceof IFeatureModel)
-    //      //      {
-    //      //        IFeatureModel featureModel = (IFeatureModel) resource;
-    //      //        return featureModel.getFeature();
-    //      //      }
-    //      return resource;
-    //    };
-    //    selectionListener = new PDESelectionListener(featureViewer, notifyResourceChangeListener, selectionPredicate, inputFunction);
-    //    selectionService.addPostSelectionListener(selectionListener);
-    //    selectionListener.selectionChanged(null, selectionService.getSelection());
+    super.createPartControl(parent);
   }
 
-  /**
-   * Return the feature viewer
-   */
-  public TreeViewer getFeatureViewer()
-  {
-    return featureViewer;
-  }
-
-  @Override
-  public void dispose()
-  {
-    if (selectionListener != null)
-    {
-      ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService();
-      selectionService.removePostSelectionListener(selectionListener);
-      selectionListener = null;
-    }
-
-    super.dispose();
-  }
-
-  private void hookContextMenu()
-  {
-    MenuManager menuMgr = new MenuManager("#PopupMenu");
-    menuMgr.setRemoveAllWhenShown(true);
-    menuMgr.addMenuListener(manager -> fillContextMenu(manager));
-    Menu menu = menuMgr.createContextMenu(featureViewer.getControl());
-    featureViewer.getControl().setMenu(menu);
-    getSite().registerContextMenu(menuMgr, featureViewer);
-  }
-
-  private void contributeToActionBars()
-  {
-    IActionBars bars = getViewSite().getActionBars();
-    fillLocalPullDown(bars.getMenuManager());
-    fillLocalToolBar(bars.getToolBarManager());
-  }
-
-  private void fillLocalPullDown(IMenuManager manager)
-  {
-    manager.add(expandAllNodesAction);
-    manager.add(collapseAllNodesAction);
-    manager.add(new Separator());
-  }
-
-  private void fillContextMenu(IMenuManager manager)
-  {
-    if (copyIdToClipboardAction.isEnabled())
-      manager.add(copyIdToClipboardAction);
-    if (copyTreeToClipboardAction.isEnabled())
-      manager.add(copyTreeToClipboardAction);
-    manager.add(new Separator());
-
-    // check if node is not expanded
-    IStructuredSelection selection = (IStructuredSelection) featureViewer.getSelection();
-    Object element = selection.getFirstElement();
-    if (element != null && !featureViewer.getExpandedState(element))
-    {
-      manager.add(expandCurrentNodeAction);
-      manager.add(new Separator());
-    }
-
-    drillDownAdapter.addNavigationActions(manager);
-    // Other plug-ins can contribute there actions here
-    manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-  }
-
-  private void fillLocalToolBar(IToolBarManager manager)
-  {
-    manager.add(getAllFeaturesAction);
-    manager.add(new Separator());
-    manager.add(expandAllNodesAction);
-    manager.add(collapseAllNodesAction);
-    manager.add(new Separator());
-    drillDownAdapter.addNavigationActions(manager);
-  }
-
-  private void makeActions()
-  {
-    copyIdToClipboardAction = new CopyIdToClipboardAction(featureViewer);
-    getAllFeaturesAction = new GetAllFeaturesAction(this);
-    expandAllNodesAction = new ExpandAllNodesAction(featureViewer, true, true);
-    expandCurrentNodeAction = new ExpandAllNodesAction(featureViewer, true, false);
-    collapseAllNodesAction = new ExpandAllNodesAction(featureViewer, false, true);
-    copyTreeToClipboardAction = new CopyTreeToClipboardAction(featureViewer);
-
-    //
-    doubleClickOpenNodeAction = new OpenNodeAction(featureViewer);
-  }
-
-  /**
-   * Set input
-   * @param input
-   */
-  public void setInput(Object input)
-  {
-    Util.setUseCache(true);
-
-    try
-    {
-      featureViewer.setInput(input);
-
-      // refresh
-      notifyResourceChangeListener.refreshWhenResourceChanged(featureViewer);
-    }
-    finally
-    {
-      Util.setUseCache(false);
-    }
-  }
-
-  private void hookDoubleClickAction()
-  {
-    featureViewer.addDoubleClickListener(event -> doubleClickOpenNodeAction.run());
-  }
-
-  /**
-   * Passing the focus request to the viewer's control.
+  /*
+   * @see cl.pde.views.AbstractPDEView#getTreeViewer()
    */
   @Override
-  public void setFocus()
+  public TreeViewer getTreeViewer()
   {
-    featureViewer.getControl().setFocus();
+    return featureFilteredTree.getViewer();
+  }
+
+  /*
+   * @see cl.pde.views.AbstractPDEView#createAllItemsAction()
+   */
+  @Override
+  protected Action createAllItemsAction()
+  {
+    return new GetAllFeaturesAction(this);
   }
 }

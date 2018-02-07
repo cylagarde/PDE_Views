@@ -75,7 +75,7 @@ public class OpenInLaunchConfigurationViewHandler extends AbstractHandler
       // get LaunchConfigurationView
       IViewPart showView = workbenchPage.showView(LaunchConfigurationView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       LaunchConfigurationView launchConfigurationView = (LaunchConfigurationView) showView;
-      TreeViewer launchConfigurationViewer = launchConfigurationView.getLaunchConfigurationViewer();
+      TreeViewer launchConfigurationViewer = launchConfigurationView.getTreeViewer();
 
       launchConfigurationViewer.getControl().setRedraw(false);
       try

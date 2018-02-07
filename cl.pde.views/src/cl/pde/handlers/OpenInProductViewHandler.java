@@ -93,7 +93,7 @@ public class OpenInProductViewHandler extends AbstractHandler implements Constan
       // get ProductView
       IViewPart showView = workbenchPage.showView(ProductView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       ProductView productView = (ProductView) showView;
-      TreeViewer productViewer = productView.getProductViewer();
+      TreeViewer productViewer = productView.getTreeViewer();
 
       productViewer.getControl().setRedraw(false);
       try

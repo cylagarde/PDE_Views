@@ -93,7 +93,7 @@ public class OpenInFeatureViewHandler extends AbstractHandler implements Constan
       // get FeatureView
       IViewPart showView = workbenchPage.showView(FeatureView.ID, null, IWorkbenchPage.VIEW_ACTIVATE);
       FeatureView featureView = (FeatureView) showView;
-      TreeViewer featureViewer = featureView.getFeatureViewer();
+      TreeViewer featureViewer = featureView.getTreeViewer();
 
       featureViewer.getControl().setRedraw(false);
       try

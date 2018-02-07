@@ -20,8 +20,8 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.TreeViewer;
 
-import cl.pde.PDEViewActivator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.Util;
 import cl.pde.views.launchconfiguration.LaunchConfigurationView;
 
@@ -94,10 +94,10 @@ public class GetAllLaunchConfigurationsAction extends Action
     }
 
     if (errorStatus.getChildren().length != 0)
-      MessageDialog.openError(launchConfigurationView.getLaunchConfigurationViewer().getTree().getShell(), "Error", "Some errors were found when processing: " + errorStatus.getMessage());
+      MessageDialog.openError(launchConfigurationView.getTreeViewer().getTree().getShell(), "Error", "Some errors were found when processing: " + errorStatus.getMessage());
 
     //
-    TreeViewer launchConfigurationViewer = launchConfigurationView.getLaunchConfigurationViewer();
+    TreeViewer launchConfigurationViewer = launchConfigurationView.getTreeViewer();
     launchConfigurationViewer.getControl().setRedraw(false);
     try
     {

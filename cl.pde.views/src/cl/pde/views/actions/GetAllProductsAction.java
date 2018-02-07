@@ -19,8 +19,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.iproduct.IProductModel;
 import org.eclipse.pde.internal.core.product.WorkspaceProductModel;
 
-import cl.pde.PDEViewActivator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.Util;
 import cl.pde.views.product.ProductView;
 
@@ -103,10 +103,10 @@ public class GetAllProductsAction extends Action
     }
 
     if (errorStatus.getChildren().length != 0)
-      MessageDialog.openError(productView.getProductViewer().getTree().getShell(), "Error", "Some errors were found when processing: " + errorStatus.getMessage());
+      MessageDialog.openError(productView.getTreeViewer().getTree().getShell(), "Error", "Some errors were found when processing: " + errorStatus.getMessage());
 
     //
-    TreeViewer productViewer = productView.getProductViewer();
+    TreeViewer productViewer = productView.getTreeViewer();
     productViewer.getControl().setRedraw(false);
     try
     {

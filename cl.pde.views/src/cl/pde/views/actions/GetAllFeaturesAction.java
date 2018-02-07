@@ -5,8 +5,8 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.core.PDECore;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 
-import cl.pde.PDEViewActivator;
 import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 import cl.pde.views.feature.FeatureView;
 
 /**
@@ -33,7 +33,7 @@ public class GetAllFeaturesAction extends Action
   {
     IFeatureModel[] allFeatureModels = PDECore.getDefault().getFeatureModelManager().getModels();
 
-    TreeViewer featureViewer = featureView.getFeatureViewer();
+    TreeViewer featureViewer = featureView.getTreeViewer();
     featureViewer.getControl().setRedraw(false);
     try
     {
