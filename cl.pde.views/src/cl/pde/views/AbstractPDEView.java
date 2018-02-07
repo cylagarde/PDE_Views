@@ -8,6 +8,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
@@ -18,6 +19,7 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
@@ -31,6 +33,8 @@ import cl.pde.views.actions.OpenNodeAction;
  */
 public abstract class AbstractPDEView extends ViewPart
 {
+  private FilteredTree filteredTree;
+
   private DrillDownAdapter drillDownAdapter;
 
   private Action copyIdToClipboardAction;
@@ -58,6 +62,20 @@ public abstract class AbstractPDEView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
+    NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter();
+    filteredTree = new AbstractCheckboxFilteredTree(parent, filter)
+    {
+      @Override
+      protected String[] getCheckboxLabels()
+      {
+        return AbstractPDEView.this.getCheckboxLabels();
+      }
+    };
+    getTreeViewer().setContentProvider(getViewContentProvider());
+
+    // Create the help context id for the viewer's control
+    PlatformUI.getWorkbench().getHelpSystem().setHelp(getTreeViewer().getControl(), getHelpContextId());
+
     drillDownAdapter = new DrillDownAdapter(getTreeViewer());
 
     //
@@ -83,9 +101,27 @@ public abstract class AbstractPDEView extends ViewPart
   }
 
   /**
+   * return the help context id
+   */
+  protected abstract String getHelpContextId();
+
+  /**
+   * Return the IContentProvider used by the treeViewer
+   */
+  protected abstract IContentProvider getViewContentProvider();
+
+  /**
+   * Return checkbox labels
+   */
+  protected abstract String[] getCheckboxLabels();
+
+  /**
    * Return the TreeViewer used by the view
    */
-  protected abstract TreeViewer getTreeViewer();
+  public final TreeViewer getTreeViewer()
+  {
+    return filteredTree.getViewer();
+  }
 
   @Override
   public void dispose()

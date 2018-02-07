@@ -1,4 +1,6 @@
-rajouter un menu pour copier l'arborescence ds le clipboard
+completer la doc 
+
+OK rajouter un menu pour copier l'arborescence ds le clipboard
 rajouter une option pour chercher les projets non ouverts sur la sélection
 
 
