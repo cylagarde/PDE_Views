@@ -9,7 +9,6 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.IContentProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.widgets.Composite;
@@ -158,10 +157,7 @@ public abstract class AbstractPDEView extends ViewPart
       manager.add(copyTreeToClipboardAction);
     manager.add(new Separator());
 
-    // check if node is not expanded
-    IStructuredSelection selection = (IStructuredSelection) getTreeViewer().getSelection();
-    Object element = selection.getFirstElement();
-    if (element != null && !getTreeViewer().getExpandedState(element))
+    if (expandCurrentNodeAction.isEnabled())
     {
       manager.add(expandCurrentNodeAction);
       manager.add(new Separator());

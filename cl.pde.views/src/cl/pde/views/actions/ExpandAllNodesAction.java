@@ -5,6 +5,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 
 import cl.pde.Images;
 import cl.pde.PDEViewActivator;
+import cl.pde.views.TreeParent;
 import cl.pde.views.Util;
 
 /**
@@ -28,6 +29,41 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     setText(expand? (actionOnAllNodes? "Expand all" : "Expand current node") : (actionOnAllNodes? "Collapse all" : "Collapse current node"));
     setToolTipText(expand? "Expand all nodes" : "Collapse all nodes");
     setImageDescriptor(PDEViewActivator.getImageDescriptor(expand? Images.EXPAND_ALL : Images.COLLAPSE_ALL));
+  }
+
+  /*
+   * @see org.eclipse.jface.action.Action#isEnabled()
+   */
+  @Override
+  public boolean isEnabled()
+  {
+    if (super.isEnabled())
+    {
+      if (actionOnAllNodes)
+        return true;
+
+      // check if node is not expanded
+      if (expand)
+      {
+        IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+        Object element = selection.getFirstElement();
+        if (element != null && !treeViewer.getExpandedState(element))
+        {
+          // check if node has leaves
+          if (!actionOnAllNodes)
+          {
+            if (element instanceof TreeParent)
+            {
+              TreeParent parent = (TreeParent) element;
+              return parent.hasChildren();
+            }
+          }
+        }
+      }
+      else
+        return true;
+    }
+    return false;
   }
 
   /*
