@@ -9,7 +9,7 @@ import cl.pde.views.Constants;
 import cl.pde.views.actions.GetAllProductsAction;
 
 /**
- * The class <b>ProductView</b> allows to.<br>
+ * The class <b>ProductView</b> allows to display the content of a product.<br>
  */
 public class ProductView extends AbstractPDEView
 {

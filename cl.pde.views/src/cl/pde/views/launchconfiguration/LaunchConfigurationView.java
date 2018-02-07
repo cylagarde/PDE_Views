@@ -9,7 +9,7 @@ import cl.pde.views.Constants;
 import cl.pde.views.actions.GetAllLaunchConfigurationsAction;
 
 /**
- * The class <b>LaunchConfigurationView</b> allows to.<br>
+ * The class <b>LaunchConfigurationView</b> allows to display the content of a launch configuration.<br>
  */
 public class LaunchConfigurationView extends AbstractPDEView
 {

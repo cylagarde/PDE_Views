@@ -9,7 +9,7 @@ import cl.pde.views.Constants;
 import cl.pde.views.actions.GetAllFeaturesAction;
 
 /**
- * The class <b>FeatureView</b> allows to.<br>
+ * The class <b>FeatureView</b> allows to display the content of a feature.<br>
  */
 public class FeatureView extends AbstractPDEView
 {
