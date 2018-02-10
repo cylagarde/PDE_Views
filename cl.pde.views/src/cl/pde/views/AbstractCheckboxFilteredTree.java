@@ -88,6 +88,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       public void widgetSelected(SelectionEvent e)
       {
         textChanged();
+        getViewer().expandAll();
       }
     };
 
