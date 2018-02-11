@@ -9,7 +9,7 @@
 		<artifactId>cl.pde.views.parent</artifactId>
 		<version>1.6.0-SNAPSHOT</version>
 	</parent>
-	
+
 	<artifactId>cl.pde.views.features</artifactId>
 	<packaging>eclipse-feature</packaging>
 
