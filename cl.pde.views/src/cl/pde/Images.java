@@ -4,7 +4,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
 
 /**
- * The enum <b>Images</b> allows to.<br>
+ * The enum <b>Images</b> allows to list images used by plugin.<br>
  */
 public enum Images
 {
