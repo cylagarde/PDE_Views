@@ -28,22 +28,35 @@ import cl.pde.PDEViewActivator;
 public class PdeLabelProvider extends LabelProvider implements IFontProvider, IColorProvider, IStyledLabelProvider
 {
   final static String SELECTION_FOREGROUND = "SELECTION_FOREGROUND";
-  final static ColorRegistry colorRegistry = JFaceResources.getColorRegistry();
+  final static ColorRegistry COLOR_REGISTRY = JFaceResources.getColorRegistry();
+  final static Font BOLD_FONT = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
+
+  final static Styler COUNTER_STYLER;
+  final static Styler DECORATIONS_STYLER;
+  final static Styler QUALIFIER_STYLER;
+  final static Styler SELECTION_STYLER;
+
   static
   {
-    colorRegistry.put(SELECTION_FOREGROUND, new RGB(255, 0, 0));
-  }
+    COLOR_REGISTRY.put(SELECTION_FOREGROUND, new RGB(255, 0, 0));
+    COLOR_REGISTRY.put("COUNTER_COLOR", new RGB(0, 127, 174));
+    COLOR_REGISTRY.put("DECORATIONS_COLOR", new RGB(149, 125, 71));
+    COLOR_REGISTRY.put("QUALIFIER_COLOR", new RGB(128, 128, 128));
 
-  final Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
-  private final Styler selectionStyler = new Styler()
-  {
-    @Override
-    public void applyStyles(TextStyle textStyle)
+    COUNTER_STYLER = StyledString.createColorRegistryStyler("COUNTER_COLOR", null);
+    DECORATIONS_STYLER = StyledString.createColorRegistryStyler("DECORATIONS_COLOR", null);
+    QUALIFIER_STYLER = StyledString.createColorRegistryStyler("QUALIFIER_COLOR", null);
+
+    SELECTION_STYLER = new Styler()
     {
-      textStyle.font = boldFont;
-      textStyle.foreground = colorRegistry.get(SELECTION_FOREGROUND);
-    }
-  };
+      @Override
+      public void applyStyles(TextStyle textStyle)
+      {
+        textStyle.font = BOLD_FONT;
+        textStyle.foreground = COLOR_REGISTRY.get(SELECTION_FOREGROUND);
+      }
+    };
+  }
 
   final NotTreeParentPatternFilter patternFilter;
 
@@ -77,21 +90,21 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
       int lastIndex = name.lastIndexOf(')');
       int beginIndex = name.lastIndexOf('(', lastIndex);
       if (lastIndex >= 0 && beginIndex >= 0)
-        styledString.setStyle(beginIndex, lastIndex - beginIndex + 1, StyledString.COUNTER_STYLER);
+        styledString.setStyle(beginIndex, lastIndex - beginIndex + 1, COUNTER_STYLER);
 
       if (treeObject.data != null)
       {
         // location
         String location = Util.getLocation(treeObject.data);
         if (location != null)
-          styledString.append(" - " + location, StyledString.QUALIFIER_STYLER);
+          styledString.append(" - " + location, QUALIFIER_STYLER);
 
         //        // resource
         //        IResource resource = Util.getResource(treeObject.data);
         //        if (resource != null)
-        //          styledString.append(" - " + resource, StyledString.DECORATIONS_STYLER);
+        //          styledString.append(" - " + resource, DECORATIONS_STYLER);
         //        else
-        //          styledString.append(" ERROR " + treeObject.data.getClass(), StyledString.DECORATIONS_STYLER);
+        //          styledString.append(" ERROR " + treeObject.data.getClass(), DECORATIONS_STYLER);
       }
 
       //
@@ -101,7 +114,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         Position firstPosition = patternFilter.getFirstPosition(text, 0, text.length());
         if (firstPosition != null)
         {
-          styledString.setStyle(firstPosition.getStart(), firstPosition.getEnd() - firstPosition.getStart(), selectionStyler);
+          styledString.setStyle(firstPosition.getStart(), firstPosition.getEnd() - firstPosition.getStart(), SELECTION_STYLER);
         }
       }
     }
@@ -152,7 +165,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     {
       TreeParent treeParent = (TreeParent) obj;
       if (treeParent.name != null && treeParent.data == null)
-        return boldFont;
+        return BOLD_FONT;
     }
     return null;
   }
