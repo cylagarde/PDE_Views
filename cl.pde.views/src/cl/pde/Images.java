@@ -8,29 +8,36 @@ import org.eclipse.swt.graphics.Image;
  */
 public enum Images
 {
-  FEATURE("icons/ftr_xml_obj.png"),
-  PRODUCT("icons/product_xml_obj.png"),
+  PRODUCT("platform:/plugin/org.eclipse.pde.ui/icons/obj16/product_xml_obj.png"),
+  LAUNCH_CONFIGURATION("platform:/plugin/org.eclipse.pde.ui/icons/etool16/eclipse16.png"),
+
   EXPAND_ALL("icons/expand_all.png"),
   COLLAPSE_ALL("icons/collapse_all.png"),
-  LAUNCH_CONFIGURATION("icons/launchConfiguration.png"),
+
   SINGLETON("icons/singleton.png"),
+
   GET_ALL_FEATURES("icons/getAllFeatures.png"),
   GET_ALL_PRODUCTS("icons/getAllProducts.png"),
   GET_ALL_LAUNCH_CONFIGURATIONS("icons/getAllLaunchConfigurations.png"),
+  GET_ALL_PLUGINS("icons/getAllPlugins.png"),
+
   INVALID_PROJECT("icons/invalid_project.png"),
   TREE("icons/tree.gif"),
+
   ;
 
-  private String path;
+  final String path;
+  final String pluginId;
 
   private Images(String path)
   {
-    this.path = path;
+    this(PDEViewActivator.PLUGIN_ID, path);
   }
 
-  public String getPath()
+  private Images(String pluginId, String path)
   {
-    return path;
+    this.pluginId = pluginId;
+    this.path = path;
   }
 
   public Image getImage()
@@ -43,4 +50,8 @@ public enum Images
     return PDEViewActivator.getImageDescriptor(this);
   }
 
+  String getKey()
+  {
+    return pluginId + ":" + path;
+  }
 }

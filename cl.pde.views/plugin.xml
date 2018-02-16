@@ -11,7 +11,7 @@
       <view
             category="cl.pde.views"
             class="cl.pde.views.feature.FeatureView"
-            icon="icons/ftr_xml_obj.png"
+            icon="platform:/plugin/org.eclipse.pde.ui/icons/obj16/ftr_xml_obj.png"
             id="cl.pde.featureView"
             name="Feature View">
       </view>
@@ -19,7 +19,7 @@
       <view
             category="cl.pde.views"
             class="cl.pde.views.product.ProductView"
-            icon="icons/product_xml_obj.png"
+            icon="platform:/plugin/org.eclipse.pde.ui/icons/obj16/product_xml_obj.png"
             id="cl.pde.productView"
             name="Product View">
       </view>
@@ -27,9 +27,16 @@
       <view
             category="cl.pde.views"
             class="cl.pde.views.launchconfiguration.LaunchConfigurationView"
-            icon="icons/launchConfiguration.png"
+            icon="platform:/plugin/org.eclipse.pde.ui/icons/etool16/eclipse16.png"
             id="cl.pde.launchConfigurationView"
             name="Launch Configuration View">
+      </view>
+      <view
+            category="cl.pde.views"
+            class="cl.pde.views.plugin.PluginView"
+            icon="platform:/plugin/org.eclipse.pde.ui/icons/eview16/plugins.png"
+            id="cl.pde.pluginView"
+            name="Plugin View">
       </view>
    </extension>
    <extension

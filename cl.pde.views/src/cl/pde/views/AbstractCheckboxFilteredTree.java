@@ -66,46 +66,49 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   {
     Composite filterComposite = super.createFilterControls(parent);
 
-    Composite content = new Composite(parent.getParent(), SWT.NONE);
-    GridLayout layout = new GridLayout(1, false);
-    layout.marginWidth = layout.marginHeight = 2;
-    content.setLayout(layout);
-    content.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-    filterComposite.setParent(content);
-
-    Composite buttonComposite = new Composite(content, SWT.NONE);
-    RowLayout buttonLayout = new RowLayout();
-    buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
-    buttonLayout.marginTop = buttonLayout.marginBottom = 0;
-    buttonLayout.spacing = 10;
-    buttonComposite.setLayout(buttonLayout);
-    buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-    SelectionAdapter listener = new SelectionAdapter()
-    {
-      @Override
-      public void widgetSelected(SelectionEvent e)
-      {
-        textChanged();
-        getViewer().expandAll();
-      }
-    };
-
     String[] checkboxLabels = getCheckboxLabels();
-
-    //
-    checkboxButtons = new Button[checkboxLabels.length];
-    for(int i = 0; i < checkboxButtons.length; i++)
+    if (checkboxLabels != null && checkboxLabels.length != 0)
     {
-      String label = checkboxLabels[i];
-      checkboxButtons[i] = new Button(buttonComposite, SWT.CHECK);
-      checkboxButtons[i].setText(label);
-      checkboxButtons[i].setData("LABEL", label);
-      checkboxButtons[i].setToolTipText("See " + label + " node");
-      checkboxButtons[i].setSelection(true);
-      checkboxButtons[i].setBackground(parent.getBackground());
-      checkboxButtons[i].addSelectionListener(listener);
+      Composite content = new Composite(parent.getParent(), SWT.NONE);
+      GridLayout layout = new GridLayout(1, false);
+      layout.marginWidth = layout.marginHeight = 2;
+      content.setLayout(layout);
+      content.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+      filterComposite.setParent(content);
+
+      Composite buttonComposite = new Composite(content, SWT.NONE);
+
+      RowLayout buttonLayout = new RowLayout();
+      buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
+      buttonLayout.marginTop = buttonLayout.marginBottom = 0;
+      buttonLayout.spacing = 10;
+      buttonComposite.setLayout(buttonLayout);
+      buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+      SelectionAdapter listener = new SelectionAdapter()
+      {
+        @Override
+        public void widgetSelected(SelectionEvent e)
+        {
+          textChanged();
+          getViewer().expandAll();
+        }
+      };
+
+      //
+      checkboxButtons = new Button[checkboxLabels.length];
+      for(int i = 0; i < checkboxButtons.length; i++)
+      {
+        String label = checkboxLabels[i];
+        checkboxButtons[i] = new Button(buttonComposite, SWT.CHECK);
+        checkboxButtons[i].setText(label);
+        checkboxButtons[i].setData("LABEL", label);
+        checkboxButtons[i].setToolTipText("See " + label + " node");
+        checkboxButtons[i].setSelection(true);
+        checkboxButtons[i].setBackground(parent.getBackground());
+        checkboxButtons[i].addSelectionListener(listener);
+      }
     }
 
     return filterComposite;

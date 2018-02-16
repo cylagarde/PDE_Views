@@ -72,9 +72,8 @@ public class PDEViewActivator extends AbstractUIPlugin
   @Override
   protected void initializeImageRegistry(ImageRegistry imageRegistry)
   {
-    //
     for(Images img : Images.values())
-      imageRegistry.put(img.getPath(), getImageDescriptor(img.getPath()));
+      imageRegistry.put(img.getKey(), imageDescriptorFromPlugin(img.pluginId, img.path));
   }
 
   /**
@@ -94,7 +93,7 @@ public class PDEViewActivator extends AbstractUIPlugin
    */
   public static ImageDescriptor getImageDescriptor(Images img)
   {
-    return plugin.getImageRegistry().getDescriptor(img.getPath());
+    return plugin.getImageRegistry().getDescriptor(img.getKey());
   }
 
   /**
@@ -104,7 +103,7 @@ public class PDEViewActivator extends AbstractUIPlugin
    */
   public static Image getImage(Images img)
   {
-    return plugin.getImageRegistry().get(img.getPath());
+    return plugin.getImageRegistry().get(img.getKey());
   }
 
   /**
@@ -117,7 +116,6 @@ public class PDEViewActivator extends AbstractUIPlugin
   {
     ILog log = plugin != null? plugin.getLog() : Platform.getLog(FrameworkUtil.getBundle(PDEViewActivator.class));
     log = log != null? log : IDEWorkbenchPlugin.getDefault().getLog();
-
     log.log(new Status(severity, PLUGIN_ID, message, e));
   }
 
