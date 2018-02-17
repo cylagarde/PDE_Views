@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -108,7 +108,7 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
         Set<Object> cacheSet = new HashSet<>();
 
         // search all resources
-        Predicate<Object> predicate = o -> {
+        BiPredicate<Integer, Object> predicate = (depth, o) -> {
           if (o instanceof TreeObject)
           {
             if (!cacheSet.add(o))

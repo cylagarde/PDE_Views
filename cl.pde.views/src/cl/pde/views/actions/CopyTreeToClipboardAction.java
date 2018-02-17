@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.function.BiPredicate;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.viewers.AbstractTreeViewer;
@@ -89,7 +89,7 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
     {
       TreeObject parentTreeObject = (TreeObject) parentTreeItem.getData();
 
-      Predicate<Object> predicate = o -> {
+      BiPredicate<Integer, Object> predicate = (depth, o) -> {
         TreeObject treeObject = (TreeObject) o;
         int level = treeObject.getLevel(parentTreeObject);
         String indent = indentMap.computeIfAbsent(level, n -> String.join("", Collections.nCopies(n, "    ")));
@@ -135,7 +135,7 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
         return true;
       };
 
-      Util.traverseElement((ITreeContentProvider) treeViewer.getContentProvider(), parentTreeObject, predicate, null);
+      Util.traverseElement((ITreeContentProvider) treeViewer.getContentProvider(), parentTreeObject, 0, predicate, null);
     }
 
     rtfBuffer.append("}");
