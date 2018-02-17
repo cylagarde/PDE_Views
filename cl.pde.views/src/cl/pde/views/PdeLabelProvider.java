@@ -27,35 +27,34 @@ import cl.pde.PDEViewActivator;
  */
 public class PdeLabelProvider extends LabelProvider implements IFontProvider, IColorProvider, IStyledLabelProvider
 {
-  final static String SELECTION_FOREGROUND = "SELECTION_FOREGROUND";
   final static ColorRegistry COLOR_REGISTRY = JFaceResources.getColorRegistry();
   final static Font BOLD_FONT = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
 
-  final static Styler COUNTER_STYLER;
-  final static Styler DECORATIONS_STYLER;
-  final static Styler QUALIFIER_STYLER;
   final static Styler SELECTION_STYLER;
+  final static Styler VERSION_STYLER;
+  final static Styler LOCATION_STYLER;
+  final static Styler DECORATIONS_STYLER;
 
   static
   {
-    COLOR_REGISTRY.put(SELECTION_FOREGROUND, new RGB(255, 0, 0));
-    COLOR_REGISTRY.put("COUNTER_COLOR", new RGB(0, 127, 174));
+    COLOR_REGISTRY.put("SELECTION_FOREGROUND", new RGB(255, 0, 0));
+    COLOR_REGISTRY.put("VERSION_COLOR", Constants.VERSION_FOREGROUND != null? Constants.VERSION_FOREGROUND.getRGB() : new RGB(0, 0, 0));
     COLOR_REGISTRY.put("DECORATIONS_COLOR", new RGB(149, 125, 71));
-    COLOR_REGISTRY.put("QUALIFIER_COLOR", new RGB(128, 128, 128));
+    COLOR_REGISTRY.put("LOCATION_COLOR", new RGB(128, 128, 128));
 
-    COUNTER_STYLER = StyledString.createColorRegistryStyler("COUNTER_COLOR", null);
-    DECORATIONS_STYLER = StyledString.createColorRegistryStyler("DECORATIONS_COLOR", null);
-    QUALIFIER_STYLER = StyledString.createColorRegistryStyler("QUALIFIER_COLOR", null);
-
+    // stylers
     SELECTION_STYLER = new Styler()
     {
       @Override
       public void applyStyles(TextStyle textStyle)
       {
         textStyle.font = BOLD_FONT;
-        textStyle.foreground = COLOR_REGISTRY.get(SELECTION_FOREGROUND);
+        textStyle.foreground = COLOR_REGISTRY.get("SELECTION_FOREGROUND");
       }
     };
+    VERSION_STYLER = StyledString.createColorRegistryStyler("VERSION_COLOR", null);
+    LOCATION_STYLER = StyledString.createColorRegistryStyler("LOCATION_COLOR", null);
+    DECORATIONS_STYLER = StyledString.createColorRegistryStyler("DECORATIONS_COLOR", null);
   }
 
   final NotTreeParentPatternFilter patternFilter;
@@ -90,14 +89,14 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
       int lastIndex = name.lastIndexOf(')');
       int beginIndex = name.lastIndexOf('(', lastIndex);
       if (lastIndex >= 0 && beginIndex >= 0)
-        styledString.setStyle(beginIndex, lastIndex - beginIndex + 1, COUNTER_STYLER);
+        styledString.setStyle(beginIndex, lastIndex - beginIndex + 1, VERSION_STYLER);
 
       if (treeObject.data != null)
       {
         // location
         String location = Util.getLocation(treeObject.data);
         if (location != null)
-          styledString.append(" - " + location, QUALIFIER_STYLER);
+          styledString.append(" - " + location, LOCATION_STYLER);
 
         //        // resource
         //        IResource resource = Util.getResource(treeObject.data);

@@ -15,6 +15,8 @@ public interface Constants
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
 
+  final Color VERSION_FOREGROUND = new Color(null, 0, 127, 174);
+
   final Color[] PDE_COLORS = {PLUGIN_FOREGROUND, FEATURE_FOREGROUND, PROJECT_FOREGROUND, LAUNCH_CONFIGURATION_FOREGROUND, PRODUCT_FOREGROUND};
 
   // Nodes
@@ -23,7 +25,7 @@ public interface Constants
   final String INCLUDED_PLUGINS_NODE = PDEUIMessages.FeatureEditor_ReferencePage_title;
   final String INCLUDED_FEATURES_NODE = PDEUIMessages.FeatureEditor_IncludesPage_title;
   final String REQUIRED_PLUGINS_NODE = PDEUIMessages.FeatureEditor_DependenciesPage_title;
-  final String ADDITIONAL_PLUGIN_NODE = "Additional Plug-ins"; //PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins;
+  final String ADDITIONAL_PLUGIN_NODE = "Additional Plug-ins"; //PDEUIMessages.FeatureBlock_AdditionalPluginsEntry_plugins; not compatible with older PDE
   final String FEATURES_NODE = "Features";
   final String PLUGINS_NODE = "Plugins";
 
