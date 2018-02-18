@@ -306,11 +306,18 @@ public class Util
   static void printExceptionWithoutRepetition(String msg, Exception exception, boolean openDialog)
   {
     if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
-      PDEViewActivator.logError(msg, exception);
-    if (openDialog)
     {
-      Shell shell = Display.getDefault().getActiveShell();
-      MessageDialog.openError(shell, "Error", msg);
+      PDEViewActivator.logError(msg, exception);
+      if (openDialog)
+      {
+        if (exception != null)
+          msg += " : " + exception.getLocalizedMessage();
+        String message = msg;
+        Display.getDefault().syncExec(() -> {
+          Shell shell = Display.getDefault().getActiveShell();
+          MessageDialog.openError(shell, "Error", message);
+        });
+      }
     }
   }
 
@@ -443,9 +450,9 @@ public class Util
    * @param pluginId
    * @param pluginVersion
    */
-  private static void openPlugin(String pluginId, String pluginVersion)
+  private static void openPlugin(String pluginId, String pluginVersion, int matchRule)
   {
-    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
     openPlugin(pluginModelBase);
   }
 
@@ -491,7 +498,8 @@ public class Util
   {
     String pluginId = featurePlugin.getId();
     String pluginVersion = featurePlugin.getVersion();
-    openPlugin(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    openPlugin(pluginId, pluginVersion, matchRule);
   }
 
   /**
@@ -501,7 +509,7 @@ public class Util
   private static void openFeatureImport(IFeatureImport featureImport)
   {
     if (featureImport.getType() == IFeatureImport.PLUGIN)
-      openPlugin(featureImport.getId(), featureImport.getVersion());
+      openPlugin(featureImport.getId(), featureImport.getVersion(), featureImport.getMatch());
     else if (featureImport.getType() == IFeatureImport.FEATURE && featureImport.getFeature() != null)
       openFeature(featureImport.getFeature());
   }
@@ -559,7 +567,8 @@ public class Util
   {
     String pluginId = productPlugin.getId();
     String pluginVersion = productPlugin.getVersion();
-    openPlugin(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    openPlugin(pluginId, pluginVersion, matchRule);
   }
 
   /**
@@ -570,7 +579,8 @@ public class Util
   {
     String fragmentId = fragment.getId();
     String fragmentVersion = fragment.getVersion();
-    openPlugin(fragmentId, fragmentVersion);
+    int matchRule = IMatchRules.PERFECT;
+    openPlugin(fragmentId, fragmentVersion, matchRule);
   }
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -666,9 +676,9 @@ public class Util
    * @param pluginId
    * @param pluginVersion
    */
-  public static String getPluginLocation(String pluginId, String pluginVersion)
+  public static String getPluginLocation(String pluginId, String pluginVersion, int matchRule)
   {
-    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
     if (pluginModelBase instanceof IFragmentModel)
     {
       IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
@@ -689,9 +699,9 @@ public class Util
    * @param pluginId
    * @param pluginVersion
    */
-  public static IPluginModelBase getPluginModelBase(String pluginId, String pluginVersion)
+  public static IPluginModelBase getPluginModelBase(String pluginId, String pluginVersion, int matchRule)
   {
-    IPluginModelBase pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.PERFECT, null);
+    IPluginModelBase pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, matchRule, null);
     //    if (pluginModelBase == null && VersionUtil.isEmptyVersion(pluginVersion))
     //      pluginModelBase = PluginRegistry.findModel(pluginId, pluginVersion, IMatchRules.EQUIVALENT, null);
     if (pluginModelBase == null && VersionUtil.isEmptyVersion(pluginVersion))
@@ -738,7 +748,8 @@ public class Util
   {
     String pluginId = featurePlugin.getId();
     String pluginVersion = featurePlugin.getVersion();
-    return getPluginLocation(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    return getPluginLocation(pluginId, pluginVersion, matchRule);
   }
 
   /**
@@ -749,7 +760,7 @@ public class Util
   {
     String oldLocation = null;
     if (featureImport.getType() == IFeatureImport.PLUGIN)
-      oldLocation = getPluginLocation(featureImport.getId(), featureImport.getVersion());
+      oldLocation = getPluginLocation(featureImport.getId(), featureImport.getVersion(), featureImport.getMatch());
     else if (featureImport.getType() == IFeatureImport.FEATURE && featureImport.getFeature() != null)
       oldLocation = getFeatureLocation(featureImport.getFeature());
     return oldLocation;
@@ -783,7 +794,8 @@ public class Util
   {
     String pluginId = productPlugin.getId();
     String pluginVersion = productPlugin.getVersion();
-    return getPluginLocation(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    return getPluginLocation(pluginId, pluginVersion, matchRule);
   }
 
   /**
@@ -903,9 +915,9 @@ public class Util
    * @param pluginId
    * @param pluginVersion
    */
-  private static IResource getPluginResource(String pluginId, String pluginVersion)
+  private static IResource getPluginResource(String pluginId, String pluginVersion, int matchRule)
   {
-    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
     return getModelResource(pluginModelBase);
   }
 
@@ -928,8 +940,9 @@ public class Util
   {
     String featureId = featureImport.getId();
     String featureVersion = featureImport.getVersion();
+    int matchRule = featureImport.getMatch();
     if (featureImport.getType() == IFeatureImport.PLUGIN)
-      return getPluginResource(featureId, featureVersion);
+      return getPluginResource(featureId, featureVersion, matchRule);
     else if (featureImport.getType() == IFeatureImport.FEATURE)
       return getFeatureResource(featureId, featureVersion);
     return null;
@@ -943,7 +956,8 @@ public class Util
   {
     String pluginId = productPlugin.getId();
     String pluginVersion = productPlugin.getVersion();
-    return getPluginResource(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    return getPluginResource(pluginId, pluginVersion, matchRule);
   }
 
   /**
@@ -994,7 +1008,8 @@ public class Util
   {
     String pluginId = featurePlugin.getId();
     String pluginVersion = featurePlugin.getVersion();
-    return getPluginResource(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    return getPluginResource(pluginId, pluginVersion, matchRule);
   }
 
   /**
@@ -1158,7 +1173,8 @@ public class Util
     {
       String featureId = featureImport.getId();
       String featureVersion = featureImport.getVersion();
-      IPluginModelBase pluginModelBase = getPluginModelBase(featureId, featureVersion);
+      int matchRule = featureImport.getMatch();
+      IPluginModelBase pluginModelBase = getPluginModelBase(featureId, featureVersion, matchRule);
       return getPluginSingletonState(pluginModelBase);
     }
     return null;
@@ -1171,7 +1187,8 @@ public class Util
   {
     String pluginId = featurePlugin.getId();
     String pluginVersion = featurePlugin.getVersion();
-    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
     return getPluginSingletonState(pluginModelBase);
   }
 
@@ -1182,7 +1199,8 @@ public class Util
   {
     String pluginId = productPlugin.getId();
     String pluginVersion = productPlugin.getVersion();
-    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion);
+    int matchRule = IMatchRules.PERFECT;
+    IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
     return getPluginSingletonState(pluginModelBase);
   }
 
@@ -1684,7 +1702,7 @@ public class Util
     }
     catch(CoreException e)
     {
-      printExceptionWithoutRepetition("Cannot load launchConfiguration " + launchConfiguration, e, true);
+      printExceptionWithoutRepetition("Cannot load launchConfiguration " + launchConfiguration, e, false);
     }
 
     return elements;
@@ -1891,32 +1909,33 @@ public class Util
     if (pdeObject instanceof IIdentifiable)
       return ((IIdentifiable) pdeObject).getId();
 
-    else if (pdeObject instanceof IProduct)
+    if (pdeObject instanceof IProduct)
       return ((IProduct) pdeObject).getId();
 
-    else if (pdeObject instanceof IProductFeature)
+    if (pdeObject instanceof IProductFeature)
       return ((IProductFeature) pdeObject).getId();
 
-    else if (pdeObject instanceof IProductPlugin)
+    if (pdeObject instanceof IProductPlugin)
       return ((IProductPlugin) pdeObject).getId();
 
-    else if (pdeObject instanceof IFeatureModel)
+    if (pdeObject instanceof IFeatureModel)
       return ((IFeatureModel) pdeObject).getFeature().getId();
 
-    else if (pdeObject instanceof ILaunchConfiguration)
+    if (pdeObject instanceof ILaunchConfiguration)
       return ((ILaunchConfiguration) pdeObject).getName();
 
-    else if (pdeObject instanceof IPluginModel)
+    if (pdeObject instanceof IPluginModel)
       return getId(((IPluginModel) pdeObject).getPlugin());
 
-    else if (pdeObject instanceof IModel)
+    if (pdeObject instanceof IModel)
     {
       IModel model = (IModel) pdeObject;
       IResource underlyingResource = model.getUnderlyingResource();
-      return underlyingResource.getName();
+      if (underlyingResource != null)
+        return underlyingResource.getName();
     }
 
-    else if (pdeObject != null)
+    if (pdeObject != null)
       printExceptionWithoutRepetition("Unsupported id for " + pdeObject.getClass().getName(), null, true);
 
     return null;

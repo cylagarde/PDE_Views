@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.TreeViewer;
+import org.eclipse.pde.core.plugin.IMatchRules;
 import org.eclipse.pde.core.plugin.IPluginModelBase;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -43,8 +44,8 @@ public class GetAllPluginsAction extends Action
     {
       String symbolicName = bundle.getSymbolicName();
       String version = bundle.getVersion().toString();
-      IPluginModelBase pluginModelBase = Util.getPluginModelBase(symbolicName, version);
-      System.out.println(bundle + " -> " + pluginModelBase);
+      int matchRule = IMatchRules.PERFECT;
+      IPluginModelBase pluginModelBase = Util.getPluginModelBase(symbolicName, version, matchRule);
       if (pluginModelBase != null)
         pluginSet.add(pluginModelBase);
       else
