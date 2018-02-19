@@ -1,5 +1,7 @@
 package cl.pde.views.plugin;
 
+import java.util.function.Predicate;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IContentProvider;
 
@@ -40,5 +42,11 @@ public class PluginView extends AbstractPDEView
   protected IContentProvider getViewContentProvider()
   {
     return new PluginViewContentProvider();
+  }
+
+  @Override
+  protected Predicate<Object> getCanSearchOnElementPredicate()
+  {
+    return e -> true;
   }
 }

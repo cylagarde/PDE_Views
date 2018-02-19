@@ -1,5 +1,7 @@
 package cl.pde.views;
 
+import java.util.function.Predicate;
+
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -62,6 +64,7 @@ public abstract class AbstractPDEView extends ViewPart
   public void createPartControl(Composite parent)
   {
     NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter();
+    filter.canSearchOnElementPredicate = getCanSearchOnElementPredicate();
     filteredTree = new AbstractCheckboxFilteredTree(parent, filter)
     {
       @Override
@@ -98,6 +101,8 @@ public abstract class AbstractPDEView extends ViewPart
     hookDoubleClickAction();
     contributeToActionBars();
   }
+
+  protected abstract Predicate<Object> getCanSearchOnElementPredicate();
 
   /**
    * return the help context id

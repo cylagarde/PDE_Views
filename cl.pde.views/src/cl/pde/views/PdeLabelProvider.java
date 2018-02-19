@@ -107,14 +107,12 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
       }
 
       //
-      if (!(element instanceof TreeParent))
+      if (patternFilter.canSearchOnElementPredicate.test(element))
       {
         String text = styledString.getString();
         Position firstPosition = patternFilter.getFirstPosition(text, 0, text.length());
         if (firstPosition != null)
-        {
           styledString.setStyle(firstPosition.getStart(), firstPosition.getEnd() - firstPosition.getStart(), SELECTION_STYLER);
-        }
       }
     }
     else

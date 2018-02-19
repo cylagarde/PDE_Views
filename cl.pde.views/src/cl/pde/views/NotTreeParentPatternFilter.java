@@ -17,6 +17,7 @@ public class NotTreeParentPatternFilter extends PatternFilter
 {
   private final boolean includeLeadingWildcard = true;
   public Predicate<Object> visiblePredicate;
+  public Predicate<Object> canSearchOnElementPredicate;
   private StringMatcher matcher;
 
   /**
@@ -42,7 +43,7 @@ public class NotTreeParentPatternFilter extends PatternFilter
   @Override
   protected boolean isLeafMatch(Viewer viewer, Object element)
   {
-    if (element instanceof TreeParent)
+    if (!canSearchOnElementPredicate.test(element))
       return false;
 
     String labelText = null;

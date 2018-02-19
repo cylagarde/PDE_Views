@@ -1,11 +1,14 @@
 package cl.pde.views.launchconfiguration;
 
+import java.util.function.Predicate;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.IContentProvider;
 
 import cl.pde.PDEViewActivator;
 import cl.pde.views.AbstractPDEView;
 import cl.pde.views.Constants;
+import cl.pde.views.TreeParent;
 import cl.pde.views.actions.GetAllLaunchConfigurationsAction;
 
 /**
@@ -41,5 +44,11 @@ public class LaunchConfigurationView extends AbstractPDEView
   protected IContentProvider getViewContentProvider()
   {
     return new LaunchConfigurationViewContentProvider();
+  }
+
+  @Override
+  protected Predicate<Object> getCanSearchOnElementPredicate()
+  {
+    return e -> !(e instanceof TreeParent);
   }
 }
