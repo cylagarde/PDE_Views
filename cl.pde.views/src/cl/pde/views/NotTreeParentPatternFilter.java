@@ -47,13 +47,19 @@ public class NotTreeParentPatternFilter extends PatternFilter
       return false;
 
     String labelText = null;
-    IBaseLabelProvider labelProvider = ((StructuredViewer) viewer).getLabelProvider();
-    if (labelProvider instanceof ILabelProvider)
-      labelText = ((ILabelProvider) labelProvider).getText(element);
-    else if (labelProvider instanceof DelegatingStyledCellLabelProvider)
+
+    if (element instanceof TreeObject)
+      labelText = ((TreeObject) element).getLabelText();
+    else
     {
-      DelegatingStyledCellLabelProvider delegatingStyledCellLabelProvider = (DelegatingStyledCellLabelProvider) labelProvider;
-      labelText = delegatingStyledCellLabelProvider.getStyledStringProvider().getStyledText(element).toString();
+      IBaseLabelProvider labelProvider = ((StructuredViewer) viewer).getLabelProvider();
+      if (labelProvider instanceof ILabelProvider)
+        labelText = ((ILabelProvider) labelProvider).getText(element);
+      else if (labelProvider instanceof DelegatingStyledCellLabelProvider)
+      {
+        DelegatingStyledCellLabelProvider delegatingStyledCellLabelProvider = (DelegatingStyledCellLabelProvider) labelProvider;
+        labelText = delegatingStyledCellLabelProvider.getStyledStringProvider().getStyledText(element).toString();
+      }
     }
 
     if (labelText == null)
