@@ -8,7 +8,6 @@ import java.util.stream.Stream;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.RTFTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -82,10 +81,7 @@ public class CopyIdToClipboardAction extends AbstractTreeViewerAction
       if (treeObject.data == null)
         continue;
 
-      String name = treeObject.name;
-      if (name == null)
-        name = PDEPlugin.getDefault().getLabelProvider().getText(treeObject.data);
-
+      String name = treeObject.getLabelText();
       buffer.append(name).append('\n');
 
       rtfBasic.useColor(treeObject.foreground != null? treeObject.foreground.getRGB() : black);

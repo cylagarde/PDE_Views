@@ -13,7 +13,6 @@ import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.RTFTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -82,10 +81,7 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
         int level = treeObject.getLevel(parentTreeObject);
         String indent = indentMap.computeIfAbsent(level, n -> String.join("", Collections.nCopies(n, "    ")));
 
-        String name = treeObject.name;
-        if (name == null)
-          name = PDEPlugin.getDefault().getLabelProvider().getText(treeObject.data);
-        //        System.out.println(indent + level + " " + name);
+        String name = treeObject.getLabelText();
         buffer.append(indent).append(name).append('\n');
 
         //
