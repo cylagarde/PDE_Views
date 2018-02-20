@@ -91,6 +91,15 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
       if (lastIndex >= 0 && beginIndex >= 0)
         styledString.setStyle(beginIndex, lastIndex - beginIndex + 1, VERSION_STYLER);
 
+      // select
+      if (patternFilter.canSearchOnElementPredicate.test(element))
+      {
+        String text = styledString.getString();
+        Position firstPosition = patternFilter.getFirstPosition(text, 0, text.length());
+        if (firstPosition != null)
+          styledString.setStyle(firstPosition.getStart(), firstPosition.getEnd() - firstPosition.getStart(), SELECTION_STYLER);
+      }
+
       if (treeObject.data != null)
       {
         // location
@@ -104,15 +113,6 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         //          styledString.append(" - " + resource, DECORATIONS_STYLER);
         //        else
         //          styledString.append(" ERROR " + treeObject.data.getClass(), DECORATIONS_STYLER);
-      }
-
-      //
-      if (patternFilter.canSearchOnElementPredicate.test(element))
-      {
-        String text = styledString.getString();
-        Position firstPosition = patternFilter.getFirstPosition(text, 0, text.length());
-        if (firstPosition != null)
-          styledString.setStyle(firstPosition.getStart(), firstPosition.getEnd() - firstPosition.getStart(), SELECTION_STYLER);
       }
     }
     else
