@@ -32,11 +32,14 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       if (treeParent.data != null)
         return true;
 
-      for(Button checkboxButton : checkboxButtons)
+      if (checkboxButtons != null)
       {
-        String label = (String) checkboxButton.getData("LABEL");
-        if (label.equals(treeParent.name))
-          return checkboxButton.getSelection();
+        for(Button checkboxButton : checkboxButtons)
+        {
+          String label = (String) checkboxButton.getData("LABEL");
+          if (label.equals(treeParent.name))
+            return checkboxButton.getSelection();
+        }
       }
     }
 
@@ -92,7 +95,6 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
         public void widgetSelected(SelectionEvent e)
         {
           textChanged();
-          getViewer().expandAll();
         }
       };
 
@@ -112,6 +114,25 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     }
 
     return filterComposite;
+  }
+
+  @Override
+  protected void textChanged()
+  {
+    Util.setUseCache(true);
+    try
+    {
+      super.textChanged();
+
+      // expand all nodes if filter is not empty
+      String filterString = getFilterString();
+      if (filterString != null && !filterString.isEmpty())
+        getViewer().expandAll();
+    }
+    finally
+    {
+      Util.setUseCache(false);
+    }
   }
 
   @Override
