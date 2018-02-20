@@ -7,6 +7,8 @@ import org.eclipse.jface.viewers.IContentProvider;
 
 import cl.pde.PDEViewActivator;
 import cl.pde.views.AbstractPDEView;
+import cl.pde.views.Constants;
+import cl.pde.views.TreeObject;
 import cl.pde.views.actions.GetAllPluginsAction;
 
 /**
@@ -28,7 +30,7 @@ public class PluginView extends AbstractPDEView
   @Override
   protected String[] getCheckboxLabels()
   {
-    String[] checkboxLabels = {};
+    String[] checkboxLabels = {Constants.WORKSPACE_NODE, Constants.TARGET_PLATFORM_NODE};
     return checkboxLabels;
   }
 
@@ -47,6 +49,13 @@ public class PluginView extends AbstractPDEView
   @Override
   protected Predicate<Object> getCanSearchOnElementPredicate()
   {
-    return e -> true;
+    return e -> {
+      if (e instanceof TreeObject)
+      {
+        TreeObject treeObject = (TreeObject) e;
+        return treeObject.data != null;
+      }
+      return false;
+    };
   }
 }
