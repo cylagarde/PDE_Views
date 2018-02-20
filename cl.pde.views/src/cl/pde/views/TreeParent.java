@@ -16,6 +16,7 @@ public class TreeParent extends TreeObject
   private ArrayList<TreeObject> children;
   public Runnable loadChildRunnable = null;
   boolean loaded = false;
+  boolean sorted = false;
 
   public TreeParent(String name, Object data)
   {
@@ -28,16 +29,18 @@ public class TreeParent extends TreeObject
     this(name, null);
   }
 
-  public void addChild(TreeObject child)
+  public synchronized void addChild(TreeObject child)
   {
     children.add(child);
     child.setParent(this);
+    sorted = false;
   }
 
-  public void removeChild(TreeObject child)
+  public synchronized void removeChild(TreeObject child)
   {
     children.remove(child);
     child.setParent(null);
+    sorted = false;
   }
 
   public TreeObject[] getChildren()
@@ -52,22 +55,24 @@ public class TreeParent extends TreeObject
     return children.size() > 0;
   }
 
-  void loadChildren()
+  synchronized void loadChildren()
   {
     //    System.out.println("++loadChildren " + this + "  loadChildRunnable " + loadChildRunnable + "  loaded " + loaded);
     if (loadChildRunnable != null && !loaded)
     {
       loadChildRunnable.run();
       loaded = true;
+      sorted = false;
     }
   }
 
-  void reset()
+  synchronized void reset()
   {
     if (loadChildRunnable != null && loaded)
     {
       children.clear();
       loaded = false;
+      sorted = false;
 
       if (data instanceof IModel)
       {
@@ -85,8 +90,11 @@ public class TreeParent extends TreeObject
 
   /**
    */
-  public void sortChildren()
+  public synchronized void sortChildren()
   {
+    if (sorted)
+      return;
     Collections.sort(children, TREEOBJECT_COMPARATOR);
+    sorted = true;
   }
 }
