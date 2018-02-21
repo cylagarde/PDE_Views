@@ -1049,6 +1049,7 @@ public class Util
   final static Object NULL = new Object();
   static boolean USE_CACHE = false;
   final static Map<Object, Object> SINGLETONSTATE_CACHEMAP = new HashMap<>();
+  final static Map<File, Object> JARFILE_TO_SINGLETONSTATE_PERSISTENT_CACHEMAP = new HashMap<>();
 
   /**
    * @param useCache
@@ -1221,23 +1222,26 @@ public class Util
         {
           if (installLocationFile.isFile())
           {
-            try
-            {
-              JarInputStream jarInputStream = new JarInputStream(new FileInputStream(installLocationFile));
-              Manifest manifest = jarInputStream.getManifest();
-              jarInputStream.close();
-              if (manifest != null)
+            singletonState = JARFILE_TO_SINGLETONSTATE_PERSISTENT_CACHEMAP.computeIfAbsent(installLocationFile, file -> {
+              try
               {
-                Attributes attributes = manifest.getMainAttributes();
-                String value = attributes.getValue("Bundle-SymbolicName");
-                if (value != null)
-                  singletonState = value.contains("singleton:=true");
+                JarInputStream jarInputStream = new JarInputStream(new FileInputStream(file));
+                Manifest manifest = jarInputStream.getManifest();
+                jarInputStream.close();
+                if (manifest != null)
+                {
+                  Attributes attributes = manifest.getMainAttributes();
+                  String value = attributes.getValue("Bundle-SymbolicName");
+                  if (value != null)
+                    return value.contains("singleton:=true");
+                }
               }
-            }
-            catch(Exception e)
-            {
-              PDEViewActivator.logError("Cannot treat " + installLocationFile, e);
-            }
+              catch(Exception e)
+              {
+                PDEViewActivator.logError("Cannot treat " + installLocationFile, e);
+              }
+              return null;
+            });
           }
           else if (installLocationFile.isDirectory())
           {
