@@ -125,9 +125,9 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       super.textChanged();
 
       // expand all nodes if filter is not empty
-      String filterString = getFilterString();
-      if (filterString != null && !filterString.isEmpty())
-        getViewer().expandAll();
+      //      String filterString = getFilterString();
+      //      if (filterString != null && !filterString.isEmpty())
+      //        getViewer().expandAll();
     }
     finally
     {
