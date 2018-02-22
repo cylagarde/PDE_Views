@@ -9,7 +9,7 @@ import cl.pde.views.TreeParent;
 import cl.pde.views.Util;
 
 /**
- * The class <b>ExpandAllNodesAction</b> allows to.<br>
+ * The class <b>ExpandAllNodesAction</b> allows to expand all nodes of a treeViewer.<br>
  */
 public class ExpandAllNodesAction extends AbstractTreeViewerAction
 {
@@ -20,6 +20,7 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
    * Constructor
    * @param treeViewer
    * @param expand true then expand otherwise collapse
+   * @param actionOnAllNodes true then expand all nodes otherwise only selected nodes
    */
   public ExpandAllNodesAction(AbstractTreeViewer treeViewer, boolean expand, boolean actionOnAllNodes)
   {
@@ -39,29 +40,26 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
   {
     if (super.isEnabled())
     {
-      if (actionOnAllNodes)
-        return true;
-
       // check if node is not expanded
-      if (expand)
+      if (!actionOnAllNodes && expand)
       {
         IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
-        Object element = selection.getFirstElement();
-        if (element != null && !treeViewer.getExpandedState(element))
+        Object[] items = selection.toArray();
+        for(Object item : items)
         {
+          if (treeViewer.getExpandedState(item))
+            return false;
+
           // check if node has leaves
-          if (!actionOnAllNodes)
+          if (item instanceof TreeParent)
           {
-            if (element instanceof TreeParent)
-            {
-              TreeParent parent = (TreeParent) element;
-              return parent.hasChildren();
-            }
+            TreeParent parent = (TreeParent) item;
+            if (!parent.hasChildren())
+              return false;
           }
         }
       }
-      else
-        return true;
+      return true;
     }
     return false;
   }
@@ -85,11 +83,15 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
       }
       else
       {
-        Object currentSelection = ((IStructuredSelection) treeViewer.getSelection()).getFirstElement();
-        if (expand)
-          treeViewer.expandToLevel(currentSelection, AbstractTreeViewer.ALL_LEVELS);
-        else
-          treeViewer.collapseToLevel(currentSelection, AbstractTreeViewer.ALL_LEVELS);
+        IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+        Object[] items = selection.toArray();
+        for(Object item : items)
+        {
+          if (expand)
+            treeViewer.expandToLevel(item, AbstractTreeViewer.ALL_LEVELS);
+          else
+            treeViewer.collapseToLevel(item, AbstractTreeViewer.ALL_LEVELS);
+        }
       }
     }
     finally
