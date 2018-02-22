@@ -4,9 +4,15 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+
+import cl.pde.Images;
+import cl.pde.PDEViewActivator;
 
 /**
  * The class <b>TreeObject</b> allows to.<br>
@@ -20,6 +26,7 @@ public class TreeObject implements IAdaptable
   public Image image;
   public Color foreground;
   private String labelText = null;
+  private Image labelImage = null;
   //  Map<Object, Object> map;
 
   private TreeParent parent;
@@ -45,6 +52,12 @@ public class TreeObject implements IAdaptable
     return parent;
   }
 
+  synchronized void reset()
+  {
+    labelText = null;
+    labelImage = null;
+  }
+
   /**
    * Return the label text
    */
@@ -58,6 +71,39 @@ public class TreeObject implements IAdaptable
         labelText = PDEPlugin.getDefault().getLabelProvider().getText(data);
     }
     return labelText;
+  }
+
+  /**
+   * Return the label image
+   */
+  public Image getLabelImage()
+  {
+    if (labelImage == null)
+    {
+      if (name != null)
+        labelImage = image;
+      else
+      {
+        Image img = PDEPlugin.getDefault().getLabelProvider().getImage(data);
+        Boolean singletonState = Util.getSingletonState(data);
+        if (singletonState != null && singletonState)
+        {
+          //
+          ImageDescriptor singletonImageDescriptor = PDEViewActivator.getImageDescriptor(Images.SINGLETON);
+          String key = String.valueOf(img) + " " + String.valueOf(singletonImageDescriptor);
+          Image overlayImage = PDEViewActivator.getDefault().getImageRegistry().get(key);
+          if (overlayImage == null)
+          {
+            DecorationOverlayIcon overlayIcon = new DecorationOverlayIcon(img, singletonImageDescriptor, IDecoration.TOP_RIGHT);
+            overlayImage = overlayIcon.createImage();
+            PDEViewActivator.getDefault().getImageRegistry().put(key, overlayImage);
+          }
+          img = overlayImage;
+        }
+        labelImage = img;
+      }
+    }
+    return labelImage;
   }
 
   @Override

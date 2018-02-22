@@ -145,8 +145,8 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       @Override
       public void treeExpanded(TreeExpansionEvent event)
       {
-        if (event.getElement() instanceof TreeParent)
-          ((TreeParent) event.getElement()).reset();
+        if (event.getElement() instanceof TreeObject)
+          ((TreeObject) event.getElement()).reset();
         treeViewer.getTree().getDisplay().asyncExec(() -> treeViewer.refresh(event.getElement()));
       }
 

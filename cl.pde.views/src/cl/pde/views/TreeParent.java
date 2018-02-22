@@ -43,13 +43,13 @@ public class TreeParent extends TreeObject
     sorted = false;
   }
 
-  public TreeObject[] getChildren()
+  public synchronized TreeObject[] getChildren()
   {
     loadChildren();
     return children.toArray(new TreeObject[children.size()]);
   }
 
-  public boolean hasChildren()
+  public synchronized boolean hasChildren()
   {
     loadChildren();
     return children.size() > 0;
@@ -66,8 +66,10 @@ public class TreeParent extends TreeObject
     }
   }
 
+  @Override
   synchronized void reset()
   {
+    super.reset();
     if (loadChildRunnable != null && loaded)
     {
       children.clear();

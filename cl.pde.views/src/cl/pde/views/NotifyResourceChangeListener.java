@@ -70,6 +70,8 @@ public class NotifyResourceChangeListener implements IResourceChangeListener
           TreeObject treeObject = resourceMap.get(changedResource);
           if (treeObject != null)
           {
+            treeObject.reset();
+
             treeViewer.getControl().getDisplay().asyncExec(() -> {
               treeViewer.getControl().setRedraw(false);
               try
