@@ -80,7 +80,7 @@ public class TreeObject implements IAdaptable
   {
     if (labelImage == null)
     {
-      if (name != null)
+      if (image != null)
         labelImage = image;
       else
       {
