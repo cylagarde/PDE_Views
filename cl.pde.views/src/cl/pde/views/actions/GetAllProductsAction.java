@@ -25,7 +25,7 @@ import cl.pde.views.Util;
 import cl.pde.views.product.ProductView;
 
 /**
- * The class <b>GetAllProductsAction</b> allows to.<br>
+ * The class <b>GetAllProductsAction</b> allows to search and display all products from workspace and target platform.<br>
  */
 public class GetAllProductsAction extends Action
 {

@@ -26,7 +26,7 @@ import cl.pde.views.Util;
 import cl.pde.views.launchconfiguration.LaunchConfigurationView;
 
 /**
- * The class <b>GetAllLaunchConfigurationsAction</b> allows to.<br>
+ * The class <b>GetAllLaunchConfigurationsAction</b> allows to search and display all launch configurations from workspace and target platform.<br>
  */
 public class GetAllLaunchConfigurationsAction extends Action
 {

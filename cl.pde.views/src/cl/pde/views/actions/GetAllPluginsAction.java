@@ -18,7 +18,7 @@ import cl.pde.views.Util;
 import cl.pde.views.plugin.PluginView;
 
 /**
- * The class <b>GetAllProductsAction</b> allows to.<br>
+ * The class <b>GetAllProductsAction</b> allows to search and display all plugins from workspace and target platform.<br>
  */
 public class GetAllPluginsAction extends Action
 {

@@ -8,7 +8,7 @@ import cl.pde.views.TreeObject;
 import cl.pde.views.Util;
 
 /**
- * The class <b>OpenNodeAction</b> allows to.<br>
+ * The class <b>OpenNodeAction</b> allows to open editor for the selected item.<br>
  */
 public class OpenNodeAction extends AbstractTreeViewerAction
 {

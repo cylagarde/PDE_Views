@@ -10,7 +10,7 @@ import cl.pde.PDEViewActivator;
 import cl.pde.views.feature.FeatureView;
 
 /**
- * The class <b>GetAllFeaturesAction</b> allows to.<br>
+ * The class <b>GetAllFeaturesAction</b> allows to search and display all features from workspace and target platform.<br>
  */
 public class GetAllFeaturesAction extends Action
 {
