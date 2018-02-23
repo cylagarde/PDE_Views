@@ -27,8 +27,8 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     super(treeViewer);
     this.expand = expand;
     this.actionOnAllNodes = actionOnAllNodes;
-    setText(expand? (actionOnAllNodes? "Expand all" : "Expand current node") : (actionOnAllNodes? "Collapse all" : "Collapse current node"));
-    setToolTipText(expand? "Expand all nodes" : "Collapse all nodes");
+    setText(expand? (actionOnAllNodes? "Expand all" : "Expand selected node") : (actionOnAllNodes? "Collapse all" : "Collapse selected node"));
+    setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(expand? Images.EXPAND_ALL : Images.COLLAPSE_ALL));
   }
 
@@ -40,10 +40,13 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
   {
     if (super.isEnabled())
     {
+      IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+      if (selection.isEmpty())
+        return false;
+
       // check if node is not expanded
       if (!actionOnAllNodes && expand)
       {
-        IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
         Object[] items = selection.toArray();
         for(Object item : items)
         {
