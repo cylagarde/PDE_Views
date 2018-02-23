@@ -232,6 +232,8 @@ public abstract class AbstractPDEView extends ViewPart
    */
   public void setInput(Object input)
   {
+    filteredTree.getFilterControl().setVisible(true);
+
     Util.setUseCache(true);
 
     try
