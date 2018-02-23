@@ -40,7 +40,7 @@ public class GetAllLaunchConfigurationsAction extends Action
   {
     this.launchConfigurationView = launchConfigurationView;
     setText("Get all launch configurations in workspace");
-    setToolTipText("Get all launch configurations in workspace");
+    setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_LAUNCH_CONFIGURATIONS));
   }
 

@@ -39,7 +39,7 @@ public class GetAllProductsAction extends Action
   {
     this.productView = productView;
     setText("Get all products in workspace");
-    setToolTipText("Get all products in workspace");
+    setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_PRODUCTS));
   }
 

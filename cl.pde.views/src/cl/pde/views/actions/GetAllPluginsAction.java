@@ -32,7 +32,7 @@ public class GetAllPluginsAction extends Action
   {
     this.pluginView = pluginView;
     setText("Get all plugins");
-    setToolTipText("Get all plugins");
+    setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_PLUGINS));
   }
 

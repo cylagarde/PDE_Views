@@ -24,7 +24,7 @@ public class GetAllFeaturesAction extends Action
   {
     this.featureView = featureView;
     setText("Get all features");
-    setToolTipText("Get all features");
+    setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_FEATURES));
   }
 

@@ -41,7 +41,7 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
   {
     super(treeViewer);
     setText("Copy tree to clipboard");
-    setToolTipText("Copy tree to clipboard");
+    setToolTipText(getText());
     setImageDescriptor(Images.TREE.getImageDescriptor());
   }
 

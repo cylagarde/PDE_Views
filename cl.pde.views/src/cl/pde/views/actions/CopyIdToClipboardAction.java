@@ -34,7 +34,7 @@ public class CopyIdToClipboardAction extends AbstractTreeViewerAction
   {
     super(treeViewer);
     setText("Copy id/version to clipboard");
-    setToolTipText("Copy id/version to clipboard");
+    setToolTipText(getText());
     setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_TOOL_PASTE));
   }
 
