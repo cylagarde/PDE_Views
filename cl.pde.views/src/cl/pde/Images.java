@@ -8,8 +8,8 @@ import org.eclipse.swt.graphics.Image;
  */
 public enum Images
 {
-  PRODUCT("platform:/plugin/org.eclipse.pde.ui/icons/obj16/product_xml_obj.png"),
-  LAUNCH_CONFIGURATION("platform:/plugin/org.eclipse.pde.ui/icons/etool16/eclipse16.png"),
+  PRODUCT("icons/product.png"),
+  LAUNCH_CONFIGURATION("icons/launch_configuration.png"),
 
   EXPAND_ALL("icons/expand_all.png"),
   COLLAPSE_ALL("icons/collapse_all.png"),

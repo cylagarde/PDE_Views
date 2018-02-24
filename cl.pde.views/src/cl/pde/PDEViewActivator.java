@@ -73,7 +73,15 @@ public class PDEViewActivator extends AbstractUIPlugin
   protected void initializeImageRegistry(ImageRegistry imageRegistry)
   {
     for(Images img : Images.values())
-      imageRegistry.put(img.getKey(), imageDescriptorFromPlugin(img.pluginId, img.path));
+    {
+      ImageDescriptor imageDescriptor = imageDescriptorFromPlugin(img.pluginId, img.path);
+      if (imageDescriptor == null)
+      {
+        logError("Cannot found image : " + img + " " + img.pluginId + " " + img.path);
+        continue;
+      }
+      imageRegistry.put(img.getKey(), imageDescriptor);
+    }
   }
 
   /**

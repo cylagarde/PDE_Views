@@ -11,7 +11,7 @@
       <view
             category="cl.pde.views"
             class="cl.pde.views.feature.FeatureView"
-            icon="platform:/plugin/org.eclipse.pde.ui/icons/obj16/ftr_xml_obj.png"
+            icon="icons/feature.png"
             id="cl.pde.featureView"
             name="Feature View">
       </view>
@@ -19,7 +19,7 @@
       <view
             category="cl.pde.views"
             class="cl.pde.views.product.ProductView"
-            icon="platform:/plugin/org.eclipse.pde.ui/icons/obj16/product_xml_obj.png"
+            icon="icons/product.png"
             id="cl.pde.productView"
             name="Product View">
       </view>
@@ -27,14 +27,14 @@
       <view
             category="cl.pde.views"
             class="cl.pde.views.launchconfiguration.LaunchConfigurationView"
-            icon="platform:/plugin/org.eclipse.pde.ui/icons/etool16/eclipse16.png"
+            icon="icons/launch_configuration.png"
             id="cl.pde.launchConfigurationView"
             name="Launch Configuration View">
       </view>
       <view
             category="cl.pde.views"
             class="cl.pde.views.plugin.PluginView"
-            icon="platform:/plugin/org.eclipse.pde.ui/icons/eview16/plugins.png"
+            icon="icons/plugin.png"
             id="cl.pde.pluginView"
             name="Plugin View">
       </view>
@@ -230,7 +230,7 @@
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
          <command
                commandId="cl.pde.open_in_feature_view"
-               icon="platform:/plugin/org.eclipse.pde.ui/icons/obj16/ftr_xml_obj.png"
+               icon="icons/feature.png"
                id="open.in.feature.view.command"
                label="Open in feature view"
                style="push">
@@ -243,7 +243,7 @@
          
          <command
                commandId="cl.pde.open_in_product_view"
-               icon="platform:/plugin/org.eclipse.pde.ui/icons/obj16/product_xml_obj.png"
+               icon="icons/product.png"
                id="open.in.product.view.command"
                label="Open in product view"
                style="push">
@@ -260,7 +260,7 @@
          
          <command
                commandId="cl.pde.open_in_launch_configuration_view"
-               icon="platform:/plugin/org.eclipse.pde.ui/icons/etool16/eclipse16.png"
+               icon="icons/launch_configuration.png"
                id="open.in.launch.configuration.view.command"
                label="Open in launch configuration view"
                style="push">
