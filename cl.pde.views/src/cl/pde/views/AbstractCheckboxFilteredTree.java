@@ -57,7 +57,6 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     setQuickSelectionMode(true);
     filter.visiblePredicate = visiblePredicate;
     setInitialText("Plugin name filter");
-    //    Stream.of(getFilterControl().getParent().getChildren()).forEach(control -> control.setVisible(false));
     getFilterControl().setVisible(false);
   }
 

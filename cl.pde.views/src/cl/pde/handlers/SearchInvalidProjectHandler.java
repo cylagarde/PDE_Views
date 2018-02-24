@@ -124,7 +124,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
 
             String location = folder.toString().substring(2);
             if (!location.equals(folder.getName()))
-              invalidProject.relative = location;
+              invalidProject.relative = location.substring(0, location.length() - folder.getName().length() - 1);
 
             invalidProject.location = folder.getLocation().toOSString();
 
@@ -206,7 +206,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       if (invalidProjectSet.stream().anyMatch(p -> p.relative != null))
       {
         TreeViewerColumn relativePathViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
-        relativePathViewerColumn.getColumn().setText("Path");
+        relativePathViewerColumn.getColumn().setText("Parent");
         relativePathViewerColumn.setLabelProvider(new ColumnLabelProvider()
         {
           @Override
@@ -300,7 +300,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         .filter(loc -> loc.isPrefixOf(project.getLocation()))
         .max(comparing)
         .map(relativeMapper)
-        .ifPresent(relative -> invalidProject.relative = relative);
+        .ifPresent(relative -> invalidProject.relative = relative.substring(0, relative.length() - project.getName().length() - 1));
 
     invalidProject.location = location;
     return invalidProject;
