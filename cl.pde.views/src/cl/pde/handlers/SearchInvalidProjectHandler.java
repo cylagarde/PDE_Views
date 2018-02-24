@@ -52,6 +52,7 @@ import org.eclipse.ui.ide.undo.CreateProjectOperation;
 import cl.pde.Images;
 import cl.pde.PDEViewActivator;
 import cl.pde.dialog.CheckedFilteredTreeSelectionDialog;
+import cl.pde.views.DefaultLabelViewerComparator;
 import cl.pde.views.Util;
 
 /**
@@ -183,6 +184,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       CheckboxTreeViewer treeViewer = searchElementTreeSelectionDialog.getTreeViewer();
       treeViewer.getTree().setHeaderVisible(true);
       treeViewer.getTree().setLinesVisible(true);
+      treeViewer.setComparator(new DefaultLabelViewerComparator());
 
       //
       TreeViewerColumn nameViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
@@ -201,6 +203,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
           return labelProvider.getImage(element);
         }
       });
+      DefaultLabelViewerComparator.configureForSortingColumn(nameViewerColumn);
 
       //
       if (invalidProjectSet.stream().anyMatch(p -> p.relative != null))
@@ -220,6 +223,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
             return null;
           }
         });
+        DefaultLabelViewerComparator.configureForSortingColumn(relativePathViewerColumn);
       }
 
       //
@@ -238,6 +242,7 @@ public class SearchInvalidProjectHandler extends AbstractHandler
           return null;
         }
       });
+      DefaultLabelViewerComparator.configureForSortingColumn(locationViewerColumn);
 
       // pack columns
       treeViewer.refresh();
