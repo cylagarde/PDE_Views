@@ -1,5 +1,6 @@
 package cl.pde.views.actions;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
@@ -42,7 +43,7 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     {
       IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
       if (selection.isEmpty())
-        return false;
+        return actionOnAllNodes;
 
       // check if node is not expanded
       if (!actionOnAllNodes && expand)
@@ -80,7 +81,11 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
       if (actionOnAllNodes)
       {
         if (expand)
-          treeViewer.expandAll();
+        {
+          boolean result = treeViewer.getInput() == null? true : MessageDialog.openQuestion(treeViewer.getControl().getShell(), "Question", "Expand all nodes can take time.\nDo you want to continue?"); // YES/NO
+          if (result)
+            treeViewer.expandAll();
+        }
         else
           treeViewer.collapseAll();
       }
