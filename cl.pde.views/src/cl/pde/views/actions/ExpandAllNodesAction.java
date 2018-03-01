@@ -58,10 +58,11 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
           if (item instanceof TreeParent)
           {
             TreeParent parent = (TreeParent) item;
-            if (!parent.hasChildren())
-              return false;
+            if (parent.hasChildren())
+              return true;
           }
         }
+        return false;
       }
       return true;
     }
