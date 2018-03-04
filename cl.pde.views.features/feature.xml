@@ -2,7 +2,7 @@
 <feature
       id="cl.pde.views.features"
       label="PDE Views Features"
-      version="1.6.1.qualifier"
+      version="1.6.2.qualifier"
       provider-name="CL">
 
    <description url="http://www.example.com/description">

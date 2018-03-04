@@ -2,6 +2,7 @@ package cl.pde.views;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -1250,7 +1251,13 @@ public class Util
             {
               try
               {
-                singletonState = Files.lines(manifestPath).anyMatch(line -> line.startsWith("Bundle-SymbolicName:") && line.contains("singleton:=true"));
+                InputStream manifestInputStream = Files.newInputStream(manifestPath);
+                Manifest manifest = new Manifest(manifestInputStream);
+                manifestInputStream.close();
+                Attributes attributes = manifest.getMainAttributes();
+                String value = attributes.getValue("Bundle-SymbolicName");
+                if (value != null)
+                  singletonState = value.contains("singleton:=true");
               }
               catch(Exception e)
               {
