@@ -3,12 +3,15 @@ package cl.pde.handlers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Optional;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.content.IContentDescription;
+import org.eclipse.core.runtime.content.IContentType;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -48,7 +51,8 @@ public class OpenInProductViewHandler extends AbstractHandler implements Constan
 
           try
           {
-            if (!PRODUCT_CONTENT_TYPE.equals(file.getContentDescription().getContentType().getId()))
+            String contentId = Optional.ofNullable(file.getContentDescription()).map(IContentDescription::getContentType).map(IContentType::getId).orElse("");
+            if (!PRODUCT_CONTENT_TYPE.equals(contentId))
               continue;
 
             // load product
