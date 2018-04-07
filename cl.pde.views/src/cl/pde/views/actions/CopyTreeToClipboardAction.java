@@ -81,7 +81,7 @@ public class CopyTreeToClipboardAction extends AbstractTreeViewerAction
         int level = treeObject.getLevel(parentTreeObject);
         String indent = indentMap.computeIfAbsent(level, n -> String.join("", Collections.nCopies(n, "    ")));
 
-        String name = treeObject.getLabelText();
+        String name = treeObject.getDisplayText();
         buffer.append(indent).append(name).append('\n');
 
         //

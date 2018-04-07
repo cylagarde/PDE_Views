@@ -49,7 +49,7 @@ public class NotTreeParentPatternFilter extends PatternFilter
     String labelText = null;
 
     if (element instanceof TreeObject)
-      labelText = ((TreeObject) element).getLabelText();
+      labelText = ((TreeObject) element).getDisplayText();
     else
     {
       IBaseLabelProvider labelProvider = ((StructuredViewer) viewer).getLabelProvider();

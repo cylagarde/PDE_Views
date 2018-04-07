@@ -30,7 +30,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DecorationOverlayIcon;
+import org.eclipse.jface.viewers.IDecoration;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.osgi.service.resolver.BundleDescription;
 import org.eclipse.pde.core.IIdentifiable;
 import org.eclipse.pde.core.IModel;
 import org.eclipse.pde.core.plugin.IFragment;
@@ -44,9 +48,14 @@ import org.eclipse.pde.core.plugin.IPluginModelBase;
 import org.eclipse.pde.core.plugin.ISharedPluginModel;
 import org.eclipse.pde.core.plugin.PluginRegistry;
 import org.eclipse.pde.internal.core.FeatureModelManager;
+import org.eclipse.pde.internal.core.ICoreConstants;
 import org.eclipse.pde.internal.core.PDECore;
+import org.eclipse.pde.internal.core.TargetPlatformHelper;
+import org.eclipse.pde.internal.core.builders.CompilerFlags;
 import org.eclipse.pde.internal.core.bundle.WorkspaceBundlePluginModel;
 import org.eclipse.pde.internal.core.feature.FeatureChild;
+import org.eclipse.pde.internal.core.feature.FeatureImport;
+import org.eclipse.pde.internal.core.feature.FeaturePlugin;
 import org.eclipse.pde.internal.core.ibundle.IBundle;
 import org.eclipse.pde.internal.core.ibundle.IBundlePluginModelBase;
 import org.eclipse.pde.internal.core.ibundle.IManifestHeader;
@@ -71,15 +80,18 @@ import org.eclipse.pde.internal.ui.PDEPluginImages;
 import org.eclipse.pde.internal.ui.editor.feature.FeatureEditor;
 import org.eclipse.pde.internal.ui.editor.plugin.ManifestEditor;
 import org.eclipse.pde.launching.IPDELauncherConstants;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+import org.osgi.framework.Version;
 
 import cl.pde.Images;
 import cl.pde.PDEViewActivator;
@@ -427,8 +439,7 @@ public class Util
 
   /**
    * Open plugin
-   * @param pluginId
-   * @param pluginVersion
+   * @param pluginModelBase
    */
   private static void openPlugin(IPluginModelBase pluginModelBase)
   {
@@ -450,11 +461,15 @@ public class Util
    * Open plugin
    * @param pluginId
    * @param pluginVersion
+   * @param matchRule
    */
   private static void openPlugin(String pluginId, String pluginVersion, int matchRule)
   {
     IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
-    openPlugin(pluginModelBase);
+    if (pluginModelBase != null)
+      openPlugin(pluginModelBase);
+    else
+      printExceptionWithoutRepetition("Cannot open plugin id=" + pluginId + ", version=" + pluginVersion, null, true);
   }
 
   /**
@@ -468,7 +483,7 @@ public class Util
     if (featureModel != null)
       openFeatureModel(featureModel);
     else
-      PDEViewActivator.logError("Cannot open feature id=" + featureId + ", version=" + featureVersion);
+      printExceptionWithoutRepetition("Cannot open feature id=" + featureId + ", version=" + featureVersion, null, true);
   }
 
   /**
@@ -1099,37 +1114,44 @@ public class Util
    */
   private static Boolean getSingletonStateImpl(Object pdeObject)
   {
+    Boolean singletonState = null;
     if (pdeObject instanceof IPlugin)
-      return getPluginSingletonState((IPlugin) pdeObject);
+      singletonState = getPluginSingletonState((IPlugin) pdeObject);
 
     else if (pdeObject instanceof IFragment)
-      return getFragmentSingletonState((IFragment) pdeObject);
+      singletonState = getFragmentSingletonState((IFragment) pdeObject);
 
     else if (pdeObject instanceof IPluginModelBase)
-      return getPluginSingletonState((IPluginModelBase) pdeObject);
+      singletonState = getPluginSingletonState((IPluginModelBase) pdeObject);
 
     else if (pdeObject instanceof IFeaturePlugin)
-      return getFeaturePluginSingletonState((IFeaturePlugin) pdeObject);
+      singletonState = getFeaturePluginSingletonState((IFeaturePlugin) pdeObject);
 
     else if (pdeObject instanceof IFeatureImport)
-      return getFeatureImportSingletonState((IFeatureImport) pdeObject);
+      singletonState = getFeatureImportSingletonState((IFeatureImport) pdeObject);
 
     else if (pdeObject instanceof IProductPlugin)
-      return getProductPluginSingletonState((IProductPlugin) pdeObject);
+      singletonState = getProductPluginSingletonState((IProductPlugin) pdeObject);
 
     else if (pdeObject instanceof IFeatureModel)
-      return null;
+      singletonState = Boolean.FALSE;
 
     else if (pdeObject instanceof IFeatureChild)
-      return null;
+      singletonState = Boolean.FALSE;
 
     else if (pdeObject instanceof IProductFeature)
-      return null;
+      singletonState = Boolean.FALSE;
+
+    else if (pdeObject instanceof IProductModel)
+      singletonState = Boolean.FALSE;
+
+    else if (pdeObject instanceof ILaunchConfiguration)
+      singletonState = Boolean.FALSE;
 
     else if (pdeObject != null)
       printExceptionWithoutRepetition("Unsupported singleton for " + pdeObject.getClass().getName(), null, true);
 
-    return null;
+    return singletonState;
   }
 
   /**
@@ -1418,6 +1440,7 @@ public class Util
   }
 
   /**
+   * Get TreeParent for productFeature
    * @param productFeature
    */
   private static TreeParent getTreeParent(IProductFeature productFeature)
@@ -1465,6 +1488,7 @@ public class Util
   }
 
   /**
+   * Get TreeObject for productPlugin
    * @param productPlugin
    */
   private static TreeObject getTreeObject(IProductPlugin productPlugin)
@@ -1475,6 +1499,7 @@ public class Util
   }
 
   /**
+   * Get TreeParent for feature
    * @param feature
    */
   private static TreeParent getTreeParent(IFeature feature)
@@ -1490,16 +1515,17 @@ public class Util
   }
 
   /**
-   * @param includedFeature
+   * Get TreeParent for featureChild
+   * @param featureChild
    */
-  private static TreeParent getTreeParent(IFeatureChild includedFeature)
+  private static TreeParent getTreeParent(IFeatureChild featureChild)
   {
-    TreeParent featureChildTreeParent = new TreeParent(null, includedFeature);
+    TreeParent featureChildTreeParent = new TreeParent(null, featureChild);
     featureChildTreeParent.foreground = Constants.FEATURE_FOREGROUND;
 
     //
     featureChildTreeParent.loadChildRunnable = () -> {
-      FeatureChild featureChildImpl = (FeatureChild) includedFeature;
+      FeatureChild featureChildImpl = (FeatureChild) featureChild;
       IFeature referencedFeature = featureChildImpl.getReferencedFeature();
       if (referencedFeature != null)
       {
@@ -1511,6 +1537,7 @@ public class Util
   }
 
   /**
+   * Get TreeParent for featureImport
    * @param featureImport
    */
   private static TreeParent getTreeParent(IFeatureImport featureImport)
@@ -1530,6 +1557,7 @@ public class Util
   }
 
   /**
+   * Get TreeObject for pluginBase
    * @param pluginBase
    */
   private static TreeObject getTreeObject(IPluginBase pluginBase)
@@ -1584,6 +1612,7 @@ public class Util
   }
 
   /**
+   * Get TreeObject for featurePlugin
    * @param featurePlugin
    */
   private static TreeObject getTreeObject(IFeaturePlugin featurePlugin)
@@ -1658,6 +1687,7 @@ public class Util
   }
 
   /**
+   * Get TreeParent for featureModel
    * @param featureModel
    */
   private static TreeParent getTreeParent(IFeatureModel featureModel)
@@ -1674,6 +1704,7 @@ public class Util
   }
 
   /**
+   * Get TreeParent for launchConfiguration
    * @param launchConfiguration
    */
   public static TreeParent getLaunchConfigurationTreeParent(ILaunchConfiguration launchConfiguration)
@@ -1764,6 +1795,7 @@ public class Util
    */
   private static List<IPluginBase> loadPlugins(ILaunchConfiguration launchConfiguration, String attributeKey)
   {
+    System.out.println("loadPlugins " + launchConfiguration);
     List<IPluginBase> pluginBases = new ArrayList<>();
     try
     {
@@ -1799,11 +1831,13 @@ public class Util
           IPlugin plugin = ((IPluginModel) model).getPlugin();
           pluginBases.add(plugin);
         }
+        else if (model == null)
+          PDEViewActivator.logError("Cannot find plugin " + pluginId + " in launch configuration " + launchConfiguration.getName(), null);
       }
     }
     catch(CoreException e)
     {
-      PDEViewActivator.logError("Cannot load plugins for launch configuration " + launchConfiguration.getName(), e);
+      PDEViewActivator.logError("Cannot load plugins in launch configuration " + launchConfiguration.getName(), e);
     }
 
     return pluginBases;
@@ -2024,4 +2058,284 @@ public class Util
   //    return true;
   //  }
 
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Return image overlay with error image at position (IDecoration.BOTTOM_LEFT,etc...)
+   * @param img
+   * @param overlayImageDescriptor
+   * @param position
+   */
+  public static Image getOverlayImage(Image img, ImageDescriptor overlayImageDescriptor, int position)
+  {
+    String key = String.valueOf(img) + " " + String.valueOf(overlayImageDescriptor);
+    Image overlayImage = PDEViewActivator.getDefault().getImageRegistry().get(key);
+    if (overlayImage == null)
+    {
+      DecorationOverlayIcon overlayIcon = new DecorationOverlayIcon(img, overlayImageDescriptor, position);
+      overlayImage = overlayIcon.createImage();
+      PDEViewActivator.getDefault().getImageRegistry().put(key, overlayImage);
+    }
+    return overlayImage;
+  }
+
+  /**
+   * Return image overlay with error image
+   * @param img
+   */
+  public static Image getImageWithError(Image img)
+  {
+    ImageDescriptor errorImageDescriptor = PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_DEC_FIELD_ERROR);
+    return getOverlayImage(img, errorImageDescriptor, IDecoration.BOTTOM_LEFT);
+  }
+
+  /**
+   * Return image overlay with error image
+   * @param img
+   */
+  public static Image getImageWithSingleton(Image img)
+  {
+    ImageDescriptor singletonImageDescriptor = PDEViewActivator.getImageDescriptor(Images.SINGLETON);
+    return getOverlayImage(img, singletonImageDescriptor, IDecoration.TOP_RIGHT);
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////
+
+  /**
+   * Return image for pdeObject
+   * @param pdeObject
+   */
+  public static Image getImage(Object data, Image defaultImage)
+  {
+    Image img = defaultImage != null? defaultImage : PDEPlugin.getDefault().getLabelProvider().getImage(data);
+
+    //
+    boolean hasError = hasError(data);
+    if (hasError)
+      img = getImageWithError(img);
+
+    //
+    Boolean singletonState = getSingletonState(data);
+    if (singletonState != null && singletonState)
+      img = getImageWithSingleton(img);
+
+    return img;
+  }
+
+  /**
+   * Return true if pdeObject has error
+   * @param pdeObject
+   */
+  public static boolean hasError(Object pdeObject)
+  {
+    boolean hasError = false;
+
+    if (pdeObject instanceof IPlugin)
+      hasError = hasPluginError((IPlugin) pdeObject);
+
+    else if (pdeObject instanceof IFeaturePlugin)
+      hasError = hasFeaturePluginError((IFeaturePlugin) pdeObject);
+
+    else if (pdeObject instanceof IFeatureChild)
+      hasError = hasFeatureChildError((IFeatureChild) pdeObject);
+
+    else if (pdeObject instanceof IFeatureImport)
+      hasError = hasFeatureImportError((IFeatureImport) pdeObject);
+    //
+    //    else if (pdeObject instanceof IFeature)
+    //      hasError = getFeatureLocation((IFeature) pdeObject);
+    //
+    else if (pdeObject instanceof IProductFeature)
+      hasError = hasProductFeatureError((IProductFeature) pdeObject);
+
+    else if (pdeObject instanceof IProductPlugin)
+      hasError = hasProductPluginError((IProductPlugin) pdeObject);
+    //
+    //    else if (pdeObject instanceof IFragment)
+    //      hasError = getFragmentLocation((IFragment) pdeObject);
+    //
+    else if (pdeObject instanceof IFeatureModel)
+      hasError = hasFeatureModelError((IFeatureModel) pdeObject);
+
+    else if (pdeObject instanceof IProductModel)
+      hasError = hasProductModelError((IProductModel) pdeObject);
+
+    else if (pdeObject instanceof ILaunchConfiguration)
+      hasError = hasLaunchConfigurationError((ILaunchConfiguration) pdeObject);
+
+    else if (pdeObject instanceof IPluginModelBase)
+      hasError = hasPluginModelError((IPluginModelBase) pdeObject);
+
+    else if (pdeObject != null)
+      printExceptionWithoutRepetition("Unsupported hasError for " + pdeObject.getClass().getName(), null, false);
+
+    return hasError;
+  }
+
+  /**
+   */
+  private static boolean hasPluginError(IPlugin plugin)
+  {
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasLaunchConfigurationError(ILaunchConfiguration launchConfiguration)
+  {
+    List<TreeParent> treeParents = getElementsFromLaunchConfiguration(launchConfiguration);
+    for(TreeParent treeParent : treeParents)
+    {
+      if (hasError(treeParent.data))
+        return true;
+
+      for(TreeObject child : treeParent.getChildren())
+      {
+        if (hasError(child.data))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasPluginModelError(IPluginModelBase pluginModel)
+  {
+    if (!(pluginModel.isLoaded() && pluginModel.isInSync()))
+      return true;
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasProductModelError(IProductModel productModel)
+  {
+    IProduct product = productModel.getProduct();
+    List<TreeParent> treeParents = getElementsFromProduct(product);
+
+    for(TreeParent treeParent : treeParents)
+    {
+      for(TreeObject child : treeParent.getChildren())
+      {
+        if (hasError(child.data))
+          return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasProductPluginError(IProductPlugin productPlugin)
+  {
+    Version version = (productPlugin.getVersion() != null && productPlugin.getVersion().length() > 0 && !productPlugin.getVersion().equals(ICoreConstants.DEFAULT_VERSION))? Version.parseVersion(productPlugin.getVersion()) : null;
+    BundleDescription desc = TargetPlatformHelper.getState().getBundle(productPlugin.getId(), version);
+    return desc == null;
+  }
+
+  /**
+   */
+  private static boolean hasFeatureChildError(IFeatureChild featureChild)
+  {
+    if (((FeatureChild) featureChild).getReferencedFeature() == null)
+    {
+      int cflag = CompilerFlags.getFlag(null, CompilerFlags.F_UNRESOLVED_FEATURES);
+      if (cflag == CompilerFlags.ERROR)
+        return true;
+      if (cflag == CompilerFlags.WARNING)
+      {
+        String featureId = featureChild.getId();
+        String featureVersion = featureChild.getVersion();
+        IFeatureModel featureModel = getFeatureModel(featureId, featureVersion);
+        if (featureModel == null)
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasFeaturePluginError(IFeaturePlugin featurePlugin)
+  {
+    if (((FeaturePlugin) featurePlugin).getPluginBase() == null)
+    {
+      int cflag = CompilerFlags.getFlag(null, CompilerFlags.F_UNRESOLVED_PLUGINS);
+      if (cflag == CompilerFlags.ERROR)
+        return true;
+      if (cflag == CompilerFlags.WARNING)
+      {
+        String pluginId = featurePlugin.getId();
+        String pluginVersion = featurePlugin.getVersion();
+        int matchRule = IMatchRules.PERFECT;
+        IPluginModelBase pluginModelBase = getPluginModelBase(pluginId, pluginVersion, matchRule);
+        if (pluginModelBase == null)
+          return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasProductFeatureError(IProductFeature productFeature)
+  {
+    TreeParent treeParent = getTreeParent(productFeature);
+    for(TreeObject child : treeParent.getChildren())
+    {
+      if (child instanceof TreeParent)
+      {
+        TreeParent subTreeParent = (TreeParent) child;
+        for(TreeObject subChild : subTreeParent.getChildren())
+        {
+          if (hasError(subChild.data))
+            return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   */
+  private static boolean hasFeatureModelError(IFeatureModel featureModel)
+  {
+    List<TreeParent> treeParents = getElementsFromFeature(featureModel.getFeature());
+
+    for(TreeParent treeParent : treeParents)
+    {
+      for(TreeObject child : treeParent.getChildren())
+      {
+        if (hasError(child.data))
+          return true;
+      }
+    }
+
+    return false;
+  }
+
+  // from PDELabelProvider.getObjectImage
+  private static boolean hasFeatureImportError(IFeatureImport obj)
+  {
+    FeatureImport iimport = (FeatureImport) obj;
+    int type = iimport.getType();
+    if (type == IFeatureImport.FEATURE)
+    {
+      IFeature feature = iimport.getFeature();
+      if (feature == null)
+        return true;
+    }
+    else
+    {
+      IPlugin plugin = iimport.getPlugin();
+      if (plugin == null)
+        return true;
+    }
+
+    return false;
+  }
 }

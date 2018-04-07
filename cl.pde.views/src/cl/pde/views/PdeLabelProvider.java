@@ -74,7 +74,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     if (element instanceof TreeObject)
     {
       TreeObject treeObject = (TreeObject) element;
-      String name = treeObject.getLabelText();
+      String name = treeObject.getDisplayText();
 
       styledString.append(name, null);
 
@@ -119,7 +119,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     if (obj instanceof TreeObject)
     {
       TreeObject treeObject = (TreeObject) obj;
-      return treeObject.getLabelImage();
+      return treeObject.getDisplayImage();
     }
 
     return null;

@@ -81,7 +81,7 @@ public class CopyIdToClipboardAction extends AbstractTreeViewerAction
       if (treeObject.data == null)
         continue;
 
-      String name = treeObject.getLabelText();
+      String name = treeObject.getDisplayText();
       buffer.append(name).append('\n');
 
       rtfBasic.useColor(treeObject.foreground != null? treeObject.foreground.getRGB() : black);
