@@ -524,10 +524,17 @@ public class Util
    */
   private static void openFeatureImport(IFeatureImport featureImport)
   {
+    String featureId = featureImport.getId();
+    String featureVersion = featureImport.getVersion();
     if (featureImport.getType() == IFeatureImport.PLUGIN)
-      openPlugin(featureImport.getId(), featureImport.getVersion(), featureImport.getMatch());
-    else if (featureImport.getType() == IFeatureImport.FEATURE && featureImport.getFeature() != null)
-      openFeature(featureImport.getFeature());
+      openPlugin(featureId, featureVersion, featureImport.getMatch());
+    else if (featureImport.getType() == IFeatureImport.FEATURE)
+    {
+      if (featureImport.getFeature() != null)
+        openFeature(featureImport.getFeature());
+      else
+        printExceptionWithoutRepetition("Cannot open feature id=" + featureId + ", version=" + featureVersion, null, true);
+    }
   }
 
   /**
