@@ -1,6 +1,7 @@
 package cl.pde.views.actions;
 
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.IStructuredSelection;
 
@@ -45,24 +46,28 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
       if (selection.isEmpty())
         return actionOnAllNodes;
 
-      // check if node is not expanded
-      if (!actionOnAllNodes && expand)
+      //
+      if (!actionOnAllNodes)
       {
-        Object[] items = selection.toArray();
-        for(Object item : items)
+        // check if node is not expanded
+        if (expand)
         {
-          if (treeViewer.getExpandedState(item))
-            return false;
-
-          // check if node has leaves
-          if (item instanceof TreeParent)
+          Object[] items = selection.toArray();
+          for(Object item : items)
           {
-            TreeParent parent = (TreeParent) item;
-            if (parent.hasChildren())
-              return true;
+            if (treeViewer.getExpandedState(item))
+              return false;
+
+            // check if node has leaves
+            if (item instanceof TreeParent)
+            {
+              TreeParent parent = (TreeParent) item;
+              if (parent.hasChildren())
+                return true;
+            }
           }
+          return false;
         }
-        return false;
       }
       return true;
     }
@@ -81,32 +86,56 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
     {
       if (actionOnAllNodes)
       {
-        if (expand)
-        {
-          boolean result = treeViewer.getInput() == null? true : MessageDialog.openQuestion(treeViewer.getControl().getShell(), "Question", "Expand all nodes can take time.\nDo you want to continue?"); // YES/NO
-          if (result)
-            treeViewer.expandAll();
-        }
-        else
-          treeViewer.collapseAll();
+        if (treeViewer.getInput() != null)
+          expandOrCollapseItems(new Object[]{treeViewer.getInput()}, expand? 4 : AbstractTreeViewer.ALL_LEVELS);
       }
       else
       {
         IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
         Object[] items = selection.toArray();
-        for(Object item : items)
-        {
-          if (expand)
-            treeViewer.expandToLevel(item, AbstractTreeViewer.ALL_LEVELS);
-          else
-            treeViewer.collapseToLevel(item, AbstractTreeViewer.ALL_LEVELS);
-        }
+        if (items != null && items.length != 0)
+          expandOrCollapseItems(items, expand? 4 : AbstractTreeViewer.ALL_LEVELS);
       }
     }
     finally
     {
       Util.setUseCache(false);
       treeViewer.getControl().setRedraw(true);
+    }
+  }
+
+  /**
+   * @param items
+   */
+  private void expandOrCollapseItems(Object[] items, int depth)
+  {
+    if (expand)
+    {
+      IInputValidator integerValidator = newText -> {
+        try
+        {
+          int level = Integer.parseInt(newText);
+          if (level < -1)
+            return "depth must be >= -1";
+          return null;
+        }
+        catch(Exception e)
+        {
+          return e.toString();
+        }
+      };
+      InputDialog inputDialog = new InputDialog(treeViewer.getControl().getShell(), "Expand node", "Enter a depth (-1 -> expand all nodes : can be slow)", String.valueOf(depth), integerValidator);
+      if (inputDialog.open() != InputDialog.OK)
+        return;
+      depth = Integer.parseInt(inputDialog.getValue());
+    }
+
+    for(Object item : items)
+    {
+      if (expand)
+        treeViewer.expandToLevel(item, depth);
+      else
+        treeViewer.collapseToLevel(item, depth);
     }
   }
 }

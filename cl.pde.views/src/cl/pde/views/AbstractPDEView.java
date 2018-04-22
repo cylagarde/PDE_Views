@@ -43,6 +43,7 @@ public abstract class AbstractPDEView extends ViewPart
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
   private Action expandCurrentNodeAction;
+  private Action collapseCurrentNodeAction;
   private Action doubleClickOpenNodeAction;
   private Action copyTreeToClipboardAction;
 
@@ -167,6 +168,11 @@ public abstract class AbstractPDEView extends ViewPart
       manager.add(expandCurrentNodeAction);
       manager.add(new Separator());
     }
+    else if (collapseCurrentNodeAction.isEnabled())
+    {
+      manager.add(collapseCurrentNodeAction);
+      manager.add(new Separator());
+    }
 
     drillDownAdapter.addNavigationActions(manager);
     // Other plug-ins can contribute there actions here
@@ -215,6 +221,7 @@ public abstract class AbstractPDEView extends ViewPart
     expandAllNodesAction = new ExpandAllNodesAction(getTreeViewer(), true, true);
     expandCurrentNodeAction = new ExpandAllNodesAction(getTreeViewer(), true, false);
     collapseAllNodesAction = new ExpandAllNodesAction(getTreeViewer(), false, true);
+    collapseCurrentNodeAction = new ExpandAllNodesAction(getTreeViewer(), false, false);
     copyTreeToClipboardAction = new CopyTreeToClipboardAction(getTreeViewer());
 
     //
