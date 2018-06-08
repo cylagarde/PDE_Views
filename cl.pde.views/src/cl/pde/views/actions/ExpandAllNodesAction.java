@@ -49,25 +49,23 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
       //
       if (!actionOnAllNodes)
       {
-        // check if node is not expanded
-        if (expand)
-        {
-          Object[] items = selection.toArray();
-          for(Object item : items)
-          {
-            if (treeViewer.getExpandedState(item))
-              return false;
+        Object[] items = selection.toArray();
 
-            // check if node has leaves
-            if (item instanceof TreeParent)
-            {
-              TreeParent parent = (TreeParent) item;
-              if (parent.hasChildren())
-                return true;
-            }
+        // check if node is not expanded
+        for(Object item : items)
+        {
+          if (treeViewer.getExpandedState(item) == expand)
+            return false;
+
+          // check if node has leaves
+          if (item instanceof TreeParent)
+          {
+            TreeParent parent = (TreeParent) item;
+            if (parent.hasChildren())
+              return true;
           }
-          return false;
         }
+        return false;
       }
       return true;
     }
