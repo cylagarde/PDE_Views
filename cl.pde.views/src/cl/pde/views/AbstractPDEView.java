@@ -27,6 +27,7 @@ import org.eclipse.ui.part.ViewPart;
 import cl.pde.views.actions.CopyIdToClipboardAction;
 import cl.pde.views.actions.CopyTreeToClipboardAction;
 import cl.pde.views.actions.ExpandAllNodesAction;
+import cl.pde.views.actions.OpenJarAction;
 import cl.pde.views.actions.OpenNodeAction;
 
 /**
@@ -46,6 +47,7 @@ public abstract class AbstractPDEView extends ViewPart
   private Action collapseCurrentNodeAction;
   private Action doubleClickOpenNodeAction;
   private Action copyTreeToClipboardAction;
+  private Action openJarAction;
 
   private ISelectionListener selectionListener;
   private NotifyResourceChangeListener notifyResourceChangeListener;
@@ -161,6 +163,8 @@ public abstract class AbstractPDEView extends ViewPart
       manager.add(copyIdToClipboardAction);
     if (copyTreeToClipboardAction.isEnabled())
       manager.add(copyTreeToClipboardAction);
+    if (openJarAction.isEnabled())
+      manager.add(openJarAction);
     manager.add(new Separator());
 
     if (expandCurrentNodeAction.isEnabled())
@@ -223,6 +227,7 @@ public abstract class AbstractPDEView extends ViewPart
     collapseAllNodesAction = new ExpandAllNodesAction(getTreeViewer(), false, true);
     collapseCurrentNodeAction = new ExpandAllNodesAction(getTreeViewer(), false, false);
     copyTreeToClipboardAction = new CopyTreeToClipboardAction(getTreeViewer());
+    openJarAction = new OpenJarAction(getTreeViewer());
 
     //
     doubleClickOpenNodeAction = new OpenNodeAction(getTreeViewer());

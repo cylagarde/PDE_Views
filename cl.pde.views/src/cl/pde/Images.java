@@ -24,6 +24,7 @@ public enum Images
   INVALID_PROJECT("icons/invalid_project.png"),
   TREE("icons/tree.gif"),
 
+  JAR_ICON("org.eclipse.jdt.ui", "icons/full/obj16/jar_obj.png"),
   ;
 
   final String path;
