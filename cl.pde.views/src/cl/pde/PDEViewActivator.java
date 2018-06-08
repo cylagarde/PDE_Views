@@ -75,12 +75,21 @@ public class PDEViewActivator extends AbstractUIPlugin
     for(Images img : Images.values())
     {
       ImageDescriptor imageDescriptor = imageDescriptorFromPlugin(img.pluginId, img.path);
-      if (imageDescriptor == null)
+      if (imageDescriptor != null)
       {
-        logError("Cannot found image : " + img + " " + img.pluginId + " " + img.path);
+        imageRegistry.put(img.getKey(), imageDescriptor);
         continue;
       }
-      imageRegistry.put(img.getKey(), imageDescriptor);
+
+      imageDescriptor = imageDescriptorFromPlugin(img.pluginId, img.otherwisePath);
+      if (imageDescriptor != null)
+      {
+        imageRegistry.put(img.getOtherwiseKey(), imageDescriptor);
+        continue;
+      }
+
+      logError("Cannot found image : " + img + " " + img.pluginId + " " + img.path);
+      continue;
     }
   }
 
@@ -101,7 +110,10 @@ public class PDEViewActivator extends AbstractUIPlugin
    */
   public static ImageDescriptor getImageDescriptor(Images img)
   {
-    return plugin.getImageRegistry().getDescriptor(img.getKey());
+    ImageDescriptor descriptor = plugin.getImageRegistry().getDescriptor(img.getKey());
+    if (descriptor == null)
+      descriptor = plugin.getImageRegistry().getDescriptor(img.getOtherwiseKey());
+    return descriptor;
   }
 
   /**

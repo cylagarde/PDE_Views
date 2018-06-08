@@ -24,11 +24,12 @@ public enum Images
   INVALID_PROJECT("icons/invalid_project.png"),
   TREE("icons/tree.gif"),
 
-  JAR_ICON("org.eclipse.jdt.ui", "icons/full/obj16/jar_obj.png"),
+  JAR_ICON("org.eclipse.jdt.ui", "icons/full/obj16/jar_obj.png", "icons/full/obj16/jar_obj.gif"),
   ;
 
-  final String path;
   final String pluginId;
+  final String path;
+  final String otherwisePath;
 
   private Images(String path)
   {
@@ -37,8 +38,14 @@ public enum Images
 
   private Images(String pluginId, String path)
   {
+    this(pluginId, path, null);
+  }
+
+  private Images(String pluginId, String path, String otherwisePath)
+  {
     this.pluginId = pluginId;
     this.path = path;
+    this.otherwisePath = otherwisePath;
   }
 
   public Image getImage()
@@ -54,5 +61,10 @@ public enum Images
   String getKey()
   {
     return pluginId + ":" + path;
+  }
+
+  String getOtherwiseKey()
+  {
+    return pluginId + ":" + otherwisePath;
   }
 }
