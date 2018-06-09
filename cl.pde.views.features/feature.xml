@@ -5,17 +5,21 @@
       version="1.7.0.qualifier"
       provider-name="CL">
 
-   <description url="http://www.example.com/description">
+   <description url="https://github.com/cylagarde/PDE_Views">
       PDE Views Features
    </description>
 
-   <copyright url="http://www.example.com/copyright">
-      [Enter Copyright Description here.]
+   <copyright>
+      Open source code
    </copyright>
 
-   <license url="http://www.example.com/license">
-      Github licence
+   <license url="https://choosealicense.com/licenses/gpl-3.0/">
+      GPL3.0 licence
    </license>
+
+   <url>
+      <discovery label="PDE views" url="https://github.com/cylagarde/PDE_Views"/>
+   </url>
 
    <requires>
       <import plugin="org.eclipse.ui"/>
