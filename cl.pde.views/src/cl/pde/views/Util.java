@@ -90,7 +90,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.part.FileEditorInput;
 import org.osgi.framework.Version;
 
 import cl.pde.Images;
@@ -102,10 +101,16 @@ import cl.pde.PDEViewActivator;
 public class Util
 {
   private static final Set<String> MESSAGE_ALREADY_PRINTED_SET = new HashSet<>();
+  private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
   private static IProgressMonitor split(IProgressMonitor monitor, int totalWork)
   {
     return new SubProgressMonitor(monitor, totalWork);
+  }
+
+  private static String lineSeparator(Object o, String text)
+  {
+    return o == null? "" : LINE_SEPARATOR + text;
   }
 
   /**
@@ -320,11 +325,11 @@ public class Util
   {
     if (MESSAGE_ALREADY_PRINTED_SET.add(msg))
     {
-      PDEViewActivator.logError(msg, exception);
+      PDEViewActivator.logError(msg.replace(LINE_SEPARATOR, ""), exception);
       if (openDialog)
       {
-        if (exception != null)
-          msg += " : " + exception.getLocalizedMessage();
+        if (exception != null && exception.getMessage() != null)
+          msg += LINE_SEPARATOR + exception.getMessage();
         String message = msg;
         Display.getDefault().syncExec(() -> {
           Shell shell = Display.getDefault().getActiveShell();
@@ -399,32 +404,21 @@ public class Util
       {
         IDE.openEditor(workbenchPage, (IFile) launchConfigurationResource);
       }
-      catch(PartInitException e)
+      catch(Exception e)
       {
-        printExceptionWithoutRepetition("Cannot open product " + launchConfigurationResource, e, true);
+        String msg = "Cannot open launch configuration" + LINE_SEPARATOR + "name=" + launchConfiguration.getName() + LINE_SEPARATOR + "resource=" + launchConfigurationResource;
+        printExceptionWithoutRepetition(msg, e, true);
       }
     }
   }
 
   /**
-   * Open featureModel
+   * Open productModel
    * @param productModel
    */
   private static void openProductModel(IProductModel productModel)
   {
-    IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-    IResource productModelResource = getProductModelResource(productModel);
-    if (workbenchPage != null && productModelResource instanceof IFile)
-    {
-      try
-      {
-        IDE.openEditor(workbenchPage, (IFile) productModelResource, IPDEUIConstants.PRODUCT_EDITOR_ID);
-      }
-      catch(PartInitException e)
-      {
-        printExceptionWithoutRepetition("Cannot open product " + productModelResource, e, true);
-      }
-    }
+    openProduct(productModel.getProduct());
   }
 
   /**
@@ -469,7 +463,10 @@ public class Util
     if (pluginModelBase != null)
       openPlugin(pluginModelBase);
     else
-      printExceptionWithoutRepetition("Cannot open plugin id=" + pluginId + ", version=" + pluginVersion, null, true);
+    {
+      String msg = "Cannot open plugin " + pluginId + lineSeparator(pluginVersion, "version=" + pluginVersion);
+      printExceptionWithoutRepetition(msg, null, true);
+    }
   }
 
   /**
@@ -483,7 +480,7 @@ public class Util
     if (featureModel != null)
       openFeatureModel(featureModel);
     else
-      printExceptionWithoutRepetition("Cannot open feature id=" + featureId + ", version=" + featureVersion, null, true);
+      printExceptionWithoutRepetition("Cannot open feature " + featureId + lineSeparator(featureVersion, "version=" + featureVersion), null, true);
   }
 
   /**
@@ -496,7 +493,7 @@ public class Util
   }
 
   /**
-   * Open FeatureChild
+   * Open featureChild
    * @param featureChild
    */
   private static void openFeatureChild(IFeatureChild featureChild)
@@ -507,7 +504,7 @@ public class Util
   }
 
   /**
-   * Open FeaturePlugin
+   * Open featurePlugin
    * @param featurePlugin
    */
   private static void openFeaturePlugin(IFeaturePlugin featurePlugin)
@@ -519,7 +516,7 @@ public class Util
   }
 
   /**
-   * Open FeatureImport
+   * Open featureImport
    * @param featureImport
    */
   private static void openFeatureImport(IFeatureImport featureImport)
@@ -533,12 +530,15 @@ public class Util
       if (featureImport.getFeature() != null)
         openFeature(featureImport.getFeature());
       else
-        printExceptionWithoutRepetition("Cannot open feature id=" + featureId + ", version=" + featureVersion, null, true);
+      {
+        String msg = "Cannot open feature " + featureId + lineSeparator(featureVersion, "version=" + featureVersion);
+        printExceptionWithoutRepetition(msg, null, true);
+      }
     }
   }
 
   /**
-   * Open Feature
+   * Open feature
    * @param feature
    */
   private static void openFeature(IFeature feature)
@@ -549,30 +549,29 @@ public class Util
   }
 
   /**
-   * Open IProduct
+   * Open product
    * @param product
    */
   private static void openProduct(IProduct product)
   {
-    IResource underlyingResource = product.getModel().getUnderlyingResource();
-    if (underlyingResource instanceof IFile)
+    IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+    IResource productModelResource = getProductModelResource(product.getModel());
+    if (workbenchPage != null && productModelResource instanceof IFile)
     {
-      IFile productFile = (IFile) underlyingResource;
-      FileEditorInput productFileEditorInput = new FileEditorInput(productFile);
-      IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
       try
       {
-        IDE.openEditor(workbenchPage, productFileEditorInput, IPDEUIConstants.PRODUCT_EDITOR_ID);
+        IDE.openEditor(workbenchPage, (IFile) productModelResource, IPDEUIConstants.PRODUCT_EDITOR_ID);
       }
       catch(PartInitException e)
       {
-        printExceptionWithoutRepetition("Cannot open product", e, true);
+        String msg = "Cannot open product " + product.getId() + LINE_SEPARATOR + productModelResource;
+        printExceptionWithoutRepetition(msg, e, true);
       }
     }
   }
 
   /**
-   * Open IProductFeature
+   * Open productFeature
    * @param productFeature
    */
   private static void openProductFeature(IProductFeature productFeature)
@@ -583,7 +582,7 @@ public class Util
   }
 
   /**
-   * Open IProductPlugin
+   * Open productPlugin
    * @param productPlugin
    */
   private static void openProductPlugin(IProductPlugin productPlugin)
@@ -595,7 +594,7 @@ public class Util
   }
 
   /**
-   * Open IFragment
+   * Open fragment
    * @param fragment
    */
   private static void openFragment(IFragment fragment)
@@ -707,18 +706,24 @@ public class Util
       IFragment fragment = ((IFragmentModel) pluginModelBase).getFragment();
       return fragment.getPluginModel().getBundleDescription().getLocation();
     }
-    else if (pluginModelBase instanceof IPluginModel)
+
+    if (pluginModelBase instanceof IPluginModel)
     {
       IPlugin plugin = ((IPluginModel) pluginModelBase).getPlugin();
       return plugin.getPluginModel().getBundleDescription().getLocation();
     }
-    else if (pluginModelBase != null)
-      printExceptionWithoutRepetition("Unsupported getPluginLocation " + pluginModelBase.getClass().getName(), null, true);
+
+    if (pluginModelBase != null)
+    {
+      String msg = "Unsupported getPluginLocation for " + pluginId + lineSeparator(pluginVersion, "version=" + pluginVersion) + lineSeparator(pluginModelBase, pluginModelBase.getClass().getName());
+      printExceptionWithoutRepetition(msg, null, false);
+    }
 
     return null;
   }
 
   /**
+   * Get pluginModelBase
    * @param pluginId
    * @param pluginVersion
    */
@@ -2007,37 +2012,37 @@ public class Util
     if (pdeObject instanceof IPlugin)
       return TYPE.PLUGIN;
 
-    else if (pdeObject instanceof IFragment)
+    if (pdeObject instanceof IFragment)
       return TYPE.PLUGIN;
 
-    else if (pdeObject instanceof IFeaturePlugin)
+    if (pdeObject instanceof IFeaturePlugin)
       return TYPE.PLUGIN;
 
-    else if (pdeObject instanceof IFeatureChild)
+    if (pdeObject instanceof IFeatureChild)
       return TYPE.FEATURE;
 
-    else if (pdeObject instanceof IFeatureImport)
+    if (pdeObject instanceof IFeatureImport)
       return ((IFeatureImport) pdeObject).getType() == IFeatureImport.PLUGIN? TYPE.PLUGIN : TYPE.FEATURE;
 
-    else if (pdeObject instanceof IFeature)
+    if (pdeObject instanceof IFeature)
       return TYPE.FEATURE;
 
-    else if (pdeObject instanceof IProduct)
+    if (pdeObject instanceof IProduct)
       return TYPE.PRODUCT;
 
-    else if (pdeObject instanceof IProductFeature)
+    if (pdeObject instanceof IProductFeature)
       return TYPE.FEATURE;
 
-    else if (pdeObject instanceof IProductPlugin)
+    if (pdeObject instanceof IProductPlugin)
       return TYPE.PLUGIN;
 
-    else if (pdeObject instanceof IFeatureModel)
+    if (pdeObject instanceof IFeatureModel)
       return TYPE.FEATURE;
 
-    else if (pdeObject instanceof ILaunchConfiguration)
+    if (pdeObject instanceof ILaunchConfiguration)
       return TYPE.LAUNCH_CONFIGURATION;
 
-    else if (pdeObject != null)
+    if (pdeObject != null)
       printExceptionWithoutRepetition("Unsupported type for " + pdeObject.getClass().getName(), null, true);
 
     return null;

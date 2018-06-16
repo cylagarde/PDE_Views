@@ -27,6 +27,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
   final static Styler VERSION_STYLER;
   final static Styler LOCATION_STYLER;
   final static Styler DECORATIONS_STYLER;
+  final static Styler ERROR_STYLER;
 
   static
   {
@@ -34,6 +35,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     COLOR_REGISTRY.put("VERSION_COLOR", Constants.VERSION_FOREGROUND != null? Constants.VERSION_FOREGROUND.getRGB() : new RGB(0, 0, 0));
     COLOR_REGISTRY.put("DECORATIONS_COLOR", new RGB(149, 125, 71));
     COLOR_REGISTRY.put("LOCATION_COLOR", new RGB(128, 128, 128));
+    COLOR_REGISTRY.put("ERROR_COLOR", new RGB(255, 0, 0));
 
     // stylers
     SELECTION_STYLER = new Styler()
@@ -48,6 +50,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     VERSION_STYLER = StyledString.createColorRegistryStyler("VERSION_COLOR", null);
     LOCATION_STYLER = StyledString.createColorRegistryStyler("LOCATION_COLOR", null);
     DECORATIONS_STYLER = StyledString.createColorRegistryStyler("DECORATIONS_COLOR", null);
+    ERROR_STYLER = StyledString.createColorRegistryStyler("ERROR_COLOR", null);
   }
 
   final NotTreeParentPatternFilter patternFilter;
@@ -96,20 +99,28 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
       if (treeObject.data != null)
       {
         // location
-        String location = Util.getLocation(treeObject.data);
-        if (location != null)
-          styledString.append(" - " + location, LOCATION_STYLER);
+        try
+        {
+          String location = Util.getLocation(treeObject.data);
+          if (location != null)
+            styledString.append(" - " + location, LOCATION_STYLER);
+        }
+        catch(Exception e)
+        {
+          styledString.append(" location error", ERROR_STYLER);
+        }
 
-        //        // resource
-        //        IResource resource = Util.getResource(treeObject.data);
-        //        if (resource != null)
-        //          styledString.append(" - " + resource, DECORATIONS_STYLER);
-        //        else
-        //          styledString.append(" ERROR " + treeObject.data.getClass(), DECORATIONS_STYLER);
+        // // resource
+        // IResource resource = Util.getResource(treeObject.data);
+        // if (resource != null)
+        //   styledString.append(" - " + resource, DECORATIONS_STYLER);
+        // else
+        //   styledString.append(" ERROR " + treeObject.data.getClass(), DECORATIONS_STYLER);
       }
     }
     else
       styledString.append(String.valueOf(element), null);
+
     return styledString;
   }
 
