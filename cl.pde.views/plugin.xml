@@ -15,15 +15,6 @@
             id="cl.pde.featureView"
             name="Feature View">
       </view>
-      
-      <view
-            category="cl.pde.views"
-            class="cl.pde.views.product.ProductView"
-            icon="icons/product.png"
-            id="cl.pde.productView"
-            name="Product View">
-      </view>
-      
       <view
             category="cl.pde.views"
             class="cl.pde.views.launchconfiguration.LaunchConfigurationView"
@@ -38,7 +29,18 @@
             id="cl.pde.pluginView"
             name="Plugin View">
       </view>
+      
+      <view
+            category="cl.pde.views"
+            class="cl.pde.views.product.ProductView"
+            icon="icons/product.png"
+            id="cl.pde.productView"
+            name="Product View">
+      </view>
+      
+     
    </extension>
+   
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
@@ -49,16 +51,20 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
-         
          <view
-               id="cl.pde.productView"
+               id="cl.pde.launchConfigurationView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
-         
          <view
-               id="cl.pde.launchConfigurationView"
+               id="cl.pde.pluginView"
+               ratio="0.5"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ProblemView">
+         </view>
+         <view
+               id="cl.pde.productView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
@@ -67,14 +73,16 @@
          <viewShortcut
                id="cl.pde.featureView">
          </viewShortcut>
-         
+         <viewShortcut
+               id="cl.pde.launchConfigurationView">
+         </viewShortcut>
+         <viewShortcut
+               id="cl.pde.pluginView">
+         </viewShortcut>
          <viewShortcut
                id="cl.pde.productView">
          </viewShortcut>
          
-         <viewShortcut
-               id="cl.pde.launchConfigurationView">
-         </viewShortcut>
       </perspectiveExtension>
       
       <perspectiveExtension
@@ -85,21 +93,18 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
-         
-         <view
-               id="cl.pde.productView"
-               ratio="0.5"
-               relationship="stack"
-               relative="org.eclipse.ui.views.ProblemView">
-         </view>
-         
          <view
                id="cl.pde.launchConfigurationView"
                ratio="0.5"
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
-         
+         <view
+               id="cl.pde.pluginView"
+               ratio="0.5"
+               relationship="stack"
+               relative="org.eclipse.ui.views.ProblemView">
+         </view>
          <view
                id="cl.pde.productView"
                ratio="0.5"
@@ -110,14 +115,16 @@
          <viewShortcut
                id="cl.pde.featureView">
          </viewShortcut>
-         
+         <viewShortcut
+               id="cl.pde.launchConfigurationView">
+         </viewShortcut>
+         <viewShortcut
+               id="cl.pde.pluginView">
+         </viewShortcut>
          <viewShortcut
                id="cl.pde.productView">
          </viewShortcut>
          
-         <viewShortcut
-               id="cl.pde.launchConfigurationView">
-         </viewShortcut>            
       </perspectiveExtension>
    </extension>
    <extension
@@ -187,42 +194,43 @@
       </category>
       
       <command
+            id="cl.pde.open_in_feature_view"
             name="Open in feature view"
             description="Open in feature view"
-            defaultHandler="cl.pde.handlers.OpenInFeatureViewHandler"
             categoryId="cl.pde.commands"
-            id="cl.pde.open_in_feature_view">
+            defaultHandler="cl.pde.handlers.OpenInFeatureViewHandler">
       </command>
       
       <command
+            id="cl.pde.open_in_product_view"
             name="Open in product view"
             description="Open in product view"
             categoryId="cl.pde.commands"
-            defaultHandler="cl.pde.handlers.OpenInProductViewHandler"
-            id="cl.pde.open_in_product_view">
+            defaultHandler="cl.pde.handlers.OpenInProductViewHandler">
       </command>
       
       <command
+            id="cl.pde.open_in_launch_configuration_view"
             name="Open in launch configuration view"
-            categoryId="cl.pde.commands"
-            defaultHandler="cl.pde.handlers.OpenInLaunchConfigurationViewHandler"
             description="Open in launch configuration view"
-            id="cl.pde.open_in_launch_configuration_view">
-      </command>
-      <command
             categoryId="cl.pde.commands"
-            defaultHandler="cl.pde.handlers.SearchInvalidProjectHandler"
-            description="Search the projects to be opened/imported"
+            defaultHandler="cl.pde.handlers.OpenInLaunchConfigurationViewHandler">
+      </command>
+
+      <command
             id="cl.pde.search_invalid_project"
-            name="Search projects to be opened/imported">
+            name="Search projects to be opened/imported"
+            description="Search the projects to be opened/imported"
+            categoryId="cl.pde.commands"
+            defaultHandler="cl.pde.handlers.SearchInvalidProjectHandler">
       </command>
       
       <command
-            categoryId="cl.pde.commands"
-            defaultHandler="cl.pde.handlers.TryToOpenInvalidProjectHandler"
-            description="Try to open/import the project"
             id="cl.pde.try_open_invalid_project"
-            name="Try to open/import project">
+            name="Try to open/import project"
+            description="Try to open/import the project"
+            categoryId="cl.pde.commands"
+            defaultHandler="cl.pde.handlers.TryToOpenInvalidProjectHandler">
       </command>
    </extension>
    
@@ -292,6 +300,7 @@
             </visibleWhen>
          </command>
       </menuContribution>
+
       <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
@@ -304,6 +313,7 @@
                tooltip="Search invalid projects">
          </command>
       </menuContribution>
+
       <menuContribution
             allPopups="false"
             locationURI="popup:org.eclipse.jdt.ui.PackageExplorer?after=additions">

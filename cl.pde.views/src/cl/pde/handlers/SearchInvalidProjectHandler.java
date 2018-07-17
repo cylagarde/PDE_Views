@@ -277,6 +277,8 @@ public class SearchInvalidProjectHandler extends AbstractHandler
         }
       }
     }
+    else
+      MessageDialog.openInformation(shell, "Information", "Cannot closed projects");
 
     return null;
   }
