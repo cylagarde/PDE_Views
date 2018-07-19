@@ -33,14 +33,21 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
+import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.StyledString;
+import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.TextStyle;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.ISharedImages;
@@ -210,19 +217,41 @@ public class SearchInvalidProjectHandler extends AbstractHandler
       {
         TreeViewerColumn relativePathViewerColumn = new TreeViewerColumn(treeViewer, SWT.NONE);
         relativePathViewerColumn.getColumn().setText("Parent");
-        relativePathViewerColumn.setLabelProvider(new ColumnLabelProvider()
+        class ParentColumnLabelProvider extends ColumnLabelProvider implements IStyledLabelProvider
         {
-          @Override
-          public String getText(Object element)
+          private final Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT);
+          private final Styler boldStyler = new Styler()
           {
+            @Override
+            public void applyStyles(TextStyle textStyle)
+            {
+              textStyle.font = boldFont;
+            }
+          };
+
+          @Override
+          public StyledString getStyledText(Object element)
+          {
+            StyledString styledString = new StyledString();
             if (element instanceof InvalidProject)
             {
               InvalidProject invalidProject = (InvalidProject) element;
-              return invalidProject.relative;
+              if (invalidProject.relative != null)
+              {
+                int index = invalidProject.relative.indexOf('/');
+                if (index > 0)
+                {
+                  styledString.append(invalidProject.relative.substring(0, index), boldStyler);
+                  styledString.append(invalidProject.relative.substring(index));
+                }
+                else
+                  styledString.append(invalidProject.relative, boldStyler);
+              }
             }
-            return null;
+            return styledString;
           }
-        });
+        }
+        relativePathViewerColumn.setLabelProvider(new DelegatingStyledCellLabelProvider(new ParentColumnLabelProvider()));
         DefaultLabelViewerComparator.configureForSortingColumn(relativePathViewerColumn);
       }
 
