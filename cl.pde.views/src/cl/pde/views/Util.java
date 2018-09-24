@@ -12,12 +12,14 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.internal.utils.Policy;
@@ -28,7 +30,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.internal.ui.launchConfigurations.LaunchConfigurationManager;
+import org.eclipse.debug.ui.ILaunchGroup;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DecorationOverlayIcon;
@@ -396,19 +404,44 @@ public class Util
    */
   private static void openLaunchConfiguration(ILaunchConfiguration launchConfiguration)
   {
-    IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-    IResource launchConfigurationResource = getLaunchConfigurationResource(launchConfiguration);
-    if (workbenchPage != null && launchConfigurationResource instanceof IFile)
+    LaunchConfigurationManager lcm = DebugUIPlugin.getDefault().getLaunchConfigurationManager();
+    try
     {
-      try
+      ILaunchConfigurationType type = launchConfiguration.getType();
+      ILaunchGroup group = null;
+      if (type.supportsMode(ILaunchManager.RUN_MODE))
+        group = lcm.getLaunchGroup(type, ILaunchManager.RUN_MODE);
+      else if (type.supportsMode(ILaunchManager.DEBUG_MODE))
+        group = lcm.getLaunchGroup(type, ILaunchManager.DEBUG_MODE);
+      else if (type.supportsMode(ILaunchManager.PROFILE_MODE))
+        group = lcm.getLaunchGroup(type, ILaunchManager.PROFILE_MODE);
+      else
       {
-        IDE.openEditor(workbenchPage, (IFile) launchConfigurationResource);
+        for(Set<String> modes : type.getSupportedModeCombinations())
+        {
+          group = lcm.getLaunchGroup(type, modes);
+          if (group != null)
+            break;
+        }
       }
-      catch(Exception e)
+      IWorkbenchPage workbenchPage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+      if (group != null)
       {
-        String msg = "Cannot open launch configuration" + LINE_SEPARATOR + "name=" + launchConfiguration.getName() + LINE_SEPARATOR + "resource=" + launchConfigurationResource;
-        printExceptionWithoutRepetition(msg, e, true);
+        Shell shell = workbenchPage.getWorkbenchWindow().getShell();
+        Set<String> configurationNames = getAllEclipseApplications().map(ILaunchConfiguration::getName).collect(Collectors.toSet());
+        DebugUIPlugin.openLaunchConfigurationPropertiesDialog(shell, launchConfiguration, group.getIdentifier(), configurationNames, null, false);
       }
+      else
+      {
+        IResource launchConfigurationResource = getLaunchConfigurationResource(launchConfiguration);
+        if (workbenchPage != null && launchConfigurationResource instanceof IFile)
+          IDE.openEditor(workbenchPage, (IFile) launchConfigurationResource);
+      }
+    }
+    catch(Exception e)
+    {
+      String msg = "Cannot open launch configuration" + LINE_SEPARATOR + "name=" + launchConfiguration.getName();
+      printExceptionWithoutRepetition(msg, e, true);
     }
   }
 
@@ -663,7 +696,10 @@ public class Util
    */
   private static String getLaunchConfigurationLocation(ILaunchConfiguration launchConfiguration)
   {
-    return launchConfiguration.getFile().getLocation().toString();
+    String location = Optional.ofNullable(launchConfiguration).map(ILaunchConfiguration::getFile).map(IFile::getLocation).map(String::valueOf).orElse(null);
+    if (location == null)
+      location = Optional.ofNullable(launchConfiguration).map(ILaunchConfiguration::getLocation).map(String::valueOf).orElse(null);
+    return location;
   }
 
   /**
@@ -2349,5 +2385,37 @@ public class Util
     }
 
     return false;
+  }
+
+  /**
+   * Return all eclipse applications
+   */
+  public static Stream<ILaunchConfiguration> getAllEclipseApplications()
+  {
+    ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+    try
+    {
+      ILaunchConfiguration[] launchConfigurations = launchManager.getLaunchConfigurations();
+      return Stream.of(launchConfigurations).filter(Util::isEclipseApplication);
+    }
+    catch(Exception e)
+    {
+      return Stream.empty();
+    }
+  }
+
+  /**
+   * @param launchConfiguration
+   */
+  public static boolean isEclipseApplication(ILaunchConfiguration launchConfiguration)
+  {
+    try
+    {
+      return "Eclipse Application".equals(launchConfiguration.getType().getName());
+    }
+    catch(CoreException e)
+    {
+      return false;
+    }
   }
 }

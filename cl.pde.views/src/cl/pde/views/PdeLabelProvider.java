@@ -107,7 +107,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         }
         catch(Exception e)
         {
-          styledString.append(" location error", ERROR_STYLER);
+          styledString.append(" location error:" + e.getMessage(), ERROR_STYLER);
         }
 
         // // resource
