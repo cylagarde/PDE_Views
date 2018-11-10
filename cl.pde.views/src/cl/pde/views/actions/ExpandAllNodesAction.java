@@ -85,7 +85,11 @@ public class ExpandAllNodesAction extends AbstractTreeViewerAction
       if (actionOnAllNodes)
       {
         if (treeViewer.getInput() != null)
+        {
           expandOrCollapseItems(new Object[]{treeViewer.getInput()}, expand? 4 : AbstractTreeViewer.ALL_LEVELS);
+          if (!expand)
+            treeViewer.expandToLevel(treeViewer.getInput(), 2);
+        }
       }
       else
       {
