@@ -88,7 +88,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
         styledString.setStyle(beginIndex, lastIndex - beginIndex + 1, VERSION_STYLER);
 
       // select
-      if (patternFilter.canSearchOnElementPredicate.test(element))
+      if (patternFilter.canSearchOnElementPredicate(element))
       {
         String text = styledString.getString();
         Position firstPosition = patternFilter.getFirstPosition(text, 0, text.length());

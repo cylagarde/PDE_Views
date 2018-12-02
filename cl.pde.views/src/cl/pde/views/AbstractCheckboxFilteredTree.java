@@ -55,7 +55,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   {
     super(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
     setQuickSelectionMode(true);
-    filter.visiblePredicate = visiblePredicate;
+    filter.setVisiblePredicate(visiblePredicate);
     setInitialText("Plugin name filter");
     getFilterControl().setVisible(false);
   }
@@ -121,6 +121,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   protected void textChanged()
   {
     Util.setUseCache(true);
+    ((NotTreeParentPatternFilter) getPatternFilter()).clearCache();
     try
     {
       super.textChanged();
@@ -132,6 +133,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     }
     finally
     {
+      ((NotTreeParentPatternFilter) getPatternFilter()).clearCache();
       Util.setUseCache(false);
     }
   }
@@ -160,7 +162,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     treeViewer.setLabelProvider(new DelegatingStyledCellLabelProvider(new PdeLabelProvider((NotTreeParentPatternFilter) getPatternFilter())));
     setBackground(treeViewer.getTree().getBackground());
 
-    ViewerFilter featureViewerFilter = new ViewerFilter()
+    ViewerFilter viewerFilter = new ViewerFilter()
     {
       @Override
       public boolean select(Viewer viewer, Object parentElement, Object element)
@@ -169,7 +171,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       }
     };
 
-    treeViewer.addFilter(featureViewerFilter);
+    treeViewer.addFilter(viewerFilter);
 
     return treeViewer;
   }

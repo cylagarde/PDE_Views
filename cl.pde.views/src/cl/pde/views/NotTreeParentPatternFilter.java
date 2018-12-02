@@ -1,5 +1,7 @@
 package cl.pde.views;
 
+import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Predicate;
 
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
@@ -16,16 +18,25 @@ import org.eclipse.ui.dialogs.PatternFilter;
 public class NotTreeParentPatternFilter extends PatternFilter
 {
   private final boolean includeLeadingWildcard = true;
-  public Predicate<Object> visiblePredicate;
-  public Predicate<Object> canSearchOnElementPredicate;
+  private Predicate<Object> visiblePredicate;
+  private final Predicate<Object> canSearchOnElementPredicate;
   private StringMatcher matcher;
+  Map<Object, Boolean> isLeafMatchCacheMap = new WeakHashMap<>();
+  Map<Object, Boolean> isParentMatchCacheMap = new WeakHashMap<>();
 
   /**
    * Constructor
    */
-  public NotTreeParentPatternFilter()
+  public NotTreeParentPatternFilter(Predicate<Object> canSearchOnElementPredicate)
   {
+    this.canSearchOnElementPredicate = canSearchOnElementPredicate;
     setIncludeLeadingWildcard(includeLeadingWildcard);
+  }
+
+  void clearCache()
+  {
+    isLeafMatchCacheMap.clear();
+    isParentMatchCacheMap.clear();
   }
 
   @Override
@@ -37,7 +48,18 @@ public class NotTreeParentPatternFilter extends PatternFilter
       if (!visible)
         return visible;
     }
-    return super.isParentMatch(viewer, element);
+
+    //    System.err.println("isParentMatch "+element);
+    return isParentMatchCacheMap.computeIfAbsent(element, e -> super.isParentMatch(viewer, e));
+    //    Boolean isParentMatch = isParentMatchCacheMap.get(element);
+    //    if (isParentMatch == null) {
+    //      System.err.println("calc "+element);
+    //      isParentMatch = super.isParentMatch(viewer, element);
+    //      isParentMatchCacheMap.put(element, isParentMatch);
+    //    }
+    //    else
+    //      System.err.println("UUSe cache "+element);
+    //    return isParentMatch;
   }
 
   @Override
@@ -46,25 +68,30 @@ public class NotTreeParentPatternFilter extends PatternFilter
     if (!canSearchOnElementPredicate.test(element))
       return false;
 
-    String labelText = null;
-
-    if (element instanceof TreeObject)
-      labelText = ((TreeObject) element).getDisplayText();
-    else
+    Boolean isLeafMatch = isLeafMatchCacheMap.get(element);
+    if (isLeafMatch == null)
     {
-      IBaseLabelProvider labelProvider = ((StructuredViewer) viewer).getLabelProvider();
-      if (labelProvider instanceof ILabelProvider)
-        labelText = ((ILabelProvider) labelProvider).getText(element);
-      else if (labelProvider instanceof DelegatingStyledCellLabelProvider)
+      String labelText = null;
+
+      if (element instanceof TreeObject)
+        labelText = ((TreeObject) element).getDisplayText();
+      else
       {
-        DelegatingStyledCellLabelProvider delegatingStyledCellLabelProvider = (DelegatingStyledCellLabelProvider) labelProvider;
-        labelText = delegatingStyledCellLabelProvider.getStyledStringProvider().getStyledText(element).toString();
+        IBaseLabelProvider labelProvider = ((StructuredViewer) viewer).getLabelProvider();
+        if (labelProvider instanceof ILabelProvider)
+          labelText = ((ILabelProvider) labelProvider).getText(element);
+        else if (labelProvider instanceof DelegatingStyledCellLabelProvider)
+        {
+          DelegatingStyledCellLabelProvider delegatingStyledCellLabelProvider = (DelegatingStyledCellLabelProvider) labelProvider;
+          labelText = delegatingStyledCellLabelProvider.getStyledStringProvider().getStyledText(element).toString();
+        }
       }
+
+      isLeafMatch = labelText == null? false: wordMatches(labelText);
+      isLeafMatchCacheMap.put(element, isLeafMatch);
     }
 
-    if (labelText == null)
-      return false;
-    return wordMatches(labelText);
+    return isLeafMatch;
   }
 
   @Override
@@ -90,5 +117,15 @@ public class NotTreeParentPatternFilter extends PatternFilter
   public StringMatcher.Position getFirstPosition(String text, int start, int end)
   {
     return matcher == null? null : matcher.find(text, start, end);
+  }
+
+  public boolean canSearchOnElementPredicate(Object element)
+  {
+    return canSearchOnElementPredicate.test(element);
+  }
+
+  public void setVisiblePredicate(Predicate<Object> visiblePredicate)
+  {
+    this.visiblePredicate = visiblePredicate;
   }
 }

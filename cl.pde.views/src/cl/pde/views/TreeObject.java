@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.Objects;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.pde.internal.ui.PDEPlugin;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 
@@ -62,7 +61,9 @@ public class TreeObject implements IAdaptable
       if (name != null)
         displayText = name;
       else
-        displayText = PDEPlugin.getDefault().getLabelProvider().getText(data);
+      {
+        displayText = Util.getDisplayText(data);
+      }
     }
     return displayText;
   }

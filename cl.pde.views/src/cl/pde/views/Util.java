@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -1249,7 +1250,7 @@ public class Util
       IPluginModelBase pluginModelBase = getPluginModelBase(featureId, featureVersion, matchRule);
       return getPluginSingletonState(pluginModelBase);
     }
-    return null;
+    return Boolean.FALSE;
   }
 
   /**
@@ -2278,7 +2279,7 @@ public class Util
    */
   private static boolean hasProductPluginError(IProductPlugin productPlugin)
   {
-    Version version = (productPlugin.getVersion() != null && productPlugin.getVersion().length() > 0 && !productPlugin.getVersion().equals(ICoreConstants.DEFAULT_VERSION))? Version.parseVersion(productPlugin.getVersion()) : null;
+    Version version = productPlugin.getVersion() != null && productPlugin.getVersion().length() > 0 && !productPlugin.getVersion().equals(ICoreConstants.DEFAULT_VERSION)? Version.parseVersion(productPlugin.getVersion()) : null;
     BundleDescription desc = TargetPlatformHelper.getState().getBundle(productPlugin.getId(), version);
     return desc == null;
   }
@@ -2417,5 +2418,16 @@ public class Util
     {
       return false;
     }
+  }
+
+  final static Map<Object, String> DISPLAY_TEXT_MAP = new WeakHashMap<>();
+
+  /**
+   * Return display text
+   * @param data
+   */
+  public static String getDisplayText(Object data)
+  {
+    return DISPLAY_TEXT_MAP.computeIfAbsent(data, d -> PDEPlugin.getDefault().getLabelProvider().getText(d));
   }
 }

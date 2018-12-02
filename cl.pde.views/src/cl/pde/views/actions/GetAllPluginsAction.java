@@ -43,6 +43,7 @@ public class GetAllPluginsAction extends Action
     pluginViewer.getControl().setRedraw(false);
     try
     {
+      Util.setUseCache(true);
       List<TreeParent> treeParentList = new ArrayList<>(2);
 
       //
@@ -79,6 +80,7 @@ public class GetAllPluginsAction extends Action
     finally
     {
       pluginViewer.getControl().setRedraw(true);
+      Util.setUseCache(false);
     }
   }
 }

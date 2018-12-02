@@ -66,8 +66,7 @@ public abstract class AbstractPDEView extends ViewPart
   @Override
   public void createPartControl(Composite parent)
   {
-    NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter();
-    filter.canSearchOnElementPredicate = getCanSearchOnElementPredicate();
+    NotTreeParentPatternFilter filter = new NotTreeParentPatternFilter(getCanSearchOnElementPredicate());
     filteredTree = new AbstractCheckboxFilteredTree(parent, filter)
     {
       @Override
