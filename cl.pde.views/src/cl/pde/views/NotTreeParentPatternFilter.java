@@ -1,6 +1,8 @@
 package cl.pde.views;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Predicate;
 
@@ -11,6 +13,8 @@ import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.pde.internal.ui.util.StringMatcher;
 import org.eclipse.ui.dialogs.PatternFilter;
+
+import cl.pde.PDEViewActivator;
 
 /**
  * The class <b>NotTreeParentPatternFilter</b> allows to.<br>
@@ -39,27 +43,38 @@ public class NotTreeParentPatternFilter extends PatternFilter
     isParentMatchCacheMap.clear();
   }
 
+  Set<Object> alreadyTreatedSet = new HashSet<>();
+
   @Override
   protected boolean isParentMatch(Viewer viewer, Object element)
   {
-    if (visiblePredicate != null)
+    if (!alreadyTreatedSet.add(element))
     {
-      boolean visible = visiblePredicate.test(element);
-      if (!visible)
-        return visible;
+      PDEViewActivator.logError("Find cyclic dependency in " + element);
+      return false;
     }
+    try
+    {
+      if (visiblePredicate != null)
+      {
+        boolean visible = visiblePredicate.test(element);
+        if (!visible)
+          return visible;
+      }
 
-    //    System.err.println("isParentMatch "+element);
-    return isParentMatchCacheMap.computeIfAbsent(element, e -> super.isParentMatch(viewer, e));
-    //    Boolean isParentMatch = isParentMatchCacheMap.get(element);
-    //    if (isParentMatch == null) {
-    //      System.err.println("calc "+element);
-    //      isParentMatch = super.isParentMatch(viewer, element);
-    //      isParentMatchCacheMap.put(element, isParentMatch);
-    //    }
-    //    else
-    //      System.err.println("UUSe cache "+element);
-    //    return isParentMatch;
+      return isParentMatchCacheMap.computeIfAbsent(element, e -> super.isParentMatch(viewer, e));
+      // Boolean isParentMatch = isParentMatchCacheMap.get(element);
+      // if (isParentMatch == null)
+      // {
+      // isParentMatch = super.isParentMatch(viewer, element);
+      // isParentMatchCacheMap.put(element, isParentMatch);
+      // }
+      // return isParentMatch;
+    }
+    finally
+    {
+      alreadyTreatedSet.remove(element);
+    }
   }
 
   @Override
@@ -87,7 +102,7 @@ public class NotTreeParentPatternFilter extends PatternFilter
         }
       }
 
-      isLeafMatch = labelText == null? false: wordMatches(labelText);
+      isLeafMatch = labelText == null? false : wordMatches(labelText);
       isLeafMatchCacheMap.put(element, isLeafMatch);
     }
 
@@ -112,6 +127,7 @@ public class NotTreeParentPatternFilter extends PatternFilter
 
   /**
    * Get first position of text
+   *
    * @param text
    */
   public StringMatcher.Position getFirstPosition(String text, int start, int end)
