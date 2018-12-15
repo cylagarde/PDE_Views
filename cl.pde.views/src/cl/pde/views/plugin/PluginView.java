@@ -58,4 +58,11 @@ public class PluginView extends AbstractPDEView
       return false;
     };
   }
+
+  @Override
+  protected String getLabelWhenItemNotFound(String filterString)
+  {
+    return "Cannot found plugin '" + filterString + "'";
+  }
+
 }

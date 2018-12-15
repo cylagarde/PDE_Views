@@ -20,7 +20,6 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.part.DrillDownAdapter;
 import org.eclipse.ui.part.ViewPart;
 
@@ -35,7 +34,7 @@ import cl.pde.views.actions.OpenNodeAction;
  */
 public abstract class AbstractPDEView extends ViewPart
 {
-  private FilteredTree filteredTree;
+  private AbstractCheckboxFilteredTree filteredTree;
 
   private DrillDownAdapter drillDownAdapter;
 
@@ -74,6 +73,12 @@ public abstract class AbstractPDEView extends ViewPart
       {
         return AbstractPDEView.this.getCheckboxLabels();
       }
+
+      @Override
+      protected String getLabelWhenItemNotFound()
+      {
+        return AbstractPDEView.this.getLabelWhenItemNotFound(getFilterString());
+      }
     };
     getTreeViewer().setContentProvider(getViewContentProvider());
 
@@ -103,6 +108,8 @@ public abstract class AbstractPDEView extends ViewPart
     hookDoubleClickAction();
     contributeToActionBars();
   }
+
+  protected abstract String getLabelWhenItemNotFound(String filterString);
 
   protected abstract Predicate<Object> getCanSearchOnElementPredicate();
 
@@ -250,6 +257,7 @@ public abstract class AbstractPDEView extends ViewPart
     try
     {
       getTreeViewer().setInput(input);
+      filteredTree.textChanged();
 
       // refresh
       notifyResourceChangeListener.refreshWhenResourceChanged(getTreeViewer());

@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -1115,6 +1114,7 @@ public class Util
   static boolean USE_CACHE = false;
   final static Map<Object, Object> SINGLETONSTATE_CACHEMAP = new HashMap<>();
   final static Map<File, Object> JARFILE_TO_SINGLETONSTATE_PERSISTENT_CACHEMAP = new HashMap<>();
+  final static Map<Object, String> DISPLAY_TEXT_MAP = new HashMap<>();
 
   /**
    * @param useCache
@@ -1124,6 +1124,7 @@ public class Util
     USE_CACHE = useCache;
     SINGLETONSTATE_CACHEMAP.clear();
     RESOURCE_CACHEMAP.clear();
+    DISPLAY_TEXT_MAP.clear();
   }
 
   /**
@@ -2419,8 +2420,6 @@ public class Util
       return false;
     }
   }
-
-  final static Map<Object, String> DISPLAY_TEXT_MAP = new WeakHashMap<>();
 
   /**
    * Return display text

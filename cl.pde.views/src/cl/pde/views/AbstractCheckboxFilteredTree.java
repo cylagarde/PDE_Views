@@ -2,6 +2,8 @@ package cl.pde.views;
 
 import java.util.function.Predicate;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
@@ -9,6 +11,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -16,16 +19,23 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.dialogs.FilteredTree;
+import org.eclipse.ui.progress.WorkbenchJob;
 
 /**
  * The class <b>AbstractCheckboxFilteredTree</b> allows to.<br>
  */
 public abstract class AbstractCheckboxFilteredTree extends FilteredTree
 {
-  Button[] checkboxButtons;
+  private Button[] checkboxButtons;
+  private StackLayout stackLayout;
+  private Label itemNotFoundLabel;
+  private Composite checkboxButtonsComposite;
 
-  Predicate<Object> visiblePredicate = element -> {
+  private Predicate<Object> visiblePredicate = element -> {
     if (element instanceof TreeParent)
     {
       TreeParent treeParent = (TreeParent) element;
@@ -66,6 +76,21 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   protected abstract String[] getCheckboxLabels();
 
   @Override
+  protected Control createTreeControl(Composite parent, int style)
+  {
+    stackLayout = new StackLayout();
+    parent.setLayout(stackLayout);
+
+    Control control = super.createTreeControl(parent, style);
+    stackLayout.topControl = control;
+
+    itemNotFoundLabel = new Label(parent, SWT.NONE);
+    itemNotFoundLabel.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+
+    return control;
+  }
+
+  @Override
   protected Composite createFilterControls(Composite parent)
   {
     Composite filterComposite = super.createFilterControls(parent);
@@ -81,14 +106,14 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
 
       filterComposite.setParent(content);
 
-      Composite buttonComposite = new Composite(content, SWT.NONE);
+      checkboxButtonsComposite = new Composite(content, SWT.NONE);
 
       RowLayout buttonLayout = new RowLayout();
       buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
       buttonLayout.marginTop = buttonLayout.marginBottom = 0;
       buttonLayout.spacing = 10;
-      buttonComposite.setLayout(buttonLayout);
-      buttonComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+      checkboxButtonsComposite.setLayout(buttonLayout);
+      checkboxButtonsComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
       SelectionAdapter listener = new SelectionAdapter()
       {
@@ -104,7 +129,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
       for(int i = 0; i < checkboxButtons.length; i++)
       {
         String label = checkboxLabels[i];
-        checkboxButtons[i] = new Button(buttonComposite, SWT.CHECK);
+        checkboxButtons[i] = new Button(checkboxButtonsComposite, SWT.CHECK);
         checkboxButtons[i].setText(label);
         checkboxButtons[i].setData("LABEL", label);
         checkboxButtons[i].setToolTipText("See " + label + " node");
@@ -125,17 +150,68 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     try
     {
       super.textChanged();
-
-      // expand all nodes if filter is not empty
-      //      String filterString = getFilterString();
-      //      if (filterString != null && !filterString.isEmpty())
-      //        getViewer().expandAll();
     }
     finally
     {
       ((NotTreeParentPatternFilter) getPatternFilter()).clearCache();
       Util.setUseCache(false);
     }
+  }
+
+  protected String getLabelWhenItemNotFound()
+  {
+    return "Not found";
+  }
+
+  @Override
+  protected WorkbenchJob doCreateRefreshJob()
+  {
+    WorkbenchJob refreshJob = super.doCreateRefreshJob();
+    refreshJob.addJobChangeListener(new IJobChangeListener()
+    {
+      @Override
+      public void sleeping(IJobChangeEvent event)
+      {
+      }
+
+      @Override
+      public void scheduled(IJobChangeEvent event)
+      {
+      }
+
+      @Override
+      public void running(IJobChangeEvent event)
+      {
+      }
+
+      @Override
+      public void done(IJobChangeEvent event)
+      {
+        if (treeViewer.getTree().getItemCount() == 0)
+        {
+          checkboxButtonsComposite.setVisible(false);
+          itemNotFoundLabel.setText(getLabelWhenItemNotFound());
+          stackLayout.topControl = itemNotFoundLabel;
+        }
+        else
+        {
+          checkboxButtonsComposite.setVisible(true);
+          stackLayout.topControl = treeViewer.getControl();
+        }
+        stackLayout.topControl.getParent().layout();
+      }
+
+      @Override
+      public void awake(IJobChangeEvent event)
+      {
+      }
+
+      @Override
+      public void aboutToRun(IJobChangeEvent event)
+      {
+      }
+    });
+    return refreshJob;
   }
 
   @Override

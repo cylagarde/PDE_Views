@@ -51,4 +51,10 @@ public class FeatureView extends AbstractPDEView
   {
     return e -> !(e instanceof TreeParent);
   }
+
+  @Override
+  protected String getLabelWhenItemNotFound(String filterString)
+  {
+    return "Cannot found plugin '" + filterString + "' in a feature";
+  }
 }
