@@ -31,7 +31,7 @@ public class GetAllPluginsAction extends Action
   public GetAllPluginsAction(PluginView pluginView)
   {
     this.pluginView = pluginView;
-    setText("Get all plugins");
+    setText("Refresh all plugins");
     setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_PLUGINS));
   }

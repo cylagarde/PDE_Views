@@ -23,7 +23,7 @@ public class GetAllFeaturesAction extends Action
   public GetAllFeaturesAction(FeatureView featureView)
   {
     this.featureView = featureView;
-    setText("Get all features");
+    setText("Refresh all features");
     setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_FEATURES));
   }

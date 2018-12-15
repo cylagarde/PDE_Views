@@ -39,7 +39,7 @@ public abstract class AbstractPDEView extends ViewPart
   private DrillDownAdapter drillDownAdapter;
 
   private Action copyIdToClipboardAction;
-  private Action getAllAction;
+  private Action getAllItemsAction;
   private Action expandAllNodesAction;
   private Action collapseAllNodesAction;
   private Action expandCurrentNodeAction;
@@ -107,6 +107,9 @@ public abstract class AbstractPDEView extends ViewPart
     hookContextMenu();
     hookDoubleClickAction();
     contributeToActionBars();
+
+    // refresh
+    getAllItemsAction.run();
   }
 
   protected abstract String getLabelWhenItemNotFound(String filterString);
@@ -213,7 +216,7 @@ public abstract class AbstractPDEView extends ViewPart
    */
   protected void fillLocalToolBar(IToolBarManager manager)
   {
-    manager.add(getAllAction);
+    manager.add(getAllItemsAction);
     manager.add(new Separator());
     manager.add(expandAllNodesAction);
     manager.add(collapseAllNodesAction);
@@ -227,7 +230,7 @@ public abstract class AbstractPDEView extends ViewPart
   protected void makeActions()
   {
     copyIdToClipboardAction = new CopyIdToClipboardAction(getTreeViewer());
-    getAllAction = createAllItemsAction();
+    getAllItemsAction = createAllItemsAction();
     expandAllNodesAction = new ExpandAllNodesAction(getTreeViewer(), true, true);
     expandCurrentNodeAction = new ExpandAllNodesAction(getTreeViewer(), true, false);
     collapseAllNodesAction = new ExpandAllNodesAction(getTreeViewer(), false, true);

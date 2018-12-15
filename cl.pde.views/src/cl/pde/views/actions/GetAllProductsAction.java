@@ -38,7 +38,7 @@ public class GetAllProductsAction extends Action
   public GetAllProductsAction(ProductView productView)
   {
     this.productView = productView;
-    setText("Get all products in workspace");
+    setText("Refresh all products in workspace");
     setToolTipText(getText());
     setImageDescriptor(PDEViewActivator.getImageDescriptor(Images.GET_ALL_PRODUCTS));
   }
