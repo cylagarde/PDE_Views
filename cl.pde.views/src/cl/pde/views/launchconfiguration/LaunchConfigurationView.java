@@ -55,7 +55,7 @@ public class LaunchConfigurationView extends AbstractPDEView
   @Override
   protected String getLabelWhenItemNotFound(String filterString)
   {
-    return "Cannot found plugin '" + filterString + "' in a launch configuration";
+    return filterString.isEmpty()? "" : "Cannot found plugin '" + filterString + "' in a launch configuration";
   }
 
 }

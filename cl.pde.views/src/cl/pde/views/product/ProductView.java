@@ -55,7 +55,7 @@ public class ProductView extends AbstractPDEView
   @Override
   protected String getLabelWhenItemNotFound(String filterString)
   {
-    return "Cannot found plugin '" + filterString + "' in a product";
+    return filterString.isEmpty()? "" : "Cannot found plugin '" + filterString + "' in a product";
   }
 
 }

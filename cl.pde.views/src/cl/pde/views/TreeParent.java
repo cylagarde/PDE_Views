@@ -43,7 +43,6 @@ public class TreeParent extends TreeObject
     if (children != null)
       children.remove(child);
     child.setParent(null);
-    sorted = false;
   }
 
   public synchronized TreeObject[] getChildren()
@@ -102,7 +101,7 @@ public class TreeParent extends TreeObject
   {
     if (sorted)
       return;
-    if (children != null)
+    if (children != null && children.size() > 1)
       Collections.sort(children, TREEOBJECT_COMPARATOR);
     sorted = true;
   }

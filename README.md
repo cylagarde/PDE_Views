@@ -1,4 +1,4 @@
-# PDE Views v1.7
+# PDE Views v1.8
 Compatible avec <b>Eclipse Luna, Mars, Neon, Oxygen</b><br>
 <b>Java 8</b>
 

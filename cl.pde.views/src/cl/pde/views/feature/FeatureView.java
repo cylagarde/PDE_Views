@@ -55,6 +55,6 @@ public class FeatureView extends AbstractPDEView
   @Override
   protected String getLabelWhenItemNotFound(String filterString)
   {
-    return "Cannot found plugin '" + filterString + "' in a feature";
+    return filterString.isEmpty()? "" : "Cannot found plugin '" + filterString + "' in a feature";
   }
 }
