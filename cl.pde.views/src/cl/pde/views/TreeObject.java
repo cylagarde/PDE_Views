@@ -15,7 +15,7 @@ public class TreeObject implements IAdaptable
   public static final Comparator<TreeObject> TREEOBJECT_COMPARATOR = Comparator.comparing(TreeObject::getDisplayText, String.CASE_INSENSITIVE_ORDER);
 
   public final Object data;
-  public String name;
+  public final String name;
   public Image image;
   public Color foreground;
   private String displayText = null;
@@ -28,11 +28,6 @@ public class TreeObject implements IAdaptable
   {
     this.data = data;
     this.name = name;
-  }
-
-  public String getName()
-  {
-    return name;
   }
 
   void setParent(TreeParent parent)

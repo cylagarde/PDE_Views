@@ -1432,13 +1432,14 @@ public class Util
    */
   public static TreeParent getTreeParent(IProductModel productModel)
   {
-    TreeParent productTreeParent = new TreeParent(null, productModel);
-    productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
     IResource underlyingResource = productModel.getUnderlyingResource();
-    productTreeParent.name = underlyingResource.getName();
+    String name = underlyingResource.getName();
     IProduct product = productModel.getProduct();
     if (!VersionUtil.isEmptyVersion(product.getVersion()))
-      productTreeParent.name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
+      name += ' ' + PDELabelProvider.formatVersion(product.getVersion());
+
+    TreeParent productTreeParent = new TreeParent(name, productModel);
+    productTreeParent.foreground = Constants.PRODUCT_FOREGROUND;
     productTreeParent.image = PDEViewActivator.getImage(Images.PRODUCT);
 
     productTreeParent.loadChildRunnable = () -> {
