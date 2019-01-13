@@ -1,7 +1,9 @@
 package cl.pde.views;
 
 import org.eclipse.pde.internal.ui.PDEUIMessages;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
 
 /**
  * The class <b>Constants</b> allows to.<br>
@@ -15,9 +17,10 @@ public interface Constants
   final Color LAUNCH_CONFIGURATION_FOREGROUND = null;
   final Color PRODUCT_FOREGROUND = null;
 
-  final Color VERSION_FOREGROUND = new Color(null, 0, 127, 174);
-
   final Color[] PDE_COLORS = {PLUGIN_FOREGROUND, FEATURE_FOREGROUND, PROJECT_FOREGROUND, LAUNCH_CONFIGURATION_FOREGROUND, PRODUCT_FOREGROUND};
+
+  final Color VERSION_FOREGROUND = new Color(null, 0, 127, 174);
+  final Color ERROR_FOREGROUND = Display.getDefault().getSystemColor(SWT.COLOR_RED);
 
   // Nodes
   final String WORKSPACE_NODE = PDEUIMessages.AdvancedLauncherTab_workspacePlugins;

@@ -20,7 +20,6 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.progress.WorkbenchJob;
@@ -85,7 +84,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
     stackLayout.topControl = control;
 
     itemNotFoundLabel = new Label(parent, SWT.NONE);
-    itemNotFoundLabel.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+    itemNotFoundLabel.setForeground(Constants.ERROR_FOREGROUND);
 
     return control;
   }

@@ -1401,6 +1401,13 @@ public class Util
         IPlugin plugin = importObject.getPlugin();
         if (plugin != null)
           pluginTreeParent.addChild(getTreeParent(plugin.getPluginModel()));
+        else
+        {
+          TreeObject child = new TreeObject(pluginImport.getId(), null);
+          child.image = getImageWithError(PDEPlugin.getDefault().getLabelProvider().getImage(pluginImport));
+          child.foreground = Constants.ERROR_FOREGROUND;
+          pluginTreeParent.addChild(child);
+        }
       }
 
       //      BundleDescription bundleDescription = pluginModelBase.getBundleDescription();
