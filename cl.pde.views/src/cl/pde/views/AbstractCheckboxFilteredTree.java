@@ -3,7 +3,7 @@ package cl.pde.views;
 import java.util.function.Predicate;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.IJobChangeListener;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider;
 import org.eclipse.jface.viewers.ITreeViewerListener;
 import org.eclipse.jface.viewers.TreeExpansionEvent;
@@ -32,7 +32,6 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   private Button[] checkboxButtons;
   private StackLayout stackLayout;
   private Label itemNotFoundLabel;
-  private Composite checkboxButtonsComposite;
 
   private Predicate<Object> visiblePredicate = element -> {
     if (element instanceof TreeParent)
@@ -105,7 +104,7 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
 
       filterComposite.setParent(content);
 
-      checkboxButtonsComposite = new Composite(content, SWT.NONE);
+      Composite checkboxButtonsComposite = new Composite(content, SWT.NONE);
 
       RowLayout buttonLayout = new RowLayout();
       buttonLayout.marginWidth = buttonLayout.marginHeight = 0;
@@ -166,48 +165,21 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
   protected WorkbenchJob doCreateRefreshJob()
   {
     WorkbenchJob refreshJob = super.doCreateRefreshJob();
-    refreshJob.addJobChangeListener(new IJobChangeListener()
+    refreshJob.addJobChangeListener(new JobChangeAdapter()
     {
-      @Override
-      public void sleeping(IJobChangeEvent event)
-      {
-      }
-
-      @Override
-      public void scheduled(IJobChangeEvent event)
-      {
-      }
-
-      @Override
-      public void running(IJobChangeEvent event)
-      {
-      }
-
       @Override
       public void done(IJobChangeEvent event)
       {
         if (treeViewer.getTree().getItemCount() == 0)
         {
-          checkboxButtonsComposite.setVisible(false);
           itemNotFoundLabel.setText(getLabelWhenItemNotFound());
           stackLayout.topControl = itemNotFoundLabel;
         }
         else
         {
-          checkboxButtonsComposite.setVisible(true);
           stackLayout.topControl = treeViewer.getControl();
         }
         stackLayout.topControl.getParent().layout();
-      }
-
-      @Override
-      public void awake(IJobChangeEvent event)
-      {
-      }
-
-      @Override
-      public void aboutToRun(IJobChangeEvent event)
-      {
       }
     });
     return refreshJob;
