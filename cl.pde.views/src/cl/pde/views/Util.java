@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.jar.Attributes;
@@ -873,7 +874,7 @@ public class Util
 
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
-  final static Map<Object, Object> RESOURCE_CACHEMAP = new HashMap<>();
+  final static Map<Object, Object> RESOURCE_CACHEMAP = new ConcurrentHashMap<>();
 
   /**
    * Get resource
@@ -1113,8 +1114,8 @@ public class Util
   final static Object NULL = new Object();
   static boolean USE_CACHE = false;
   final static Map<Object, Object> SINGLETONSTATE_CACHEMAP = new HashMap<>();
-  final static Map<File, Object> JARFILE_TO_SINGLETONSTATE_PERSISTENT_CACHEMAP = new HashMap<>();
-  final static Map<Object, String> DISPLAY_TEXT_MAP = new HashMap<>();
+  final static Map<File, Object> JARFILE_TO_SINGLETONSTATE_PERSISTENT_CACHEMAP = new ConcurrentHashMap<>();
+  final static Map<Object, String> DISPLAY_TEXT_MAP = new ConcurrentHashMap<>();
 
   /**
    * @param useCache
