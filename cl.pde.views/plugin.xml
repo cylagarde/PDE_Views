@@ -7,7 +7,7 @@
             id="cl.pde.views"
             name="PDE views">
       </category>
-      
+
       <view
             category="cl.pde.views"
             class="cl.pde.views.feature.FeatureView"
@@ -29,7 +29,7 @@
             id="cl.pde.pluginView"
             name="Plugin View">
       </view>
-      
+
       <view
             category="cl.pde.views"
             class="cl.pde.views.product.ProductView"
@@ -37,10 +37,8 @@
             id="cl.pde.productView"
             name="Product View">
       </view>
-      
-     
    </extension>
-   
+
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
@@ -69,7 +67,7 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
-         
+
          <viewShortcut
                id="cl.pde.featureView">
          </viewShortcut>
@@ -82,9 +80,8 @@
          <viewShortcut
                id="cl.pde.productView">
          </viewShortcut>
-         
       </perspectiveExtension>
-      
+
       <perspectiveExtension
             targetID="org.eclipse.pde.ui.PDEPerspective">
          <view
@@ -111,7 +108,7 @@
                relationship="stack"
                relative="org.eclipse.ui.views.ProblemView">
          </view>
-         
+
          <viewShortcut
                id="cl.pde.featureView">
          </viewShortcut>
@@ -124,23 +121,22 @@
          <viewShortcut
                id="cl.pde.productView">
          </viewShortcut>
-         
       </perspectiveExtension>
    </extension>
+
    <extension
          point="org.eclipse.help.contexts">
       <contexts
             file="contexts.xml">
       </contexts>
    </extension>
-   
-   
+
    <extension point="org.eclipse.core.expressions.definitions">
       <definition id="is.feature">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile">
                <and>
-                  <test property="org.eclipse.core.resources.name" 
+                  <test property="org.eclipse.core.resources.name"
                         value="feature.xml"/>
                   <test property="org.eclipse.core.resources.contentTypeId"
                         value="org.eclipse.pde.featureManifest"/>
@@ -148,51 +144,46 @@
             </adapt>
          </iterate>
       </definition>
-      
+
       <definition id="is.product">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile">
                <and>
-                  <test
-                        property="org.eclipse.core.resources.extension"
-                        value="product">
-                  </test>
-                  <test
-                        property="org.eclipse.core.resources.contentTypeId"
-                        value="org.eclipse.pde.productFile">
-                  </test>
+                  <test property="org.eclipse.core.resources.extension"
+                        value="product"/>
+                  <test property="org.eclipse.core.resources.contentTypeId"
+                        value="org.eclipse.pde.productFile"/>
                </and>
             </adapt>
          </iterate>
       </definition>
-      
+
       <definition id="is.launch">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IFile">
-               <test property="org.eclipse.core.resources.extension" 
+               <test property="org.eclipse.core.resources.extension"
                      value="launch"/>
             </adapt>
          </iterate>
       </definition>
-      
+
       <definition id="is.pde">
          <iterate ifEmpty="false">
             <adapt type="org.eclipse.core.resources.IProject">
                <test property="org.eclipse.core.resources.projectNature"
-                   	 value="org.eclipse.pde.PluginNature">
-               </test>
+                   	 value="org.eclipse.pde.PluginNature"/>
             </adapt>
          </iterate>
       </definition>
    </extension>
-   
+
    <extension point="org.eclipse.ui.commands">
       <category
             name="CL PDE commands"
             description="CL PDE commands"
             id="cl.pde.commands">
       </category>
-      
+
       <command
             id="cl.pde.open_in_feature_view"
             name="Open in feature view"
@@ -200,7 +191,7 @@
             categoryId="cl.pde.commands"
             defaultHandler="cl.pde.handlers.OpenInFeatureViewHandler">
       </command>
-      
+
       <command
             id="cl.pde.open_in_product_view"
             name="Open in product view"
@@ -208,7 +199,7 @@
             categoryId="cl.pde.commands"
             defaultHandler="cl.pde.handlers.OpenInProductViewHandler">
       </command>
-      
+
       <command
             id="cl.pde.open_in_launch_configuration_view"
             name="Open in launch configuration view"
@@ -224,7 +215,7 @@
             categoryId="cl.pde.commands"
             defaultHandler="cl.pde.handlers.SearchInvalidProjectHandler">
       </command>
-      
+
       <command
             id="cl.pde.try_open_invalid_project"
             name="Try to open/import project"
@@ -233,7 +224,7 @@
             defaultHandler="cl.pde.handlers.TryToOpenInvalidProjectHandler">
       </command>
    </extension>
-   
+
    <extension point="org.eclipse.ui.menus">
       <menuContribution locationURI="popup:org.eclipse.ui.popup.any">
          <command
@@ -248,7 +239,7 @@
                </with>
             </visibleWhen>
          </command>
-         
+
          <command
                commandId="cl.pde.open_in_product_view"
                icon="icons/product.png"
@@ -265,7 +256,7 @@
                </with>
             </visibleWhen>
          </command>
-         
+
          <command
                commandId="cl.pde.open_in_launch_configuration_view"
                icon="icons/launch_configuration.png"
@@ -282,7 +273,7 @@
                </with>
             </visibleWhen>
          </command>
-         
+
          <command
                commandId="cl.pde.try_open_invalid_project"
                icon="icons/invalid_project.png"
@@ -293,9 +284,7 @@
             <visibleWhen>
                <iterate
                      ifEmpty="false">
-                  <instanceof
-                        value="org.eclipse.pde.internal.core.plugin.ImportObject">
-                  </instanceof>
+                  <instanceof value="org.eclipse.pde.internal.core.plugin.ImportObject"/>
                </iterate>
             </visibleWhen>
          </command>
