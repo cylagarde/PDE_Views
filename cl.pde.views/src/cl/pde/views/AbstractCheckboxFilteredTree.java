@@ -61,11 +61,15 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
    */
   public AbstractCheckboxFilteredTree(Composite parent, NotTreeParentPatternFilter filter)
   {
-    super(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
+    super(parent, SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL, filter, true, true);
     setQuickSelectionMode(true);
     filter.setVisiblePredicate(visiblePredicate);
     setInitialText("Plugin name filter");
     getFilterControl().setVisible(false);
+
+    // set background for all checkboxes
+    for(int i = 0; i < checkboxButtons.length; i++)
+      checkboxButtons[i].setBackground(getBackground());
   }
 
   /**
@@ -132,7 +136,6 @@ public abstract class AbstractCheckboxFilteredTree extends FilteredTree
         checkboxButtons[i].setData("LABEL", label);
         checkboxButtons[i].setToolTipText("See " + label + " node");
         checkboxButtons[i].setSelection(true);
-        checkboxButtons[i].setBackground(parent.getBackground());
         checkboxButtons[i].addSelectionListener(listener);
       }
     }
