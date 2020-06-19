@@ -8,12 +8,13 @@ import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
-import org.eclipse.pde.internal.ui.util.StringMatcher.Position;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.TextStyle;
+
+import cl.pde.misc.StringMatcher.Position;
 
 /**
  * The class <b>PdeLabelProvider</b> allows to.<br>
@@ -38,8 +39,7 @@ public class PdeLabelProvider extends LabelProvider implements IFontProvider, IC
     COLOR_REGISTRY.put("ERROR_COLOR", new RGB(255, 0, 0));
 
     // stylers
-    SELECTION_STYLER = new Styler()
-    {
+    SELECTION_STYLER = new Styler() {
       @Override
       public void applyStyles(TextStyle textStyle)
       {

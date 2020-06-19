@@ -11,10 +11,10 @@ import org.eclipse.jface.viewers.IBaseLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.pde.internal.ui.util.StringMatcher;
 import org.eclipse.ui.dialogs.PatternFilter;
 
 import cl.pde.PDEViewActivator;
+import cl.pde.misc.StringMatcher;
 
 /**
  * The class <b>NotTreeParentPatternFilter</b> allows to.<br>
