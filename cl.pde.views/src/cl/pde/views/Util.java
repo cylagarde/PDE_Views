@@ -308,7 +308,7 @@ public class Util
       {
         try
         {
-          try (FileInputStream fis = new FileInputStream(manifestFile))
+          try(FileInputStream fis = new FileInputStream(manifestFile))
           {
             pluginModel.load(fis, false);
           }
@@ -1816,9 +1816,13 @@ public class Util
    */
   private static void loadPluginsFromLaunchConfiguration(ILaunchConfiguration launchConfiguration, List<TreeParent> elements)
   {
-    loadElements(launchConfiguration, Constants.WORKSPACE_NODE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS, elements);
+    List<IPluginBase> pluginBases = loadElements(launchConfiguration, Constants.WORKSPACE_NODE, IPDELauncherConstants.SELECTED_WORKSPACE_PLUGINS, elements);
+    //    if (pluginBases.isEmpty())
+    //      loadElements(launchConfiguration, Constants.WORKSPACE_NODE, IPDELauncherConstants.SELECTED_WORKSPACE_BUNDLES, elements);
 
-    loadElements(launchConfiguration, Constants.TARGET_PLATFORM_NODE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS, elements);
+    pluginBases = loadElements(launchConfiguration, Constants.TARGET_PLATFORM_NODE, IPDELauncherConstants.SELECTED_TARGET_PLUGINS, elements);
+    //    if (pluginBases.isEmpty())
+    //      loadElements(launchConfiguration, Constants.TARGET_PLATFORM_NODE, IPDELauncherConstants.SELECTED_TARGET_BUNDLES, elements);
   }
 
   /**
@@ -1828,7 +1832,7 @@ public class Util
    * @param attributeKey
    * @param elements
    */
-  private static void loadElements(ILaunchConfiguration launchConfiguration, String name, String attributeKey, List<TreeParent> elements)
+  private static List<IPluginBase> loadElements(ILaunchConfiguration launchConfiguration, String name, String attributeKey, List<TreeParent> elements)
   {
     List<IPluginBase> pluginBases = loadPlugins(launchConfiguration, attributeKey);
     if (!pluginBases.isEmpty())
@@ -1845,6 +1849,8 @@ public class Util
         treeParent.sortChildren();
       };
     }
+
+    return pluginBases;
   }
 
   /**
@@ -1854,11 +1860,33 @@ public class Util
    */
   private static List<IPluginBase> loadPlugins(ILaunchConfiguration launchConfiguration, String attributeKey)
   {
-    System.out.println("loadPlugins " + launchConfiguration);
+    // System.out.println("loadPlugins " + launchConfiguration);
     List<IPluginBase> pluginBases = new ArrayList<>();
     try
     {
-      String selected_target_plugins = launchConfiguration.getAttribute(attributeKey, "");
+      Map<String, Object> attributes = launchConfiguration.getAttributes();
+      Object attribute = attributes.get(attributeKey);
+
+      String selected_target_plugins = null;
+      if (attribute instanceof String)
+        selected_target_plugins = (String) attribute;
+      else if (attribute instanceof Iterable)
+      {
+        StringBuilder builder = new StringBuilder();
+        ((Iterable) attribute).forEach(o -> {
+          if (o instanceof String)
+          {
+            if (builder.length() != 0)
+              builder.append(",");
+            builder.append(o);
+          }
+        });
+        selected_target_plugins = builder.toString();
+      }
+
+      if (selected_target_plugins == null || selected_target_plugins.isEmpty())
+        return pluginBases;
+
       for(String str : selected_target_plugins.split(","))
       {
         int index = str.indexOf(':');
@@ -1960,8 +1988,9 @@ public class Util
           {
             pluginId = additional_plugin.substring(0, index);
             pluginVersion = additional_plugin.substring(index + 1);
-            if (pluginVersion.endsWith("default:true"))
-              pluginVersion = pluginVersion.substring(0, pluginVersion.length() - "default:true".length() - 1);
+            int twoPointsIndex = pluginVersion.indexOf(':');
+            if (twoPointsIndex > 0)
+              pluginVersion = pluginVersion.substring(0, twoPointsIndex);
           }
 
           IPluginModelBase model = null;
@@ -2005,7 +2034,7 @@ public class Util
   /////////////////////////////////////////////////////////////////////////////////////////////////
 
   /**
-   * Open PDE object
+   * Get id
    * @param pdeObject
    */
   public static String getId(Object pdeObject)
@@ -2030,6 +2059,9 @@ public class Util
 
     if (pdeObject instanceof IPluginModel)
       return getId(((IPluginModel) pdeObject).getPlugin());
+
+    if (pdeObject instanceof IFragmentModel)
+      return getId(((IFragmentModel) pdeObject).getPluginBase());
 
     if (pdeObject instanceof IModel)
     {
